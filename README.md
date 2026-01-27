@@ -3,7 +3,9 @@ GROUP:
 
 François ALICANTE 21414341
 Justin KANG 21431641
+Soufiane BEL HADJ 21303076
 Tamer AL MASRI 21412678
+
 
 ## Getting started
 
