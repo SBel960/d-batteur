@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home | Discussions</title>
+  <link rel="stylesheet" href="homepage.css" />
+</head>
+<body>
+
+  <!-- HEADER / TOOLBAR -->
+  <header class="topbar">
+    <!-- Gauche : Entreprise + emplacement logo + logo -->
+    <div class="topbar-left">
+      <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
+
+      <div class="company">
+        <div id="companyName" class="company-name">NomEntreprise</div>
+        <div class="company-sub">Accueil</div>
+      </div>
+
+      <div class="company-mark" aria-hidden="true">🏢</div>
+    </div>
+
+    <!-- Centre : recherche (titre uniquement) -->
+    <div class="topbar-center">
+      <div class="search">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Rechercher par titre de discussion..."
+          aria-label="Rechercher"
+        />
+      </div>
+    </div>
+
+    <!-- Droite : user + groupe + bouton + -->
+    <div class="topbar-right">
+      <div class="user">
+        <div id="userFullName" class="user-name">Prénom Nom</div>
+        <div id="userGroup" class="user-group">Groupe : ...</div>
+      </div>
+
+      <button id="addDiscussionBtn" class="icon-btn" title="Ajouter une discussion" style="display:none;">
+        +
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENU -->
+  <main class="container">
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Discussions</h2>
+        <div id="countInfo" class="muted">0 discussion(s)</div>
+      </div>
+
+      <div id="discussionsList" class="list">
+        <!-- Items injectés par JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * Données DEMO -> à remplacer par votre backend Java
+     * Rôles: "EMPLOYE", "MANAGER", "PDG"
+     * type: "QUESTION" ou "PROPOSITION"
+     * scope:
+     *  - GENERAL = visible à tous les groupes
+     *  - GROUPS = visible à une liste de groupes
+     */
+    const state = {
+      companyName: "ACME Corp",
+      user: {
+        firstName: "Sara",
+        lastName: "Dupont",
+        group: "Groupe A",
+        role: "MANAGER",
+        managedGroups: ["Groupe A", "Groupe C"]
+      },
+      discussions: [
+        {
+          id: 101,
+          title: "Nouvelle procédure congés",
+          description: "Merci de lire la nouvelle procédure et poser vos questions ici.",
+          type: "QUESTION",
+          scope: { kind: "GENERAL" },
+          createdByRole: "PDG",
+          updatedAtISO: "2026-01-29T10:12:00Z"
+        },
+        {
+          id: 102,
+          title: "Proposition : horaire flexible",
+          description: "Pour/contre : mise en place d’horaires flexibles sur 2 jours/semaine.",
+          type: "PROPOSITION",
+          scope: { kind: "GROUPS", groups: ["Groupe A"] },
+          createdByRole: "MANAGER",
+          votes: { up: 5, down: 2 },
+          updatedAtISO: "2026-01-28T18:40:00Z"
+        },
+        {
+          id: 103,
+          title: "Questions projet site web",
+          description: "Ajoutez vos questions techniques (frontend, backend, DB).",
+          type: "QUESTION",
+          scope: { kind: "GROUPS", groups: ["Groupe A", "Groupe C"] },
+          createdByRole: "MANAGER",
+          updatedAtISO: "2026-01-27T09:05:00Z"
+        }
+      ]
+    };
+
+    // Header infos
+    document.getElementById("companyName").textContent = state.companyName;
+    document.getElementById("userFullName").textContent = `${state.user.firstName} ${state.user.lastName}`;
+    document.getElementById("userGroup").textContent = `Groupe : ${state.user.group}`;
+
+    // Afficher le + pour PDG/MANAGER
+    const addBtn = document.getElementById("addDiscussionBtn");
+    const canAdd = (state.user.role === "PDG" || state.user.role === "MANAGER");
+    addBtn.style.display = canAdd ? "inline-flex" : "none";
+
+    addBtn.addEventListener("click", () => {
+      alert("Créer une discussion (à brancher au backend Java).");
+    });
+
+    // Utils
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return iso;
+      return d.toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
+    }
+
+    function scopeLabel(scope) {
+      if (!scope || !scope.kind) return "—";
+      if (scope.kind === "GENERAL") return "Générale (tous groupes)";
+      if (scope.kind === "GROUPS") return `Groupes: ${scope.groups.join(", ")}`;
+      return "—";
+    }
+
+    // Tri récent -> ancien
+    function getSortedDiscussions(items) {
+      return [...items].sort((a, b) => {
+        const da = new Date(a.updatedAtISO).getTime();
+        const db = new Date(b.updatedAtISO).getTime();
+        return db - da;
+      });
+    }
+
+    // Render
+    const list = document.getElementById("discussionsList");
+    const countInfo = document.getElementById("countInfo");
+
+    function renderDiscussions(items) {
+      list.innerHTML = "";
+      countInfo.textContent = `${items.length} discussion(s)`;
+
+      if (!items.length) {
+        list.innerHTML = `<div class="empty">Aucune discussion trouvée.</div>`;
+        return;
+      }
+
+      items.forEach(d => {
+        const isProposal = d.type === "PROPOSITION";
+        const votes = d.votes || { up: 0, down: 0 };
+
+        const card = document.createElement("article");
+        card.className = "card";
+
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-title">
+              <span class="badge ${isProposal ? "badge-prop" : "badge-q"}">
+                ${escapeHtml(d.type)}
+              </span>
+              <span class="title-text">${escapeHtml(d.title)}</span>
+            </div>
+            <div class="card-date">${escapeHtml(formatDate(d.updatedAtISO))}</div>
+          </div>
+
+          <div class="card-desc">${escapeHtml(d.description)}</div>
+
+          <div class="card-bottom">
+            <div class="card-meta">
+              <span>${escapeHtml(scopeLabel(d.scope))}</span>
+              <span class="dot">•</span>
+              <span>Auteur: ${escapeHtml(d.createdByRole || "—")}</span>
+            </div>
+
+            <div class="card-actions">
+              <a class="btn" href="discussion.html?id=${encodeURIComponent(d.id)}">Ouvrir</a>
+
+              ${isProposal ? `
+                <button class="vote" data-id="${escapeHtml(d.id)}" data-vote="up" title="Avis positif">
+                  👍 <span id="up-${escapeHtml(d.id)}">${votes.up}</span>
+                </button>
+                <button class="vote" data-id="${escapeHtml(d.id)}" data-vote="down" title="Avis négatif">
+                  👎 <span id="down-${escapeHtml(d.id)}">${votes.down}</span>
+                </button>
+              ` : ``}
+            </div>
+          </div>
+        `;
+
+        list.appendChild(card);
+      });
+
+      // Vote demo (front)
+      document.querySelectorAll("button[data-vote]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-id");
+          const vote = btn.getAttribute("data-vote");
+          const disc = state.discussions.find(x => String(x.id) === String(id));
+          if (!disc) return;
+
+          disc.votes = disc.votes || { up: 0, down: 0 };
+          if (vote === "up") disc.votes.up += 1;
+          if (vote === "down") disc.votes.down += 1;
+
+          document.getElementById("up-" + id).textContent = disc.votes.up;
+          document.getElementById("down-" + id).textContent = disc.votes.down;
+        });
+      });
+    }
+
+    // Recherche : titre uniquement
+    const searchInput = document.getElementById("searchInput");
+    function applySearchAndRender() {
+      const q = searchInput.value.trim().toLowerCase();
+      const filtered = state.discussions.filter(d => d.title.toLowerCase().includes(q));
+      renderDiscussions(getSortedDiscussions(filtered));
+    }
+    searchInput.addEventListener("input", applySearchAndRender);
+
+    // Initial
+    renderDiscussions(getSortedDiscussions(state.discussions));
+  </script>
+</body>
+</html>
