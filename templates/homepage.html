@@ -210,7 +210,7 @@
             </div>
 
             <div class="card-actions">
-              <a class="btn" href="discussion.html?id=${encodeURIComponent(d.id)}">Ouvrir</a>
+              <a class="btn" href="/main/${d.id}">Ouvrir</a>
 
               ${isProposal ? `
                 <button class="vote" data-id="${escapeHtml(d.id)}" data-vote="up" title="Avis positif">

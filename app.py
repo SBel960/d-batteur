@@ -8,6 +8,6 @@ app.secret_key = "ITTorsdyP2Gfzss33gjoY34otqT5BWC5"
 def home():
     return render_template("homepage.html")
 
-@app.route("/main")
-def main():
-    return render_template("main.html")
+@app.route("/main/<int:discussion_id>")
+def main(discussion_id):
+    return render_template("main.html", discussion_id=discussion_id)
