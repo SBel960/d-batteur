@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}"/>
+    <title>Topics</title>
+</head>
+<body>
+    
+    <!-- HEADER / TOOLBAR -->
+  <header class="topbar">
+    <!-- Gauche : Entreprise + emplacement logo + logo -->
+    <div class="topbar-left">
+      <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
+
+      <div class="company">
+        <div id="companyName" class="company-name">NomEntreprise</div>
+        <div class="company-sub">Topics</div>
+      </div>
+
+      <div class="company-mark" aria-hidden="true">🏢</div>
+    </div>
+
+    <!-- Centre : recherche (titre uniquement) -->
+    <div class="topbar-center">
+      <div class="search">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Rechercher par titre de discussion..."
+          aria-label="Rechercher"
+        />
+      </div>
+    </div>
+
+    <!-- Droite : user + groupe + bouton + -->
+    <div class="topbar-right">
+      <div class="user">
+        <div id="userFullName" class="user-name">Prénom Nom</div>
+        <div id="userGroup" class="user-group">Groupe : ...</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Essayer de trouver un moyen de transférer le titre de la question au span "topic-title" -->
+  <main>
+    <section class="information-section">
+      <div class="topic-title-container">
+        <span class="topic-title">
+          Titre de la discussion
+        </span>
+      </div>
+      <div class="description-container">
+        <div class="description">
+          Section de la description / infos supplémentaires sur la question posée
+        </div>
+      </div>
+    </section>
+    
+    <!-- Essayer de trouver un moyen de transférer les pouces bleus et rouges dans la section vote -->
+    <!-- Forme de la représentation des résultats du vote encore à décider -->
+
+    <section class="interactive-section">
+      <div class="voting-results">
+        Section des votes ici
+      </div>
+      <div class="comments">
+        Section des commentaires ici
+      </div>
+    </section>
+  </main>
+
+  <script>
+
+    /*Script JS à remplir*/
+    const state = {
+      companyName: "ACME Corp",
+      user: {
+        firstName: "Sara",
+        lastName: "Dupont",
+        group: "Groupe A",
+        role: "MANAGER",
+        managedGroups: ["Groupe A", "Groupe C"]
+      }
+    }
+
+    document.getElementById("companyName").textContent = state.companyName;
+    document.getElementById("userFullName").textContent = `${state.user.firstName} ${state.user.lastName}`;
+    document.getElementById("userGroup").textContent = `Groupe : ${state.user.group}`;
+
+  </script>
+</body>
+</html>
