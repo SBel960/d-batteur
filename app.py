@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table
 app = Flask(__name__)
 
 app.secret_key = "ITTorsdyP2Gfzss33gjoY34otqT5BWC5"
@@ -72,6 +72,15 @@ def insert_comments(): # fonction a modifier quand on a l'option de cree une nou
     content= "Tamer is the best!!!"
     insert_comments_table(id_c, id_d, content)
     return "inserted comments table succesfully!"
+
+@app.route("/insert_likes_table")
+def insert_likes(): # fonction a modifier quand on a l'option de like/dislike un commentaire/discussion
+    id_c = 1
+    target = "comment"
+    id_target = 1
+    like = 1
+    insert_likes_table(id_c, target, id_target, like)
+    return "inserted likes table succesfully!"
 
 
 @app.cli.command("db:reset")

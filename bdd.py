@@ -109,6 +109,14 @@ def insert_comments_table(id_c, id_d, content):
     sql.execute(command, [id_c, id_d, content])
     data.commit()
 
+def insert_likes_table(id_c, target, id_target, like):
+    data = get_db()
+    sql = data.cursor()
+    command = """INSERT INTO Likes(id_c, target, id_target, like)
+                VALUES (?,?,?,?)
+            """
+    sql.execute(command, [id_c, target, id_target, like])
+    data.commit()
 
 
 
