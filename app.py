@@ -74,4 +74,3 @@ def insert_comments(): # fonction a modifier quand on a l'option de cree une nou
     return "inserted comments table succesfully!"
 
 
-
