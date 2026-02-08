@@ -66,11 +66,11 @@ def create_likes_table():
     command = """CREATE TABLE IF NOT EXISTS Likes(
                 id_like INTEGER PRIMARY KEY AUTOINCREMENT,
                 id_c INTEGER NOT NULL,
-                id_reference INTEGER NOT NULL,
-                bool_discussion INTEGER NOT NULL,
-                likes INTEGER NOT NULL DEFAULT 0,
-                dislike INTEGER NOT NULL DEFAULT 0,
-                FOREIGN KEY(id_c) REFERENCES Client(id_client)
+                target TEXT NOT NULL CHECK (target IN ('discussion', 'comment')),
+                id_target INTEGER NOT NULL,
+                like INTEGER NOT NULL CHECK (like IN (-1, 1)),
+                FOREIGN KEY(id_c) REFERENCES Client(id_client),
+                UNIQUE (id_c, target, id_target)
                 )
                  
             """
@@ -112,3 +112,15 @@ def insert_comments_table(id_c, id_d, content):
 
 
 
+def reset_all_db():
+    data = get_db()
+    sql = data.cursor()
+    tables = ["Client", "Discussions", "Comments", "Likes"]
+    for table in tables:
+        sql.execute(f"DROP TABLE IF EXISTS {table};")
+    data.commit()
+
+    create_client_table()
+    create_discussions_table()
+    create_comments_table()
+    create_likes_table()

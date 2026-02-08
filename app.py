@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db
 app = Flask(__name__)
 
 app.secret_key = "ITTorsdyP2Gfzss33gjoY34otqT5BWC5"
@@ -74,3 +74,9 @@ def insert_comments(): # fonction a modifier quand on a l'option de cree une nou
     return "inserted comments table succesfully!"
 
 
+@app.cli.command("db:reset")
+def reset_database():
+    "resets the database tables"
+    print("Dropping Database")
+    reset_all_db()
+    
