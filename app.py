@@ -1,5 +1,5 @@
-from flask import Flask, render_template, url_for
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table
+from flask import Flask, render_template, url_for, redirect, request
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions
 app = Flask(__name__)
 
 app.secret_key = "ITTorsdyP2Gfzss33gjoY34otqT5BWC5"
@@ -13,11 +13,26 @@ with app.app_context():
     
 @app.route("/")
 def home():
-    return render_template("homepage.html")
+    result = select_all_discussions()
+    titles = []
+    contents = []
+    for row in result:
+        titles.append(row[2])
+        contents.append(row[3])
+
+    print(titles)
+    return render_template("homepage.html", contents = contents, titles = titles)
 
 @app.route("/main/<int:discussion_id>")
 def main(discussion_id):
     return render_template("main.html", discussion_id=discussion_id)
+
+
+
+@app.route("/commentaire", methods=["POST"])
+def commentaire():
+    content = request.form['content']
+    
 
 
 
@@ -59,8 +74,8 @@ def insert_client(): #fonction a modifier quand on a la page login
 @app.route("/insert_discussions_table")
 def insert_discussions(): # fonction a modifier quand on a l'option de cree une nouvelle discussion
     id_c = 1
-    title = "3onjour"
-    content= "le 3 est un lettre arabe dont le son ne peut pas etre represente par l'alphabet latin donc on utilise le chiffre 3 pour le representer (on parle arabe avec le keyboard latin souvent, car le keyboard arabe a 10000 touche cest dificile)"
+    title = "Jason"
+    content= "Jason son nom est jason"
     insert_disscussions_table(id_c, title, content)
     return "inserted clients table succesfully!"
 
@@ -69,7 +84,7 @@ def insert_discussions(): # fonction a modifier quand on a l'option de cree une 
 def insert_comments(): # fonction a modifier quand on a l'option de cree une nouvelle commentaire
     id_c = 1
     id_d = 1
-    content= "Tamer is the best!!!"
+    content= "Tamer is the vire!!!"
     insert_comments_table(id_c, id_d, content)
     return "inserted comments table succesfully!"
 

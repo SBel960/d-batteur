@@ -132,3 +132,13 @@ def reset_all_db():
     create_discussions_table()
     create_comments_table()
     create_likes_table()
+
+
+def select_all_discussions():
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT * FROM Discussions;
+            """
+    sql.execute(command)
+    result = sql.fetchall()
+    return result
