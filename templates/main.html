@@ -64,7 +64,14 @@
 
     <section class="interactive-section">
       <div class="voting-results">
-        Section des votes ici
+        <div class="voting-bar-results">
+          <div class="bar-for"></div>
+          <div class="bar-against"></div>
+        </div>
+        <div class="btn-area">
+          <a class="icon-btn" href="">👍</a>
+          <a class="icon-btn" href="">👎</a>
+        </div>
       </div>
       <div class="comments">
         Section des commentaires ici
@@ -74,21 +81,14 @@
 
   <script>
 
-    /*Script JS à remplir*/
-    const state = {
-      companyName: "ACME Corp",
-      user: {
-        firstName: "Sara",
-        lastName: "Dupont",
-        group: "Groupe A",
-        role: "MANAGER",
-        managedGroups: ["Groupe A", "Groupe C"]
-      }
-    }
+    /*Script JS à remplir / à modifier*/
+    document.addEventListener("ContenuCharge", () => {
+      const state = JSON.parse(localStorage.getItem("appState"));
 
-    document.getElementById("companyName").textContent = state.companyName;
-    document.getElementById("userFullName").textContent = `${state.user.firstName} ${state.user.lastName}`;
-    document.getElementById("userGroup").textContent = `Groupe : ${state.user.group}`;
+      document.getElementById("companyName").textContent = state.companyName;
+      document.getElementById("userFullName").textContent = `${state.user.firstName} ${state.user.lastName}`;
+      document.getElementById("userGroup").textContent = `Groupe : ${state.user.group}`;
+    });
 
   </script>
 </body>
