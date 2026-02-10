@@ -23,16 +23,19 @@ def home():
     print(titles)
     return render_template("homepage.html", contents = contents, titles = titles)
 
-@app.route("/main/<int:discussion_id>")
+@app.route("/main/<int:discussion_id>", methods=["GET", "POST"])
 def main(discussion_id):
     return render_template("main.html", discussion_id=discussion_id)
 
 
 
 @app.route("/commentaire", methods=["POST"])
-def commentaire():
+def commentaire(discussion_id):
     content = request.form['content']
-    
+    id_client = 1 #a modifier quand on a la page login
+    insert_comments_table(id_client, discussion_id, content)
+    return redirect(url_for("main", discussion_id= discussion_id))
+
 
 
 
