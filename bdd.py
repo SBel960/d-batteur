@@ -142,3 +142,14 @@ def select_all_discussions():
     sql.execute(command)
     result = sql.fetchall()
     return result
+
+
+def select_comments(discussion_id):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT * FROM Comments WHERE id_d= ?;
+            """
+    
+    sql.execute(command, [discussion_id])
+    result = sql.fetchall()
+    return result
