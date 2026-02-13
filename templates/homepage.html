@@ -133,6 +133,8 @@
       ]
     };
 
+    localStorage.setItem("appState", JSON.stringify(state));
+
     // Header infos
     document.getElementById("companyName").textContent = state.companyName;
     document.getElementById("userFullName").textContent = `${state.user.firstName} ${state.user.lastName}`;

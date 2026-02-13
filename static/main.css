@@ -180,10 +180,10 @@ main{
   color: var(--muted);
 }
   
-/* A "dé-commenter" une fois l'implémentation des fonctionnalités de vote et de commentaire effectuée
+/* A "dé-commenter" une fois l'implémentation des fonctionnalités de vote et de commentaire effectuée */
 
 .icon-btn{
-  width: 38px;
+  width: 76px;
   height: 38px;
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.05);
@@ -202,7 +202,7 @@ main{
   background: rgba(255,255,255,0.08);
   border-color: rgba(255,255,255,0.18);
 }
-.icon-btn:active{ transform: translateY(0px); } */
+.icon-btn:active{ transform: translateY(0px); }
 
 .topic-title-container{
   height: 250px;
@@ -231,8 +231,70 @@ main{
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px dashed rgba(255,255,255,0.35);
+  flex-direction: column;
+  padding: 10px;
   height: 125px;
+}
+
+.voting-bar-results {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
+
+.bar-for {
+  display: table;
+  height: 100%;
+  width: 100%;
+  background: greenyellow;
+}
+
+.bar-for::after {
+  font-size: 40px;
+  position: relative;
+  display: block;
+  text-align: center;
+  content: "50%";
+  opacity: 0;
+  background: greenyellow;
+  transform: translate(0%, 0%);
+  transition: 0.4s opacity cubic-bezier(0.33, 1, 0.68, 1), 0.4s transform cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.bar-for:hover::after {
+  opacity: 1;
+  transform: translate(0%, 0%);
+  transition: 0.4s opacity cubic-bezier(0.33, 1, 0.68, 1), 0.4s transform cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.bar-against {
+  display: table;
+  height: 100%;
+  width: 100%;
+  background: red;
+}
+
+.bar-against::after {
+  font-size: 40px;
+  position: relative;
+  display: block;
+  text-align: center;
+  content: "50%";
+  opacity: 0;
+  background: red;
+  transform: translate(0%, 0%);
+  transition: 0.4s opacity cubic-bezier(0.33, 1, 0.68, 1), 0.4s transform cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.bar-against:hover::after {
+  opacity: 1;
+  transform: translate(0%, 0%);
+  transition: 0.4s opacity cubic-bezier(0.33, 1, 0.68, 1), 0.4s transform cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.btn-area {
+  margin-top: 10px;
 }
 
 .comments{

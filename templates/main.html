@@ -64,7 +64,14 @@
 
     <section class="interactive-section">
       <div class="voting-results">
-        Section des votes ici
+        <div class="voting-bar-results">
+          <div class="bar-for"></div>
+          <div class="bar-against"></div>
+        </div>
+        <div class="btn-area">
+          <a class="icon-btn" href="">👍</a>
+          <a class="icon-btn" href="">👎</a>
+        </div>
       </div>
       <div class="comments">
         <div class="commentInput">
@@ -101,9 +108,10 @@
       }
     }
 
-    document.getElementById("companyName").textContent = state.companyName;
-    document.getElementById("userFullName").textContent = `${state.user.firstName} ${state.user.lastName}`;
-    document.getElementById("userGroup").textContent = `Groupe : ${state.user.group}`;
+      document.getElementById("companyName").textContent = state.companyName;
+      document.getElementById("userFullName").textContent = `${state.user.firstName} ${state.user.lastName}`;
+      document.getElementById("userGroup").textContent = `Groupe : ${state.user.group}`;
+    });
 
 
 
