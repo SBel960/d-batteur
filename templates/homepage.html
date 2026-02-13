@@ -50,14 +50,24 @@
 
   <!-- CONTENU -->
   <main class="container">
+    {% for title in titles %}
+        <p> {{ title }}  </p>
+        {% endfor %}
 
+
+    {% for content in contents %}
+        <p> {{ content }}  </p>
+        {% endfor %}
     <section class="section">
       <div class="section-head">
         <h2>Discussions</h2>
-        <div id="countInfo" class="muted">0 discussion(s)</div>
+        <div id="countInfo" class="muted">0 discussion(s) 
+
+        </div>
       </div>
 
       <div id="discussionsList" class="list">
+        
         <!-- Items injectés par JS -->
       </div>
     </section>

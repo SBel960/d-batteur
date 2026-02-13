@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}"/>
-    <title>Topics</title>
+    <title>{% block title %}{% endblock %} </title>
 </head>
 <body>
     
@@ -44,17 +44,17 @@
     </div>
   </header>
 
-  <!-- Essayer de trouver un moyen de transférer le titre de la question au span "topic-title" -->
+
   <main>
     <section class="information-section">
       <div class="topic-title-container">
-        <span class="topic-title">
-          Titre de la discussion
+        <span class="topic-title">*
+          Discussion titre
         </span>
       </div>
       <div class="description-container">
         <div class="description">
-          Section de la description / infos supplémentaires sur la question posée
+            Descriotio
         </div>
       </div>
     </section>
@@ -74,21 +74,47 @@
         </div>
       </div>
       <div class="comments">
-        Section des commentaires ici
+        <div class="commentInput">
+          <form class="commentForm" method="post" action='{{url_for("commentaire", discussion_id=discussion_id)}}'>
+            <label for="test"> Commentaires </label>
+            <input type="text" class="form-control" name="commentaire" placeholder="ton commentaire ici" id="comment_input">
+            <input class="icon-btn" type="submit" value="Envoyer">
+          </form>
+        </div>
+        <div class="commentUser">
+          
+        </div>
+
+          {% for  comment in comments %}
+        <div class="commentText"> {{ comment }}  </div>
+        <hr>
+        {% endfor %}
+          
+
       </div>
     </section>
   </main>
 
   <script>
-
-    /*Script JS à remplir / à modifier*/
-    document.addEventListener("ContenuCharge", () => {
-      const state = JSON.parse(localStorage.getItem("appState"));
+        /*Script JS à remplir*/
+    const state = {
+      companyName: "ACME Corp",
+      user: {
+        firstName: "Sara",
+        lastName: "Dupont",
+        group: "Groupe A",
+        role: "MANAGER",
+        managedGroups: ["Groupe A", "Groupe C"]
+      }
+    }
 
       document.getElementById("companyName").textContent = state.companyName;
       document.getElementById("userFullName").textContent = `${state.user.firstName} ${state.user.lastName}`;
       document.getElementById("userGroup").textContent = `Groupe : ${state.user.group}`;
     });
+
+
+
 
   </script>
 </body>
