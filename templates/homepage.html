@@ -65,7 +65,7 @@
           <label for="yesno"> Question fermé</label>
           
 
-          
+
           <input type="checkbox" name="groupList" id="groupList">
           <label for="groupList"> Groupe 1</label>
           <input type="checkbox" name="groupList" id="groupList">
@@ -179,13 +179,7 @@
     const canAdd = (state.user.role === "PDG" || state.user.role === "MANAGER");
     addBtn.style.display = canAdd ? "inline-flex" : "none";
 
-    addBtn.addEventListener("click", () => {
-      `<form class="newDiscussion">
-        <label for='newDiscussion'> 
-        <input >
-        <form>
-      `
-    });
+
 
     // Utils
     function escapeHtml(str) {
