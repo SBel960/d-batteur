@@ -48,13 +48,13 @@
   <main>
     <section class="information-section">
       <div class="topic-title-container">
-        <span class="topic-title">*
+        <span class="topic-title">
           Discussion titre
         </span>
       </div>
       <div class="description-container">
         <div class="description">
-            Descriotio
+            Description
         </div>
       </div>
     </section>
@@ -76,7 +76,7 @@
       <div class="comments">
         <div class="commentInput">
           <form class="commentForm" method="post" action='{{url_for("commentaire", discussion_id=discussion_id)}}'>
-            <label for="test"> Commentaires </label>
+            <label for="comment_input"> Commentaires </label>
             <input type="text" class="form-control" name="commentaire" placeholder="ton commentaire ici" id="comment_input">
             <input class="icon-btn" type="submit" value="Envoyer">
           </form>
@@ -111,7 +111,7 @@
       document.getElementById("companyName").textContent = state.companyName;
       document.getElementById("userFullName").textContent = `${state.user.firstName} ${state.user.lastName}`;
       document.getElementById("userGroup").textContent = `Groupe : ${state.user.group}`;
-    });
+  });
 
 
 

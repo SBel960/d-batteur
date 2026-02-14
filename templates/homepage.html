@@ -42,9 +42,43 @@
         <div id="userGroup" class="user-group">Groupe : ...</div>
       </div>
 
-      <button id="addDiscussionBtn" class="icon-btn" title="Ajouter une discussion" style="display:none;">
+      <button id="addDiscussionBtn" commandfor='newDiscussion'command="show-modal" class="icon-btn" title="Ajouter une discussion" style="display:none;">
         +
       </button>
+
+      <dialog id="newDiscussion">
+        <!-- Pour fermer la page -->
+        <button id="closePage" commandfor='newDiscussion' command="request-close"> 
+          X
+        </button>
+
+        <!-- Création d'une discussion  -->
+        <form class="newDiscussionForm" method="post">
+          <label> Nouvelle discussion</label>
+          <input type="text" class="questionBlock" name='discussionTitle'placeholder="Ajouter un titre"> 
+          <input type="text" class="contentBlock" name="discussionContent" placeholder="Ajouter une description">
+
+          <input type="radio" name="discussionType" id="ouvert" value="ouvert">
+          <label for="ouvert"> Question ouverte </label>
+          
+          <input type="radio" name="discussionType" id="yesno" value="yesno">   
+          <label for="yesno"> Question fermé</label>
+          
+
+          
+          <input type="checkbox" name="groupList" id="groupList">
+          <label for="groupList"> Groupe 1</label>
+          <input type="checkbox" name="groupList" id="groupList">
+          <label for="groupList"> Groupe 2</label>
+          <input type="checkbox" name="groupList" id="groupList">
+          <label for="groupList"> Groupe 3</label>
+
+          <input type="submit" value="Poster">
+        </form>
+
+
+
+      </dialog>
     </div>
   </header>
 
@@ -146,7 +180,11 @@
     addBtn.style.display = canAdd ? "inline-flex" : "none";
 
     addBtn.addEventListener("click", () => {
-      alert("Créer une discussion (à brancher au backend Java).");
+      `<form class="newDiscussion">
+        <label for='newDiscussion'> 
+        <input >
+        <form>
+      `
     });
 
     // Utils
