@@ -101,14 +101,7 @@
 
   <!-- CONTENU -->
   <main class="container">
-    {% for title in titles %}
-        <p> {{ title }}  </p>
-        {% endfor %}
-
-
-    {% for content in contents %}
-        <p> {{ content }}  </p>
-        {% endfor %}
+    
     <section class="section">
       <div class="section-head">
         <h2>Discussions</h2>
@@ -116,10 +109,35 @@
 
         </div>
       </div>
+        
+      
+      {% for discussion in discussions %}
+        
+       <div class="card">
+              <div class="card-top">
+                <div class="card-title">
+                  <span class="title-text">{{discussion[0]}}</span>
+                </div>
 
+              </div>
+
+          <div class="card-desc">{{discussion[1]}}</div>
+
+          <div class="card-bottom">
+            <div class="card-actions">
+              <a class="btn" href="/main/{{discussion[2]}}">Ouvrir</a>
+            </div>
+
+          </div> 
+       </div> 
+
+      {% endfor %}
       <div id="discussionsList" class="list">
         
-        <!-- Items injectés par JS -->
+      {% for discussion in discussions %}
+        
+      {% endfor %}
+
       </div>
     </section>
 
