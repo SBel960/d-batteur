@@ -18,7 +18,7 @@ def home():
     discussions=[]
 
     for row in result:
-        discussions.append([row[2],row[3]])
+        discussions.append([row[2],row[3],str(row[0])])
     print(discussions)
     return render_template("homepage.html", discussions=discussions)
 
