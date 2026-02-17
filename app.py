@@ -14,14 +14,13 @@ with app.app_context():
 @app.route("/")
 def home():
     result = select_all_discussions()
-    titles = []
-    contents = []
-    for row in result:
-        titles.append(row[2])
-        contents.append(row[3])
 
-    print(titles)
-    return render_template("homepage.html", contents = contents, titles = titles)
+    discussions=[]
+
+    for row in result:
+        discussions.append([row[2],row[3]])
+    print(discussions)
+    return render_template("homepage.html", discussions=discussions)
 
 @app.route("/main/<int:discussion_id>", methods=["GET", "POST"])
 def main(discussion_id):

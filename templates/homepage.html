@@ -84,14 +84,12 @@
 
   <!-- CONTENU -->
   <main class="container">
-    {% for title in titles %}
-        <p> {{ title }}  </p>
+    {% for discussion in discussions %}
+        <p> {{ discussion[0] discussion[1] }}  </p>
         {% endfor %}
 
 
-    {% for content in contents %}
-        <p> {{ content }}  </p>
-        {% endfor %}
+   
     <section class="section">
       <div class="section-head">
         <h2>Discussions</h2>
