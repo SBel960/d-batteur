@@ -299,10 +299,19 @@ main{
 
 .comments{
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: center;
   border: 1px dashed rgba(255,255,255,0.35);
   height: 250px;
+}
+
+.commentText {
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.045);
+  padding: 14px 14px;
+  box-shadow: 0 8px 26px rgba(0,0,0,0.20);
+  backdrop-filter: blur(10px);
+
 }
 
 @media (max-width: 980px){

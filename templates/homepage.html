@@ -55,25 +55,42 @@
         <!-- Création d'une discussion  -->
         <form class="newDiscussionForm" method="post">
           <label> Nouvelle discussion</label>
-          <input type="text" class="questionBlock" name='discussionTitle'placeholder="Ajouter un titre"> 
-          <input type="text" class="contentBlock" name="discussionContent" placeholder="Ajouter une description">
+          <div class="discussionInformation">
+            <input type="text" class="questionBlock" name='discussionTitle'placeholder="Ajouter un titre"> 
+            <input type="text" class="contentBlock" name="discussionContent" placeholder="Ajouter une description">
+          </div>
 
-          <input type="radio" name="discussionType" id="ouvert" value="ouvert">
-          <label for="ouvert"> Question ouverte </label>
-          
-          <input type="radio" name="discussionType" id="yesno" value="yesno">   
-          <label for="yesno"> Question fermé</label>
-          
+          <div class="form-choices">
+            <div class="discussionType">
 
+              <div>
+                <input type="radio" name="discussionType" id="ouvert" value="ouvert">
+                <label for="ouvert"> Question ouverte </label>
+              </div>
 
-          <input type="checkbox" name="groupList" id="groupList">
-          <label for="groupList"> Groupe 1</label>
-          <input type="checkbox" name="groupList" id="groupList">
-          <label for="groupList"> Groupe 2</label>
-          <input type="checkbox" name="groupList" id="groupList">
-          <label for="groupList"> Groupe 3</label>
+              <div>
+                <input type="radio" name="discussionType" id="yesno" value="yesno">   
+                <label for="yesno"> Question fermé </label>
+              </div>
+            </div>
 
-          <input type="submit" value="Poster">
+            <div class="groupList">
+              <div class="checkbox-group1">
+                <input type="checkbox" name="groupList" id="groupList">
+                <label for="groupList"> Groupe 1</label>
+              </div>
+              <div class="checkbox-group2">
+                <input type="checkbox" name="groupList" id="groupList">
+                <label for="groupList"> Groupe 2</label>
+              </div>
+              <div class="checkbox-group3">
+                <input type="checkbox" name="groupList" id="groupList">
+                <label for="groupList"> Groupe 3</label>
+              </div>
+            </div>
+          </div>
+
+          <input class="postButton" type="submit" value="Poster">
         </form>
 
 

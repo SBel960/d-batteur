@@ -84,13 +84,11 @@
         <div class="commentUser">
           
         </div>
-
-          {% for  comment in comments %}
-        <div class="commentText"> {{ comment }}  </div>
-        <hr>
+        {% for  comment in comments %}
+        <div class="commentText">
+          {{ comment }}
+        </div>
         {% endfor %}
-          
-
       </div>
     </section>
   </main>
@@ -111,10 +109,6 @@
       document.getElementById("companyName").textContent = state.companyName;
       document.getElementById("userFullName").textContent = `${state.user.firstName} ${state.user.lastName}`;
       document.getElementById("userGroup").textContent = `Groupe : ${state.user.group}`;
-  });
-
-
-
 
   </script>
 </body>

@@ -206,7 +206,105 @@
     background: rgba(255,255,255,0.04);
     color: var(--muted);
   }
-  
+
+  :modal {
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: rgba(255,255,255,0.045);
+    padding: 14px 14px;
+    box-shadow: 0 8px 26px rgba(0,0,0,0.20);
+    backdrop-filter: blur(10px);
+  }
+
+  #closePage {
+    height: 30px;
+    width: 30px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    user-select: none;
+  }
+  #closePage:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.18);
+  }
+  #closePage:active{
+    transform: translateY(0px);
+  }
+
+  .newDiscussionForm{
+    color: (--text);
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+  }
+
+  .discussionInformation {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .discussionInformation input{
+    height: 30px;
+  }
+
+  .newDiscussionForm label {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .discussionDescription {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-choices {
+    display: flex;
+    flex-direction: row;
+    margin: 20px 20px;
+  }
+
+  .discussionType {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    border-right: solid 1px var(--muted);
+  }
+
+  .groupList {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    padding-left: 10px;
+  }
+
+  .postButton {
+    height: 30px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    user-select: none;
+  }
+  .postButton:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.18);
+  }
+  .postButton:active{
+    transform: translateY(0px);
+  }
+
   /* Cards */
   .card{
     border: 1px solid var(--border);
