@@ -62,6 +62,22 @@ def ajouter_discussion():
 
 
 
+@app.route("/like_discussion/<int:discussion_id>/<action>")
+def like_discussion(discussion_id, action):
+    
+    id_client = 1 #a modifier quand on a la page login
+    if(action == "like"):
+        action = 1
+    elif(action == "unlike"):
+        action = -1
+    else:
+        return 
+    
+# a changer
+    target = "discussion"
+    id_target = discussion_id
+    insert_likes_table(id_client, target, id_target, action)
+    return redirect(url_for("main", discussion_id= discussion_id))
 
 
 
