@@ -53,7 +53,7 @@
         </button>
 
         <!-- Création d'une discussion  -->
-        <form class="newDiscussionForm" method="post">
+        <form class="newDiscussionForm" method="post" action='{{url_for("ajouter_discussion")}}'>
           <label> Nouvelle discussion</label>
           <div class="discussionInformation">
             <input type="text" class="questionBlock" name='discussionTitle'placeholder="Ajouter un titre"> 

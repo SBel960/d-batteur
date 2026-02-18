@@ -153,3 +153,14 @@ def select_comments(discussion_id):
     sql.execute(command, [discussion_id])
     result = sql.fetchall()
     return result
+
+
+def select_newest_discussion_id(id_client):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT id_discussion FROM Discussions WHERE id_c= ? ORDER BY id_discussion DESC;
+            """
+    
+    sql.execute(command, [id_client ])
+    result = sql.fetchone()
+    return result
