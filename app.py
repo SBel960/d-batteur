@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id
 import time
 app = Flask(__name__)
 
@@ -25,10 +25,13 @@ def home():
 
 @app.route("/main/<int:discussion_id>", methods=["GET", "POST"])
 def main(discussion_id):
+    id_client, title, content = select_discussion_by_id(discussion_id)
     comments = []
     for comment in select_comments(discussion_id):
         comments.append(comment[3])
-    return render_template("main.html", discussion_id=discussion_id, comments=comments)
+
+    print(title)
+    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=id_client, title=title, content=content)
 
 
 
@@ -51,7 +54,6 @@ def ajouter_discussion():
     print(content)
     id_client = 1 #a modifier quand on a la page login
     
-# a changer
     insert_disscussions_table(id_client, title, content)
     time.sleep(0.01)
     discussion_id = select_newest_discussion_id(id_client)[0]

@@ -161,6 +161,16 @@ def select_newest_discussion_id(id_client):
     command = """SELECT id_discussion FROM Discussions WHERE id_c= ? ORDER BY id_discussion DESC;
             """
     
-    sql.execute(command, [id_client ])
+    sql.execute(command, [id_client])
+    result = sql.fetchone()
+    return result
+
+def select_discussion_by_id(id_discussion):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT id_c, title, content FROM Discussions WHERE id_discussion= ?;
+            """
+    
+    sql.execute(command, [id_discussion])
     result = sql.fetchone()
     return result
