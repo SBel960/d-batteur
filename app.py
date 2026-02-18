@@ -1,5 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id
+import time
 app = Flask(__name__)
 
 app.secret_key = "ITTorsdyP2Gfzss33gjoY34otqT5BWC5"
@@ -42,7 +43,27 @@ def commentaire(discussion_id):
     return redirect(url_for("main", discussion_id= discussion_id))
 
 
+@app.route("/ajouter_discussion", methods=["POST"])
+def ajouter_discussion():
+    title = request.form['discussionTitle']
+    content = request.form['discussionContent']
+    
+    print(content)
+    id_client = 1 #a modifier quand on a la page login
+    
+# a changer
+    insert_disscussions_table(id_client, title, content)
+    time.sleep(0.01)
+    discussion_id = select_newest_discussion_id(id_client)[0]
 
+    return redirect(url_for("main", discussion_id= discussion_id))
+
+
+
+
+
+
+#--------------------------- 
 
 @app.route("/create_client_table")
 def create_client():
@@ -111,4 +132,4 @@ def reset_database():
     "resets the database tables"
     print("Dropping Database")
     reset_all_db()
-    
+    print("reset successful")
