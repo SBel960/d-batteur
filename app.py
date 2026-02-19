@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id,get_discussion_attribut
 import time
 app = Flask(__name__)
 
@@ -25,10 +25,12 @@ def home():
 
 @app.route("/main/<int:discussion_id>", methods=["GET", "POST"])
 def main(discussion_id):
+    
+    attribute=get_discussion_attribut(discussion_id)
     comments = []
     for comment in select_comments(discussion_id):
         comments.append(comment[3])
-    return render_template("main.html", discussion_id=discussion_id, comments=comments)
+    return render_template("main.html", discussion_id=discussion_id, comments=comments,title=attribute[0][2],content=attribute[0][3])
 
 
 
