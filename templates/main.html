@@ -69,8 +69,8 @@
           <div class="bar-against"></div>
         </div>
         <div class="btn-area">
-          <a class="icon-btn" href="{{ url_for('like_discussion', discussion_id=discussion_id , action='like') }}">👍</a>
-          <a class="icon-btn" href="{{ url_for('like_discussion', discussion_id=discussion_id , action='unlike') }}">👎</a>
+          <a class="icon-btn" href="{{ url_for('like_discussion', discussion_id=discussion_id , action='like') }}">👍 {{likes}}</a>
+          <a class="icon-btn" href="{{ url_for('like_discussion', discussion_id=discussion_id , action='unlike') }}">👎 {{dislikes}}</a>
         </div>
       </div>
       <div class="comments">

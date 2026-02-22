@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes
 import time
 app = Flask(__name__)
 
@@ -30,8 +30,8 @@ def main(discussion_id):
     for comment in select_comments(discussion_id):
         comments.append(comment[3])
 
-    print(title)
-    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=id_client, title=title, content=content)
+    likes, dislikes = get_discussion_likes(discussion_id)
+    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=id_client, title=title, content=content, likes=likes, dislikes=dislikes)
 
 
 
@@ -76,7 +76,7 @@ def like_discussion(discussion_id, action):
 # a changer
     target = "discussion"
     id_target = discussion_id
-    insert_likes_table(id_client, target, id_target, action)
+    update_like(id_client, id_target, target, action)
     return redirect(url_for("main", discussion_id= discussion_id))
 
 
@@ -145,7 +145,12 @@ def insert_likes(): # fonction a modifier quand on a l'option de like/dislike un
     return "inserted likes table succesfully!"
 
 
-@app.cli.command("db:reset")
+
+#-------------------------------------------------
+
+
+###COMMANDS
+@app.cli.command("db:reset") #usage    flask db:reset
 def reset_database():
     "resets the database tables"
     print("Dropping Database")
