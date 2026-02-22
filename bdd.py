@@ -172,6 +172,64 @@ def select_newest_discussion_id(id_client):
     command = """SELECT id_discussion FROM Discussions WHERE id_c= ? ORDER BY id_discussion DESC;
             """
     
-    sql.execute(command, [id_client ])
+    sql.execute(command, [id_client])
     result = sql.fetchone()
     return result
+
+def select_discussion_by_id(id_discussion):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT id_c, title, content FROM Discussions WHERE id_discussion= ?;
+            """
+    
+    sql.execute(command, [id_discussion])
+    result = sql.fetchone()
+    return result
+
+def update_like(id_client, id_cible, cible, value):
+    """ fonction a 3 cas:
+    1- si il nya pas de like ou dislike deja dans la table: on insere la ligne
+    2- sinon: si l'action ne correspond pas a la valeur deja dans la table, on modifie la ligne
+    3- sinon: si l'action est comme la valeur deja dans la table, on supprime la ligne
+    """
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT like FROM Likes WHERE id_c= ? AND id_target=? AND target=?;
+            """
+    
+    sql.execute(command, [id_client, id_cible, cible])
+    result = sql.fetchone()
+    if not result:
+        insert_likes_table(id_client, cible, id_cible, value)
+        return 
+    else:
+        if result[0] != value:
+            print("je susi ici")
+            command = """UPDATE Likes SET like=? WHERE id_c= ? AND id_target=? AND target=?;
+                """      
+            sql.execute(command, [value, id_client, id_cible, cible])
+            data.commit()
+        else:
+            command = """DELETE FROM Likes WHERE id_c= ? AND id_target=? AND target=?;
+                """      
+            sql.execute(command, [id_client, id_cible, cible])
+            data.commit()
+
+
+def get_discussion_likes(id_discussion):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT like FROM Likes WHERE id_target=? AND target =?;
+            """
+    sql.execute(command, [id_discussion, "discussion"])
+    result = sql.fetchall()
+    likes = 0
+    dislikes = 0
+    for res in result:
+        print(res[0])
+        if res[0] == 1:
+            likes += 1
+        else:
+            dislikes += 1
+
+    return (likes, dislikes)

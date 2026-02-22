@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id,get_discussion_attribut
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes
 import time
 app = Flask(__name__)
 
@@ -25,12 +25,13 @@ def home():
 
 @app.route("/main/<int:discussion_id>", methods=["GET", "POST"])
 def main(discussion_id):
-    
-    attribute=get_discussion_attribut(discussion_id)
+    id_client, title, content = select_discussion_by_id(discussion_id)
     comments = []
     for comment in select_comments(discussion_id):
         comments.append(comment[3])
-    return render_template("main.html", discussion_id=discussion_id, comments=comments,title=attribute[0][2],content=attribute[0][3])
+
+    likes, dislikes = get_discussion_likes(discussion_id)
+    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=id_client, title=title, content=content, likes=likes, dislikes=dislikes)
 
 
 
@@ -53,7 +54,6 @@ def ajouter_discussion():
     print(content)
     id_client = 1 #a modifier quand on a la page login
     
-# a changer
     insert_disscussions_table(id_client, title, content)
     time.sleep(0.01)
     discussion_id = select_newest_discussion_id(id_client)[0]
@@ -62,6 +62,22 @@ def ajouter_discussion():
 
 
 
+@app.route("/like_discussion/<int:discussion_id>/<action>")
+def like_discussion(discussion_id, action):
+    
+    id_client = 1 #a modifier quand on a la page login
+    if(action == "like"):
+        action = 1
+    elif(action == "unlike"):
+        action = -1
+    else:
+        return 
+    
+# a changer
+    target = "discussion"
+    id_target = discussion_id
+    update_like(id_client, id_target, target, action)
+    return redirect(url_for("main", discussion_id= discussion_id))
 
 
 
@@ -129,7 +145,12 @@ def insert_likes(): # fonction a modifier quand on a l'option de like/dislike un
     return "inserted likes table succesfully!"
 
 
-@app.cli.command("db:reset")
+
+#-------------------------------------------------
+
+
+###COMMANDS
+@app.cli.command("db:reset") #usage    flask db:reset
 def reset_database():
     "resets the database tables"
     print("Dropping Database")

@@ -50,7 +50,7 @@
     <section class="information-section">
       <div class="topic-title-container">
         <span class="topic-title">
-          {{title}}
+         {{title}}
         </span>
       </div>
       <div class="description-container">
@@ -70,8 +70,8 @@
           <div class="bar-against"></div>
         </div>
         <div class="btn-area">
-          <a class="icon-btn" href="">👍</a>
-          <a class="icon-btn" href="">👎</a>
+          <a class="icon-btn" href="{{ url_for('like_discussion', discussion_id=discussion_id , action='like') }}">👍 {{likes}}</a>
+          <a class="icon-btn" href="{{ url_for('like_discussion', discussion_id=discussion_id , action='unlike') }}">👎 {{dislikes}}</a>
         </div>
       </div>
       <div class="comments">
