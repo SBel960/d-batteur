@@ -11,6 +11,7 @@
     <!-- HEADER / TOOLBAR -->
   <header class="topbar">
     <!-- Gauche : Entreprise + emplacement logo + logo -->
+
     <div class="topbar-left">
       <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
 
@@ -77,18 +78,20 @@
         <div class="commentInput">
           <form class="commentForm" method="post" action='{{url_for("commentaire", discussion_id=discussion_id)}}'>
             <label for="comment_input"> Commentaires </label>
-            <input type="text" class="form-control" name="commentaire" placeholder="ton commentaire ici" id="comment_input">
-            <input class="icon-btn" type="submit" value="Envoyer">
+            <input type="text" class="form-control" name="commentaire" placeholder="Ajoutez votre commentaire..." id="comment_input">
+            <input class="icon-btn submit-button" type="submit" value="Envoyer">
           </form>
         </div>
         <div class="commentUser">
           
         </div>
         {% for  comment in comments %}
-        <div class="commentText">
-          {{ comment }}
+        <div class="commentTextList">
+          <div class="commentText">
+            {{ comment }}
+          </div>
+          {% endfor %}
         </div>
-        {% endfor %}
       </div>
     </section>
   </main>

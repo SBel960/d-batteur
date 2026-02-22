@@ -143,6 +143,17 @@ def select_all_discussions():
     result = sql.fetchall()
     return result
 
+def get_discussion_attribut(discussion_id):
+    data = get_db()
+    sql = data.cursor()
+    command="""SELECT * FROM Discussions WHERE id_discussion= ?;
+           """
+    
+    sql.execute(command, [discussion_id])
+    res=sql.fetchall()
+ 
+    return res
+
 
 def select_comments(discussion_id):
     data = get_db()
