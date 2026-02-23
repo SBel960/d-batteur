@@ -243,6 +243,7 @@ main{
 .bar-against, .bar-for {
   display: flex;
   height: 100%;
+  position: relative;
 }
 
 .bar-against, .bar-against::after {
@@ -254,12 +255,13 @@ main{
 
 .bar-against::after, .bar-for::after {
   font-size: 20px;
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   display: block;
   text-align: center;
-  left: 50%;
   opacity: 0;
-  transform: translate(0%, 0%);
+  transform: translate(-50%, -50%);
   transition: 0.4s opacity cubic-bezier(0.33, 1, 0.68, 1), 0.4s transform cubic-bezier(0.33, 1, 0.68, 1);
 }
 
@@ -270,11 +272,8 @@ main{
   content: var(--likesCount);
 }
 
-
 .bar-against:hover::after, .bar-for:hover::after {
   opacity: 1;
-  transform: translate(0%, 0%);
-  transition: 0.4s opacity cubic-bezier(0.33, 1, 0.68, 1), 0.4s transform cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .btn-area {
