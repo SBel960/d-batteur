@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, password_select
 import time
 app = Flask(__name__)
 
@@ -97,6 +97,26 @@ def like_comment(discussion_id,comment_id, action):
     return redirect(url_for("main", discussion_id=discussion_id))
 
 
+
+@app.route('/login_page', methods=['GET','POST'])
+def login_page():
+    return render_template("login.html")
+
+
+
+# login route
+@app.route('/login', methods=['POST'])
+def login():
+    email = request.form["email"]
+    password = request.form["password"]
+    password_select_result = password_select(email)
+    print(password_select_result)
+    if password_select_result == []:
+        return "Email not found"
+    if password != password_select_result[0][0]:
+        return "Incorrect password"
+    return redirect(url_for("home"))
+
 #--------------------------- 
 
 @app.route("/create_client_table")
@@ -122,13 +142,14 @@ def create_likes():
 
 @app.route("/insert_client_table")
 def insert_client(): #fonction a modifier quand on a la page login
+    email = "tamer@gmail.com"
     name = "Tamer"
     last_name = "Masri"
     password= "3onjour"
     company = "Debatteurs"
     role = "CEO"
     group_name = "groupe A"
-    insert_clients_table(name, last_name, password, company, role, group_name)
+    insert_clients_table(email, name, last_name, password, company, role, group_name)
     return "inserted clients table succesfully!"
 
 

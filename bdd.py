@@ -16,6 +16,7 @@ def create_client_table():
     sql = data.cursor()
     command = """CREATE TABLE IF NOT EXISTS Client(
                 id_client INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL UNIQUE,
                 name TEXT NOT NULL,
                 last_name TEXT NOT NULL,
                 password TEXT NOT NULL,
@@ -78,14 +79,14 @@ def create_likes_table():
     data.commit()
 
 
-def insert_clients_table(name, last_name, password, company, role, group_name):
+def insert_clients_table(email, name, last_name, password, company, role, group_name):
     data = get_db()
     sql = data.cursor()
-    command = """INSERT INTO Client(name, last_name, password, company, role, group_name)
-                VALUES (?,?,?,?,?,?)
+    command = """INSERT INTO Client(email, name, last_name, password, company, role, group_name)
+                VALUES (?,?,?,?,?,?,?)
 
             """
-    sql.execute(command, [name, last_name, password, company, role, group_name])
+    sql.execute(command, [email, name, last_name, password, company, role, group_name])
     data.commit()
 
 
@@ -251,3 +252,14 @@ def get_comment_likes(id_comment):
             dislikes += 1
 
     return (likes, dislikes)
+
+
+
+def password_select(email):
+    data = get_db()
+    sql= data.cursor()
+    command = """SELECT password FROM Client WHERE email = ? ;
+            """
+    sql.execute(command, [email])
+    result = sql.fetchall()
+    return result
