@@ -220,9 +220,8 @@ main{
   justify-content: center;
   align-items: center;
   background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-  opacity: 0.5;
   border: 1px solid rgba(255,255,255,0.35);
-  height: 250px;
+  padding: 20px;
 }
 
 .voting-results{
@@ -231,7 +230,7 @@ main{
   align-items: center;
   flex-direction: column;
   padding: 10px;
-  height: 125px;
+  height: 100px;
 }
 
 .voting-bar-results {
@@ -241,54 +240,40 @@ main{
   height: 100%;
 }
 
-.bar-for {
-  display: table;
+.bar-against, .bar-for {
+  display: flex;
   height: 100%;
-  width: 100%;
-  background: greenyellow;
+  position: relative;
 }
 
-.bar-for::after {
-  font-size: 40px;
-  position: relative;
+.bar-against, .bar-against::after {
+  background: #bf0603;
+}
+.bar-for, .bar-for::after {
+  background: #a7c957;
+}
+
+.bar-against::after, .bar-for::after {
+  font-size: 20px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   display: block;
   text-align: center;
-  content: "50%";
   opacity: 0;
-  background: greenyellow;
-  transform: translate(0%, 0%);
+  transform: translate(-50%, -50%);
   transition: 0.4s opacity cubic-bezier(0.33, 1, 0.68, 1), 0.4s transform cubic-bezier(0.33, 1, 0.68, 1);
-}
-
-.bar-for:hover::after {
-  opacity: 1;
-  transform: translate(0%, 0%);
-  transition: 0.4s opacity cubic-bezier(0.33, 1, 0.68, 1), 0.4s transform cubic-bezier(0.33, 1, 0.68, 1);
-}
-
-.bar-against {
-  display: table;
-  height: 100%;
-  width: 100%;
-  background: red;
 }
 
 .bar-against::after {
-  font-size: 40px;
-  position: relative;
-  display: block;
-  text-align: center;
-  content: "50%";
-  opacity: 0;
-  background: red;
-  transform: translate(0%, 0%);
-  transition: 0.4s opacity cubic-bezier(0.33, 1, 0.68, 1), 0.4s transform cubic-bezier(0.33, 1, 0.68, 1);
+  content: var(--dislikesCount);
+}
+.bar-for::after {
+  content: var(--likesCount);
 }
 
-.bar-against:hover::after {
+.bar-against:hover::after, .bar-for:hover::after {
   opacity: 1;
-  transform: translate(0%, 0%);
-  transition: 0.4s opacity cubic-bezier(0.33, 1, 0.68, 1), 0.4s transform cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .btn-area {
@@ -325,9 +310,10 @@ main{
 }
 
 .commentText {
+  width: fit-content;
+  padding: 10px 10px;
   border: 1px solid var(--border);
   background: rgba(255,255,255,0.045);
-  padding: 10px 10px;
   box-shadow: 0 8px 26px rgba(0,0,0,0.20);
   backdrop-filter: blur(10px);
 }

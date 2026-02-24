@@ -56,8 +56,8 @@
         <form class="newDiscussionForm" method="post" action='{{url_for("ajouter_discussion")}}'>
           <label> Nouvelle discussion</label>
           <div class="discussionInformation">
-            <input type="text" class="questionBlock" name='discussionTitle'placeholder="Ajouter un titre"> 
-            <input type="text" class="contentBlock" name="discussionContent" placeholder="Ajouter une description">
+            <input type="text" class="questionBlock" name='discussionTitle'placeholder=" Ajouter un titre"> 
+            <input type="text" class="contentBlock" name="discussionContent" placeholder=" Ajouter une description">
           </div>
 
           <div class="form-choices">
@@ -136,8 +136,10 @@
 
       <!-- A enlever une fois les discussions finies et bien implémentées avec les bonnes fonctionnalités -->
 
-      <div> La section ci-dessous est un placeholder </div>
-      <div> A enlever une fois les discussions implémentées avec toutes les fonctionnalités </div>
+      <div class="temporary-comments">
+        <span> La section ci-dessous est un placeholder </span>
+        <span> A enlever une fois les discussions implémentées avec toutes les fonctionnalités </span>
+      </div>
 
       <div id="discussionsList" class="list">
 
