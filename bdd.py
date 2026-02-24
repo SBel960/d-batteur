@@ -233,3 +233,21 @@ def get_discussion_likes(id_discussion):
             dislikes += 1
 
     return (likes, dislikes)
+
+def get_comment_likes(id_comment):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT like FROM Likes WHERE id_target=? AND target =?;
+            """
+    sql.execute(command, [id_comment, "comment"])
+    result = sql.fetchall()
+    likes = 0
+    dislikes = 0
+    for res in result:
+        print(res[0])
+        if res[0] == 1:
+            likes += 1
+        else:
+            dislikes += 1
+
+    return (likes, dislikes)

@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes
 import time
 app = Flask(__name__)
 
@@ -28,7 +28,7 @@ def main(discussion_id):
     id_client, title, content = select_discussion_by_id(discussion_id)
     comments = []
     for comment in select_comments(discussion_id):
-        comments.append(comment[3])
+        comments.append(dict(id_c=comment[0],content=comment[3],like=get_comment_likes(comment[0])[0],dislike=get_comment_likes(comment[0])[1]))
 
     likes, dislikes = get_discussion_likes(discussion_id)
     return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=id_client, title=title, content=content, likes=likes, dislikes=dislikes)
@@ -77,8 +77,24 @@ def like_discussion(discussion_id, action):
     target = "discussion"
     id_target = discussion_id
     update_like(id_client, id_target, target, action)
-    return redirect(url_for("main", discussion_id= discussion_id))
+    return redirect(url_for("main", discussion_id=discussion_id))
 
+@app.route("/like_comment/<int:discussion_id>/<int:comment_id>/<action>")
+def like_comment(discussion_id,comment_id, action):
+    
+    id_client = 1 #a modifier quand on a la page login
+    if(action == "like"):
+        action = 1
+    elif(action == "unlike"):
+        action = -1
+    else:
+        return 
+    
+# a changer
+    target = "comment"
+    id_target = comment_id
+    update_like(id_client, id_target, target, action)
+    return redirect(url_for("main", discussion_id=discussion_id))
 
 
 #--------------------------- 
