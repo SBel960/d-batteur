@@ -98,10 +98,13 @@ def like_comment(discussion_id,comment_id, action):
 
 
 
-@app.route('/login_page', methods=['GET','POST'])
+@app.route('/login_page', methods=['GET'])
 def login_page():
     return render_template("login.html")
 
+@app.route('/registry_page', methods=['GET'])
+def registry_page():
+    return render_template("registry.html")
 
 
 # login route
@@ -116,6 +119,22 @@ def login():
     if password != password_select_result[0][0]:
         return "Incorrect password"
     return redirect(url_for("home"))
+
+
+
+@app.route('/registry', methods=['POST'])
+def registry():
+    email = request.form["email"]
+    first_name = request.form["first-name"]
+    last_name = request.form["last-name"]
+    password = request.form["new-password"]
+    company = request.form["company-name"]
+    role = request.form["role"]
+    group_name = 'groupe A' ##a changer
+    insert_clients_table(email, first_name, last_name, password, company, role, group_name)
+    return redirect(url_for("home"))
+
+
 
 #--------------------------- 
 
