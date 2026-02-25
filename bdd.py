@@ -255,11 +255,11 @@ def get_comment_likes(id_comment):
 
 
 
-def password_select(email):
+def select_client_infos_from_email(email):
     data = get_db()
     sql= data.cursor()
-    command = """SELECT password FROM Client WHERE email = ? ;
+    command = """SELECT password, id_client, email, name, last_name, company, role, group_name FROM Client WHERE email = ? ;
             """
     sql.execute(command, [email])
-    result = sql.fetchall()
+    result = sql.fetchone()
     return result
