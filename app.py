@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request, session
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client
 import time
 app = Flask(__name__)
 
@@ -23,19 +23,19 @@ def home():
     for row in result:
         discussions.append([row[2],row[3],str(row[0])])
     print(discussions)
-    return render_template("homepage.html", discussions=discussions)
+    return render_template("homepage.html", discussions=discussions, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'], group_name=session['group_name'])
 
 @app.route("/main/<int:discussion_id>", methods=["GET", "POST"])
 def main(discussion_id):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    id_client, title, content = select_discussion_by_id(discussion_id)
+    id_poster, title, content = select_discussion_by_id(discussion_id)
     comments = []
     for comment in select_comments(discussion_id):
         comments.append(dict(id_c=comment[0],content=comment[3],like=get_comment_likes(comment[0])[0],dislike=get_comment_likes(comment[0])[1]))
 
     likes, dislikes = get_discussion_likes(discussion_id)
-    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=id_client, title=title, content=content, likes=likes, dislikes=dislikes)
+    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'], group_name=session['group_name'])
 
 
 
@@ -44,10 +44,8 @@ def commentaire(discussion_id):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
     content = request.form['commentaire']
-    print(content)
-    id_client = 1 #a modifier quand on a la page login
+    id_client = session['id_client'] 
     
-# a changer
     insert_comments_table(id_client, discussion_id, content)
     return redirect(url_for("main", discussion_id= discussion_id))
 
@@ -59,8 +57,7 @@ def ajouter_discussion():
     title = request.form['discussionTitle']
     content = request.form['discussionContent']
     
-    print(content)
-    id_client = 1 #a modifier quand on a la page login
+    id_client = session['id_client']
     
     insert_disscussions_table(id_client, title, content)
     time.sleep(0.01)
@@ -74,7 +71,7 @@ def ajouter_discussion():
 def like_discussion(discussion_id, action):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    id_client = 1 #a modifier quand on a la page login
+    id_client = session['id_client'] 
     if(action == "like"):
         action = 1
     elif(action == "unlike"):
@@ -93,7 +90,7 @@ def like_comment(discussion_id,comment_id, action):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
     
-    id_client = 1 #a modifier quand on a la page login
+    id_client = session['id_client'] 
     if(action == "like"):
         action = 1
     elif(action == "unlike"):
@@ -133,11 +130,10 @@ def login():
         return render_template('login.html', message= message)
     
     client_infos = select_client_infos_from_email(email)
-    print(client_infos)
-    if client_infos == []:
+    if not(client_infos):
         message = "Email or password is incorrect. Please try again"
         return render_template('login.html', message= message)
-    elif password != client_infos[0]:
+    if password != client_infos[0]:
         message = "Email or password is incorrect. Please try again"
         return render_template('login.html', message= message)
     
@@ -159,12 +155,22 @@ def registry():
     company = request.form["company-name"]
     role = request.form["role"]
     group_name = 'groupe A' ##a changer
+    result = check_if_exists_client(email, company)
+    if len(result) > 0:
+        msg = 'Ce compte existe deja'
+        return render_template('registry.html', message=msg)
+    
     insert_clients_table(email, first_name, last_name, password, company, role, group_name)
 
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
     return redirect(url_for("home"))
 
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    session['logged_in'] = False
+    return redirect(url_for("login_page"))
 
 
 #--------------------------- 

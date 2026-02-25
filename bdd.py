@@ -263,3 +263,13 @@ def select_client_infos_from_email(email):
     sql.execute(command, [email])
     result = sql.fetchone()
     return result
+
+
+def check_if_exists_client(email, company):
+    data = get_db()
+    sql= data.cursor()
+    command = """SELECT * FROM Client WHERE email = ? AND company = ? ;
+            """
+    sql.execute(command, [email, company])
+    result = sql.fetchone()
+    return result
