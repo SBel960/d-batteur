@@ -1,2 +1,4 @@
 approot/
 __pycache__/
+*.db
+*.pyc

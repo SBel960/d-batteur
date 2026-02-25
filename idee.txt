@@ -1,0 +1,15 @@
+ (tamer)-- on implemente une differente registry pour ajouter des nouvelles companies, et creer le compte des CEO qui veulent s'inscrire a Company Connect CC
+        seulement accessible pour les admins
+        qui sont les admins?
+            Tamer, Jason, Francois, Soufiane
+        Comment y acceder?
+            on implemente une nouvelle route, par example /registry/admin
+            pour acceder a cette route, il faut que l'utilisateur est un admin
+            a voir comment le faire 
+                idee: l'utilisateur doit mettre un password si il essaye dacceder /registry/admin. idee temporaire
+            
+        consequences?
+            le champ "company" dans le registry qu'on a deja devient static
+            (le directeur dune entreprise ne peut pas creer le compte d'un employer qui appartient a une autre entreprise)
+            example: CEO de "facebook" ne peut pas creer le compte d'un employer de l'entreprise "tamerIsTheBest"
+

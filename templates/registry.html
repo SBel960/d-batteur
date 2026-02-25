@@ -3,25 +3,26 @@
   <head>
     <meta charset="UTF-8">
     <title>Registration Form</title>
-    <link rel="stylesheet" href="../static/regystery.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='registry.css') }}" />
   </head>
   <body>
     <main>
       <h1>Registration Form</h1>
+      <p class="error-msg" style="color:red;"><b> {{message}} </b></p>
       <p>Please fill out this form with the required information</p>
-      <form method="post" action=''>
+      <form method="post" action='{{url_for("registry")}}'>
         <fieldset>
           <label for="first-name">Enter the First Name: <input id="first-name" name="first-name" type="text" required /></label>
           <label for="last-name">Enter the Last Name: <input id="last-name" name="last-name" type="text" required /></label>
           <label for="email">Enter the Email: <input id="email" name="email" type="email" required /></label>
           <label for="new-password">Create a New Password: <input id="new-password" name="new-password" type="password" pattern="[a-z0-5]{8,}" required /></label>
-          <label for="new-password">Enter Company name: <input id="new-password" name="new-password" type="password" pattern="[a-z0-5]{8,}" required /></label>
+          <label for="new-password">Enter Company name: <input id="company-name" name="company-name" type="text" required /></label>
         </fieldset>
         <fieldset>
           <legend>Account type (required)</legend>
-          <label for="personal-account"><input id="personal-account" type="radio" name="account-type" class="inline" checked /> Director</label>
-          <label for="business-account"><input id="business-account" type="radio" name="account-type" class="inline" /> Manager</label>
-          <label for="business-account"><input id="business-account" type="radio" name="account-type" class="inline" /> Employe</label>
+          <label for="personal-account"><input id="personal-account" type="radio" name="role" class="inline" checked /> Director</label>
+          <label for="business-account"><input id="business-account" type="radio" name="role" class="inline" /> Manager</label>
+          <label for="business-account"><input id="business-account" type="radio" name="role" class="inline" /> Employe</label>
         </fieldset>
         <fieldset>
           <label for="age">Input age (years): <input id="age" type="number" name="age" min="13" max="120" /></label>

@@ -15,7 +15,7 @@
       <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
 
       <div class="company">
-        <div id="companyName" class="company-name">NomEntreprise</div>
+        <div id="companyName" class="company-name">{{company}}</div>
         <div class="company-sub">Accueil</div>
       </div>
 
@@ -38,9 +38,10 @@
     <!-- Droite : user + groupe + bouton + -->
     <div class="topbar-right">
       <div class="user">
-        <div id="userFullName" class="user-name">Prénom Nom</div>
-        <div id="userGroup" class="user-group">Groupe : ...</div>
+        <div id="userFullName" class="user-name">{{first_name}} {{last_name}}</div>
+        <div id="userGroup" class="user-group">Groupe : {{group_name}}</div>
       </div>
+      <div class="company-mark"> <a class="logout" href="{{url_for('logout')}}"> Logout </a></div>
 
       <button id="addDiscussionBtn" commandfor='newDiscussion'command="show-modal" class="icon-btn" title="Ajouter une discussion" style="display:none;">
         +
@@ -49,7 +50,7 @@
       <dialog id="newDiscussion">
         <!-- Pour fermer la page -->
         <button id="closePage" commandfor='newDiscussion' command="request-close"> 
-          X
+          x
         </button>
 
         <!-- Création d'une discussion  -->
@@ -216,9 +217,7 @@
     localStorage.setItem("appState", JSON.stringify(state));
 
     // Header infos
-    document.getElementById("companyName").textContent = state.companyName;
-    document.getElementById("userFullName").textContent = `${state.user.firstName} ${state.user.lastName}`;
-    document.getElementById("userGroup").textContent = `Groupe : ${state.user.group}`;
+    
 
     // Afficher le + pour PDG/MANAGER
     const addBtn = document.getElementById("addDiscussionBtn");

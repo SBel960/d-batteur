@@ -16,7 +16,7 @@
       <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
 
       <div class="company">
-        <div id="companyName" class="company-name">NomEntreprise</div>
+        <div id="companyName" class="company-name">{{company}}</div>
         <div class="company-sub">Topics</div>
       </div>
 
@@ -39,8 +39,9 @@
     <!-- Droite : user + groupe + bouton + -->
     <div class="topbar-right">
       <div class="user">
-        <div id="userFullName" class="user-name">Prénom Nom</div>
-        <div id="userGroup" class="user-group">Groupe : ...</div>
+        <div id="userFullName" class="user-name">{{first_name}} {{last_name}}</div>
+        <div id="userGroup" class="user-group">Groupe : {{group_name}}</div>
+         <div class="company-mark"> <a class="logout" href="{{url_for('logout')}}"> Logout </a></div>
       </div>
     </div>
   </header>
