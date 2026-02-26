@@ -156,7 +156,7 @@ def registry():
     role = request.form["role"]
     group_name = 'groupe A' ##a changer
     result = check_if_exists_client(email, company)
-    if len(result) > 0:
+    if result != None:
         msg = 'Ce compte existe deja'
         return render_template('registry.html', message=msg)
     
