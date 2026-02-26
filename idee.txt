@@ -13,3 +13,9 @@
             (le directeur dune entreprise ne peut pas creer le compte d'un employer qui appartient a une autre entreprise)
             example: CEO de "facebook" ne peut pas creer le compte d'un employer de l'entreprise "tamerIsTheBest"
 
+
+botton kpour sortir de la discussion
+reparer apres signup
+implementer group
+implementer hierarchie
+

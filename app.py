@@ -162,9 +162,8 @@ def registry():
     
     insert_clients_table(email, first_name, last_name, password, company, role, group_name)
 
-    if not(session.get('logged_in')):
-        return redirect(url_for('login_page'))
-    return redirect(url_for("home"))
+    
+    return redirect(url_for('login_page')) #a changer quand on a hierarchy
 
 
 @app.route('/logout', methods=['GET', 'POST'])
