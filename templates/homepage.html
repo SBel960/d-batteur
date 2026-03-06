@@ -127,6 +127,8 @@
         <div class="card-bottom">
           <div class="card-actions">
             <a class="btn" href="/main/{{discussion[2]}}">Ouvrir</a>
+            <a id="likes-count" class="vote" href="{{ url_for('like_discussion', discussion_id=discussion[2] , action='like') }}">👍 {{discussion[3]}}</a>
+            <a id="dislikes-count" class="vote" href="{{ url_for('like_discussion', discussion_id=discussion[2] , action='unlike') }}">👎 {{discussion[4]}}</a>
           </div>
         </div> 
        </div> 

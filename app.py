@@ -21,7 +21,9 @@ def home():
     discussions=[]
 
     for row in result:
-        discussions.append([row[2],row[3],str(row[0])])
+        likes, dislikes = get_discussion_likes(row[0])
+
+        discussions.append([row[2],row[3],str(row[0]),likes,dislikes])
     print(discussions)
     return render_template("homepage.html", discussions=discussions, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'], group_name=session['group_name'])
 
