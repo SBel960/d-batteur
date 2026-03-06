@@ -82,10 +82,15 @@ def like_discussion(discussion_id, action):
         return 
     
 # a changer
+    origin_page = request.args.get('origin_page')
     target = "discussion"
     id_target = discussion_id
     update_like(id_client, id_target, target, action)
-    return redirect(url_for("main", discussion_id=discussion_id))
+
+    if origin_page == 'homepage':
+        return redirect(url_for("home"))
+    elif origin_page == 'main':
+        return redirect(url_for("main", discussion_id=discussion_id))
 
 @app.route("/like_comment/<int:discussion_id>/<int:comment_id>/<action>")
 def like_comment(discussion_id,comment_id, action):
