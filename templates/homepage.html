@@ -41,7 +41,7 @@
         <div id="userFullName" class="user-name">{{first_name}} {{last_name}}</div>
         <div id="userGroup" class="user-group">Groupe : {{group_name}}</div>
       </div>
-      <div class="company-mark"> <a class="logout" href="{{url_for('logout')}}"> Logout </a></div>
+      <a class="logout" href="{{url_for('logout')}}"> Logout </a>
 
       <button id="addDiscussionBtn" commandfor='newDiscussion'command="show-modal" class="icon-btn" title="Ajouter une discussion" style="display:none;">
         +
@@ -127,6 +127,8 @@
         <div class="card-bottom">
           <div class="card-actions">
             <a class="btn" href="/main/{{discussion[2]}}">Ouvrir</a>
+            <a id="likes-count" class="vote" href="{{ url_for('like_discussion', discussion_id=discussion[2] , action='like', origin_page='homepage') }}">👍 {{discussion[3]}}</a>
+            <a id="dislikes-count" class="vote" href="{{ url_for('like_discussion', discussion_id=discussion[2] , action='unlike', origin_page='homepage') }}">👎 {{discussion[4]}}</a>
           </div>
         </div> 
        </div> 

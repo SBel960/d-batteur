@@ -21,7 +21,9 @@ def home():
     discussions=[]
 
     for row in result:
-        discussions.append([row[2],row[3],str(row[0])])
+        likes, dislikes = get_discussion_likes(row[0])
+
+        discussions.append([row[2],row[3],str(row[0]),likes,dislikes])
     print(discussions)
     return render_template("homepage.html", discussions=discussions, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'], group_name=session['group_name'])
 
@@ -80,10 +82,15 @@ def like_discussion(discussion_id, action):
         return 
     
 # a changer
+    origin_page = request.args.get('origin_page')
     target = "discussion"
     id_target = discussion_id
     update_like(id_client, id_target, target, action)
-    return redirect(url_for("main", discussion_id=discussion_id))
+
+    if origin_page == 'homepage':
+        return redirect(url_for("home"))
+    elif origin_page == 'main':
+        return redirect(url_for("main", discussion_id=discussion_id))
 
 @app.route("/like_comment/<int:discussion_id>/<int:comment_id>/<action>")
 def like_comment(discussion_id,comment_id, action):
