@@ -154,7 +154,7 @@ def registry():
     password = request.form["new-password"]
     company = request.form["company-name"]
     role = request.form["role"]
-    group_name = 'groupe A' ##a changer
+    group_name = company ##a changer
     result = check_if_exists_client(email, company)
     if result != None:
         msg = 'Ce compte existe deja'
@@ -204,7 +204,7 @@ def insert_client(): #fonction a modifier quand on a la page login
     company = "Debatteurs"
     role = "CEO"
     group_name = "groupe A"
-    insert_clients_table(email, name, last_name, password, company, role, group_name)
+    insert_clients_table("test@test", 'test', 'test', 'test', 'test', 'test', 'test')
     return "inserted clients table succesfully!"
 
 
@@ -247,4 +247,5 @@ def reset_database():
     "resets the database tables"
     print("Dropping Database")
     reset_all_db()
+    insert_clients_table("test@test", 'test', 'test', 'test', 'test', 'test', 'test')
     print("reset successful")

@@ -273,3 +273,6 @@ def check_if_exists_client(email, company):
     sql.execute(command, [email, company])
     result = sql.fetchone()
     return result
+
+
+
