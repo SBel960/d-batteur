@@ -165,7 +165,7 @@ def insert_groups_table(name):
 def insert_group_members(id_group, id_client):
     data = get_db()
     sql = data.cursor()
-    command = """INSERT INTO Groups(id_g, id_c)
+    command = """INSERT INTO GroupMembers(id_g, id_c)
                 VALUES (?,?)
             """
     sql.execute(command, [id_group, id_client])
@@ -267,7 +267,7 @@ def select_all_clients():
 def select_all_groupes():
     data = get_db()
     sql = data.cursor()
-    command = """SELECT name FROM Groups;
+    command = """SELECT * FROM Groups;
             """
     
     sql.execute(command)
@@ -277,12 +277,25 @@ def select_all_groupes():
 def select_client_groupes(id_c):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT Groups.name FROM Groups JOIN GroupMembers ON Groups.id_group = GroupMembers.id_g WHERE GroupMembers.id_c=?;
+    command = """SELECT Groups.name FROM Groups 
+        JOIN GroupMembers ON Groups.id_group = GroupMembers.id_g 
+        WHERE GroupMembers.id_c=?;
             """
     
     sql.execute(command, [id_c])
     result = sql.fetchall()
     return result
+
+def select_client_groupes_by_id(id_g, id_c):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT * FROM GroupMembers where id_g = ? AND id_c=?;
+            """
+    
+    sql.execute(command, [id_g,id_c])
+    result = sql.fetchall()
+    return result
+
 
 def select_groupe_from_name(name):
     data = get_db()
@@ -293,6 +306,8 @@ def select_groupe_from_name(name):
     sql.execute(command, [name])
     result = sql.fetchall()
     return result
+
+
 
 
 #---------------------- likes
