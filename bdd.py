@@ -113,7 +113,7 @@ def insert_clients_table(email, name, last_name, password, company, role):
     data = get_db()
     sql = data.cursor()
     command = """INSERT INTO Client(email, name, last_name, password, company, role)
-                VALUES (?,?,?,?,?,?,?)
+                VALUES (?,?,?,?,?,?)
 
             """
     sql.execute(command, [email, name, last_name, password, company, role])
@@ -242,6 +242,58 @@ def select_discussion_by_id(id_discussion):
     return result
 
 
+def select_clients_not_in_group(id_group):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT Client.id_client, Client.name, Clients.last_name
+                 FROM Client JOIN Groupes ON Client.id_client = Groupes.id_c 
+                WHERE Groupes.id_g != ?;
+            """
+    
+    sql.execute(command, [id_group])
+    result = sql.fetchall()
+    return result
+
+def select_all_clients():
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT id_client, name, last_name FROM Client;
+            """
+    
+    sql.execute(command)
+    result = sql.fetchall()
+    return result
+
+def select_all_groupes():
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT name FROM Groups;
+            """
+    
+    sql.execute(command)
+    result = sql.fetchall()
+    return result
+
+def select_client_groupes(id_c):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT Groups.name FROM Groups JOIN GroupMembers ON Groups.id_group = GroupMembers.id_g WHERE GroupMembers.id_c=?;
+            """
+    
+    sql.execute(command, [id_c])
+    result = sql.fetchall()
+    return result
+
+def select_groupe_from_name(name):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT name FROM Groups WHERE name=?;
+            """
+    
+    sql.execute(command, [name])
+    result = sql.fetchall()
+    return result
+
 
 #---------------------- likes
 
@@ -317,7 +369,7 @@ def get_comment_likes(id_comment):
 def select_client_infos_from_email(email):
     data = get_db()
     sql= data.cursor()
-    command = """SELECT password, id_client, email, name, last_name, company, role, group_name FROM Client WHERE email = ? ;
+    command = """SELECT password, id_client, email, name, last_name, company, role FROM Client WHERE email = ? ;
             """
     sql.execute(command, [email])
     result = sql.fetchone()

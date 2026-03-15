@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home | Discussions</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}" />
+</head>
+<body>
+
+  <!-- HEADER / TOOLBAR -->
+  <header class="topbar">
+    <!-- Gauche : Entreprise + emplacement logo + logo -->
+    <div class="topbar-left">
+      <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
+
+      <div class="company">
+        <div id="companyName" class="company-name">{{company}}</div>
+        <div class="company-sub">Accueil</div>
+      </div>
+
+      <div class="company-mark" aria-hidden="true">🏢</div>
+    </div>
+
+    <!-- Centre : recherche (titre uniquement) -->
+    <div class="topbar-center">
+    
+      <div><a href="{{url_for('groups_page')}}"> Groupes </a></div>
+      <div><a href="{{url_for('membres')}}"> Membres </a></div>
+      <div class="search">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Rechercher par titre de discussion..."
+          aria-label="Rechercher"
+        />
+      </div>
+    </div>
+
+    <!-- Droite : user + groupe + bouton + -->
+    <div class="topbar-right">
+      <div class="user">
+        <div id="userFullName" class="user-name">{{first_name}} {{last_name}}</div>
+        <div id="userGroup" class="user-group">Groupe : {{group_name}}</div>
+      </div>
+      <a class="logout" href="{{url_for('logout')}}"> Logout </a>
+
+      <button id="addDiscussionBtn" commandfor='newDiscussion'command="show-modal" class="icon-btn" title="Ajouter une discussion" style="display:none;">
+        +
+      </button>
+
+      <dialog id="newDiscussion">
+        <!-- Pour fermer la page -->
+        <button id="closePage" commandfor='newDiscussion' command="request-close"> 
+          x
+        </button>
+
+        <!-- Création d'une discussion  -->
+        <form class="newDiscussionForm" method="post" action='{{url_for("ajouter_discussion")}}'>
+          <label> Nouvelle discussion</label>
+          <div class="discussionInformation">
+            <input type="text" class="questionBlock" name='discussionTitle' placeholder=" Ajouter un titre"> 
+            <textarea type="text" class="contentBlock" name="discussionContent" placeholder=" Ajouter une description"></textarea>
+          </div>
+
+          <div class="form-choices">
+            <div class="discussionType">
+
+              <div>
+                <input type="radio" name="discussionType" id="ouvert" value="ouvert">
+                <label for="ouvert"> Question ouverte </label>
+              </div>
+
+              <div>
+                <input type="radio" name="discussionType" id="yesno" value="yesno">   
+                <label for="yesno"> Question fermé </label>
+              </div>
+            </div>
+
+            <div class="groupList">
+              <div class="checkbox-group1">
+                <input type="checkbox" name="groupList" id="groupList">
+                <label for="groupList"> Groupe 1</label>
+              </div>
+              <div class="checkbox-group2">
+                <input type="checkbox" name="groupList" id="groupList">
+                <label for="groupList"> Groupe 2</label>
+              </div>
+              <div class="checkbox-group3">
+                <input type="checkbox" name="groupList" id="groupList">
+                <label for="groupList"> Groupe 3</label>
+              </div>
+            </div>
+          </div>
+
+          <input class="postButton" type="submit" value="Poster">
+        </form>
+
+
+
+      </dialog>
+    </div>
+  </header>
+
+  <!-- CONTENU -->
+  <main class="container">
+    <h1>GROUPS</h1>
+    <div class="">
+        <h3 class="ajouter_group">Ajouter un nouveau group: (cette section doit nromalement etre seulement visible pour membres de haut rank)</h3> 
+        <form class="ajouter_group_form" action="{{url_for('groups_page')}}", method="POST">
+            <label> Nouvelle groupe</label>
+            
+            <div class="discussionInformation">
+                <input type="text" class="questionBlock" name='groupName' placeholder=" nom du groupe"> 
+                <input type="submit" class="postButton" value="ajouter groupe">
+                <p class="error-msg" style="color:red;"> {{msg}}</p>
+            </div>
+        </form> 
+    </div>
+
+    <h2> Vos groupes </h2>
+    {% for group in groups_client %}
+        <p> {{group}} </p>
+        
+    {% endfor %}
+    <br><br>
+    <h2> tout les groupes </h2>
+    {% for group in all_groups %}
+        <p> {{group}} </p>
+        <form action="" methods="post" class="ajouter_membres_groupes_form">
+            <select name="membres" id="membres">
+                {% for member in members%}
+                    <option value="{{member}}"> {{member[0]}} {{member[1]}} {{member[2]}} </option>
+
+
+                {% endfor %}
+            </select>
+
+        </form>
+    {% endfor %}
+  </main>
+
+   
+</body>
+</html>
