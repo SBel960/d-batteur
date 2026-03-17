@@ -14,8 +14,15 @@
             example: CEO de "facebook" ne peut pas creer le compte d'un employer de l'entreprise "tamerIsTheBest"
 
 
-botton kpour sortir de la discussion
-reparer apres signup
+botton kpour sortir de la discussion - soufi
 implementer group
 implementer hierarchie
 
+comment implementer fonctionalite de groupe
+idee: fonctionalite add group (manager/ceo)
+ fonctionalite view all groupes (manager/ceo)
+ on peut cliquer un groupe depuisla fonctionalite view all groups (par ex manager clique sur group 1)
+ puis le manager peut chercher un employer et le mettre dans le groupe?
+
+
+reply to a comment fonctionalite

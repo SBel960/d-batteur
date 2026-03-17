@@ -1,5 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, request, session
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id
 import time
 app = Flask(__name__)
 
@@ -25,7 +25,7 @@ def home():
 
         discussions.append([row[2],row[3],str(row[0]),likes,dislikes])
     print(discussions)
-    return render_template("homepage.html", discussions=discussions, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'], group_name=session['group_name'])
+    return render_template("homepage.html", discussions=discussions, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'])
 
 @app.route("/main/<int:discussion_id>", methods=["GET", "POST"])
 def main(discussion_id):
@@ -37,7 +37,7 @@ def main(discussion_id):
         comments.append(dict(id_c=comment[0],content=comment[3],like=get_comment_likes(comment[0])[0],dislike=get_comment_likes(comment[0])[1]))
 
     likes, dislikes = get_discussion_likes(discussion_id)
-    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'], group_name=session['group_name'])
+    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'])
 
 
 
@@ -113,6 +113,61 @@ def like_comment(discussion_id,comment_id, action):
 
 
 
+
+#--------------------------- section group
+@app.route('/groups', methods=['GET', 'POST'])
+def groups_page():
+    if not(session.get('logged_in')):
+        return redirect(url_for('login_page'))
+    msg = ''
+    if request.method == "POST":
+        group_name = request.form["groupName"]
+        if group_name == "":
+            msg = 'tout les champs sont requises'
+        elif len(select_groupe_from_name(group_name)) > 0:
+            msg="Ce group existe deja"
+        else:
+            insert_groups_table(group_name)
+    id_client = session['id_client']
+    groups_client = []
+    res= select_client_groupes(id_client)
+    print(res)
+    for row in res:
+        groups_client.append(row[0])
+
+    all_groups = []
+    res = select_all_groupes()
+    for row in res:
+        all_groups.append([row[0], row[1]])
+
+    membres = []
+    res =select_all_clients()
+    for row in res:
+        membres.append([row[0], row[1], row[2]])
+    return render_template("groups.html", groups_client=groups_client, all_groups=all_groups, members=membres, msg=msg)
+
+
+
+@app.route('/addgroupe/<int:group_id>', methods=['POST'])
+def add_member_to_group(group_id):
+    if not(session.get('logged_in')):
+        return redirect(url_for('login_page'))
+    id_c_inserter= request.form['membres']
+    id_groupe = group_id
+    print(id_c_inserter)
+    if len(select_client_groupes_by_id(id_groupe, id_c_inserter)) == 0:
+        insert_group_members(id_groupe, id_c_inserter)
+    return redirect(url_for("groups_page"))
+
+
+@app.route('/membres', methods=["GET"])
+def membres():
+    if not(session.get('logged_in')):
+        return redirect(url_for('login_page'))
+    pass
+
+
+########################## authentificatiojn
 @app.route('/login_page', methods=['GET'])
 def login_page():
     return render_template("login.html")
@@ -122,7 +177,7 @@ def registry_page():
     return render_template("registry.html")
 
 
-# login route
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == "GET":
@@ -145,7 +200,8 @@ def login():
         return render_template('login.html', message= message)
     
     session["logged_in"] = True
-    session['id_client'], session['email'], session['first_name'], session['last_name'], session['company'], session['role'], session['group_name'] = client_infos[1::]
+    session['id_client'], session['email'], session['first_name'], session['last_name'], session['company'], session['role'] = client_infos[1::]
+    print(session['id_client'])
     return redirect(url_for("home"))
 
 
@@ -161,13 +217,13 @@ def registry():
     password = request.form["new-password"]
     company = request.form["company-name"]
     role = request.form["role"]
-    group_name = 'groupe A' ##a changer
+    
     result = check_if_exists_client(email, company)
     if result != None:
         msg = 'Ce compte existe deja'
         return render_template('registry.html', message=msg)
     
-    insert_clients_table(email, first_name, last_name, password, company, role, group_name)
+    insert_clients_table(email, first_name, last_name, password, company, role)
 
     
     return redirect(url_for('login_page')) #a changer quand on a hierarchy
@@ -202,16 +258,11 @@ def create_likes():
     return "created likes table succesfully!"
 
 
+
+#################examples utiliations
 @app.route("/insert_client_table")
 def insert_client(): #fonction a modifier quand on a la page login
-    email = "tamer@gmail.com"
-    name = "Tamer"
-    last_name = "Masri"
-    password= "3onjour"
-    company = "Debatteurs"
-    role = "CEO"
-    group_name = "groupe A"
-    insert_clients_table(email, name, last_name, password, company, role, group_name)
+    insert_clients_table("test@test", 'test', 'test', 'test', 'test', 'test')
     return "inserted clients table succesfully!"
 
 
@@ -245,6 +296,7 @@ def insert_likes(): # fonction a modifier quand on a l'option de like/dislike un
 
 
 
+
 #-------------------------------------------------
 
 
@@ -254,4 +306,5 @@ def reset_database():
     "resets the database tables"
     print("Dropping Database")
     reset_all_db()
+    insert_clients_table("test@test", 'test', 'test', 'test', 'test', 'test')
     print("reset successful")
