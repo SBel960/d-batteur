@@ -311,7 +311,15 @@ def select_groupe_from_name(name):
     return result
 
 
-
+def select_client_profile(id_c):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT name, last_name, FROM Groups WHERE name=?;
+            """
+    
+    sql.execute(command, [name])
+    result = sql.fetchall()
+    return result
 
 #---------------------- likes
 

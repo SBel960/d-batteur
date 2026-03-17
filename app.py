@@ -166,6 +166,13 @@ def membres():
         return redirect(url_for('login_page'))
     pass
 
+@app.route('/profile/<int:id_c>')
+def profile(id_c):
+    if not(session.get('logged_in')):
+        return redirect(url_for('login_page'))
+    my_profile = id_c == session["id_client"] #si la profile cible est le profile du user
+    
+
 
 ########################## authentificatiojn
 @app.route('/login_page', methods=['GET'])
