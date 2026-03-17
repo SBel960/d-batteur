@@ -97,14 +97,30 @@ def create_group_members_table():
                 id_group_member INTEGER PRIMARY KEY AUTOINCREMENT,
                 id_g INTEGER NOT NULL,
                 id_c INTEGER NOT NULL,
-                FOREIGN KEY(id_c) REFERENCES Client(id_client),
-                FOREIGN KEY(id_g) REFERENCES Groupes(id_groupe), 
 
+                FOREIGN KEY(id_c) REFERENCES Client(id_client),
+                FOREIGN KEY(id_g) REFERENCES Groupes(id_groupe)
                 )  
             """
     sql.execute(command)
     data.commit()
 
+
+def create_discussion_groups_table():
+    data = get_db()
+    sql = data.cursor()
+    command = """CREATE TABLE IF NOT EXISTS DiscussionGroups(  
+                id_g INTEGER NOT NULL,
+                id_d INTEGER NOT NULL,
+
+                FOREIGN KEY(id_d) REFERENCES Discussions(id_discussion),
+                FOREIGN KEY(id_g) REFERENCES Groupes(id_groupe)
+    
+
+                )  
+            """
+    sql.execute(command)
+    data.commit()
 
 
 
@@ -173,12 +189,23 @@ def insert_group_members(id_group, id_client):
             """
     sql.execute(command, [id_group, id_client])
     data.commit()
+
+
+
+def insert_discussion_groups(id_group, id_discussion):
+    data = get_db()
+    sql = data.cursor()
+    command = """INSERT INTO DiscussionGroups(id_g, id_d)
+                VALUES (?,?)
+            """
+    sql.execute(command, [id_group, id_discussion])
+    data.commit()
 #------------------------------- commandes
 
 def reset_all_db():
     data = get_db()
     sql = data.cursor()
-    tables = ["Client", "Discussions", "Comments", "Likes", "Groups", "GroupMembers"]
+    tables = ["Client", "Discussions", "Comments", "Likes", "Groups", "GroupMembers", "DiscussionGroups"]
     for table in tables:
         sql.execute(f"DROP TABLE IF EXISTS {table};")
     data.commit()
@@ -187,8 +214,12 @@ def reset_all_db():
     create_discussions_table()
     create_comments_table()
     create_likes_table()
+    create_discussion_groups_table()
     create_groups_table()
+
+
     create_group_members_table()
+    print("bonjour")
 
 
 #--------------------------------- selections
@@ -300,15 +331,26 @@ def select_groupe_from_name(name):
     return result
 
 
-def select_client_profile(id_c):
+def select_groupe_from_id(id_g):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT name, last_name, FROM Groups WHERE name=?;
+    command = """SELECT name FROM Groups WHERE id_group=?;
             """
     
-    sql.execute(command, [name])
+    sql.execute(command, [id_g])
+    result = sql.fetchone()
+    return result
+
+def select_discussion_groups(id_discussion):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT id_g FROM DiscussionGroups WHERE id_d=?;
+            """
+    
+    sql.execute(command, [id_discussion])
     result = sql.fetchall()
     return result
+
 
 #---------------------- likes
 
@@ -404,7 +446,7 @@ def check_if_exists_client(email, company):
 def get_user_by_id(id_c):
     data = get_db()
     sql=data.cursor()
-    command= """SELECT * FROM Client WHERE id_client= ?
+    command= """SELECT id_client, name, last_name, role FROM Client WHERE id_client= ?
             """
     sql.execute(command,[id_c])
 
