@@ -24,6 +24,8 @@
 
     <!-- Centre : recherche (titre uniquement) -->
     <div class="topbar-center">
+      <a href="{{url_for('groups_page')}}"> Groupes </a>
+      <a href="{{url_for('membres')}}"> Membres </a>
       <div class="search">
         <span class="search-icon" aria-hidden="true">⌕</span>
         <input
@@ -41,7 +43,7 @@
         <div id="userFullName" class="user-name">{{first_name}} {{last_name}}</div>
         <div id="userGroup" class="user-group">Groupe : {{group_name}}</div>
       </div>
-      <div class="company-mark"> <a class="logout" href="{{url_for('logout')}}"> Logout </a></div>
+      <a class="logout" href="{{url_for('logout')}}"> Logout </a>
 
       <button id="addDiscussionBtn" commandfor='newDiscussion'command="show-modal" class="icon-btn" title="Ajouter une discussion" style="display:none;">
         +
@@ -57,8 +59,8 @@
         <form class="newDiscussionForm" method="post" action='{{url_for("ajouter_discussion")}}'>
           <label> Nouvelle discussion</label>
           <div class="discussionInformation">
-            <input type="text" class="questionBlock" name='discussionTitle'placeholder=" Ajouter un titre" required> 
-            <input type="text" class="contentBlock" name="discussionContent" placeholder=" Ajouter une description">
+            <input type="text" class="questionBlock" name='discussionTitle' placeholder=" Ajouter un titre"> 
+            <textarea type="text" class="contentBlock" name="discussionContent" placeholder=" Ajouter une description"></textarea>
           </div>
 
           <div class="form-choices">
@@ -127,6 +129,8 @@
         <div class="card-bottom">
           <div class="card-actions">
             <a class="btn" href="/main/{{discussion[2]}}">Ouvrir</a>
+            <a id="likes-count" class="vote" href="{{ url_for('like_discussion', discussion_id=discussion[2] , action='like', origin_page='homepage') }}">👍 {{discussion[3]}}</a>
+            <a id="dislikes-count" class="vote" href="{{ url_for('like_discussion', discussion_id=discussion[2] , action='unlike', origin_page='homepage') }}">👎 {{discussion[4]}}</a>
           </div>
         </div> 
        </div> 

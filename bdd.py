@@ -10,7 +10,7 @@ def get_db():
     return g.db
 
 
-
+#---------------------creation tables
 def create_client_table():
     data = get_db()
     sql = data.cursor()
@@ -21,8 +21,7 @@ def create_client_table():
                 last_name TEXT NOT NULL,
                 password TEXT NOT NULL,
                 company TEXT NOT NULL,
-                role TEXT,
-                group_name TEXT
+                role TEXT       
                 )  
             """
     sql.execute(command)
@@ -79,14 +78,45 @@ def create_likes_table():
     data.commit()
 
 
-def insert_clients_table(email, name, last_name, password, company, role, group_name):
+
+def create_groups_table():
     data = get_db()
     sql = data.cursor()
-    command = """INSERT INTO Client(email, name, last_name, password, company, role, group_name)
-                VALUES (?,?,?,?,?,?,?)
+    command = """CREATE TABLE IF NOT EXISTS Groups(  
+                id_group INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL
+                )  
+            """
+    sql.execute(command)
+    data.commit()
+
+def create_group_members_table():
+    data = get_db()
+    sql = data.cursor()
+    command = """CREATE TABLE IF NOT EXISTS GroupMembers(  
+                id_group_member INTEGER PRIMARY KEY AUTOINCREMENT,
+                id_g INTEGER NOT NULL,
+                id_c INTEGER NOT NULL
+                )  
+            """
+    sql.execute(command)
+    data.commit()
+
+
+
+
+#-------------------------- insertion
+
+
+
+def insert_clients_table(email, name, last_name, password, company, role):
+    data = get_db()
+    sql = data.cursor()
+    command = """INSERT INTO Client(email, name, last_name, password, company, role)
+                VALUES (?,?,?,?,?,?)
 
             """
-    sql.execute(command, [email, name, last_name, password, company, role, group_name])
+    sql.execute(command, [email, name, last_name, password, company, role])
     data.commit()
 
 
@@ -121,10 +151,31 @@ def insert_likes_table(id_c, target, id_target, like):
 
 
 
+def insert_groups_table(name):
+    data = get_db()
+    sql = data.cursor()
+    command = """INSERT INTO Groups(name)
+                VALUES (?)
+            """
+    sql.execute(command, [name])
+    data.commit()
+
+
+
+def insert_group_members(id_group, id_client):
+    data = get_db()
+    sql = data.cursor()
+    command = """INSERT INTO GroupMembers(id_g, id_c)
+                VALUES (?,?)
+            """
+    sql.execute(command, [id_group, id_client])
+    data.commit()
+#------------------------------- commandes
+
 def reset_all_db():
     data = get_db()
     sql = data.cursor()
-    tables = ["Client", "Discussions", "Comments", "Likes"]
+    tables = ["Client", "Discussions", "Comments", "Likes", "Groups", "GroupMembers"]
     for table in tables:
         sql.execute(f"DROP TABLE IF EXISTS {table};")
     data.commit()
@@ -133,8 +184,11 @@ def reset_all_db():
     create_discussions_table()
     create_comments_table()
     create_likes_table()
+    create_groups_table()
+    create_group_members_table()
 
 
+#--------------------------------- selections
 def select_all_discussions():
     data = get_db()
     sql = data.cursor()
@@ -175,6 +229,77 @@ def select_discussion_by_id(id_discussion):
     sql.execute(command, [id_discussion])
     result = sql.fetchone()
     return result
+
+
+def select_clients_not_in_group(id_group):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT Client.id_client, Client.name, Clients.last_name
+                 FROM Client JOIN Groupes ON Client.id_client = Groupes.id_c 
+                WHERE Groupes.id_g != ?;
+            """
+    
+    sql.execute(command, [id_group])
+    result = sql.fetchall()
+    return result
+
+def select_all_clients():
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT id_client, name, last_name FROM Client;
+            """
+    
+    sql.execute(command)
+    result = sql.fetchall()
+    return result
+
+def select_all_groupes():
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT * FROM Groups;
+            """
+    
+    sql.execute(command)
+    result = sql.fetchall()
+    return result
+
+def select_client_groupes(id_c):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT Groups.name FROM Groups 
+        JOIN GroupMembers ON Groups.id_group = GroupMembers.id_g 
+        WHERE GroupMembers.id_c=?;
+            """
+    
+    sql.execute(command, [id_c])
+    result = sql.fetchall()
+    return result
+
+def select_client_groupes_by_id(id_g, id_c):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT * FROM GroupMembers where id_g = ? AND id_c=?;
+            """
+    
+    sql.execute(command, [id_g,id_c])
+    result = sql.fetchall()
+    return result
+
+
+def select_groupe_from_name(name):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT name FROM Groups WHERE name=?;
+            """
+    
+    sql.execute(command, [name])
+    result = sql.fetchall()
+    return result
+
+
+
+
+#---------------------- likes
 
 def update_like(id_client, id_cible, cible, value):
     """ fonction a 3 cas:
@@ -243,11 +368,12 @@ def get_comment_likes(id_comment):
     return (likes, dislikes)
 
 
+#-------------------------------authentificattion
 
 def select_client_infos_from_email(email):
     data = get_db()
     sql= data.cursor()
-    command = """SELECT password, id_client, email, name, last_name, company, role, group_name FROM Client WHERE email = ? ;
+    command = """SELECT password, id_client, email, name, last_name, company, role FROM Client WHERE email = ? ;
             """
     sql.execute(command, [email])
     result = sql.fetchone()

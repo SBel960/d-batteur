@@ -180,6 +180,25 @@ main{
   color: var(--muted);
 }
 
+.logout {
+  width: 76px;
+  height: 38px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: transform .12s ease, background .12s ease;
+  user-select: none;
+}
+.logout:hover{
+  transform: translateY(-1px);
+  background: rgb(255, 86, 86);
+}
+
 .icon-btn{
   width: 76px;
   height: 38px;
@@ -341,13 +360,10 @@ main{
   }
   .topbar-left, .topbar-right{
     min-width: auto;
-    flex: 1 1 320px;
+    flex: 1 1;
   }
   .topbar-center{
     flex: 1 1 100%;
     order: 3;
-  }
-  .topbar-right{
-    justify-content: space-between;
   }
 }
