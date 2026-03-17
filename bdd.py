@@ -393,7 +393,7 @@ def check_if_exists_client(email, company):
 def get_user_by_id(id_c):
     data = get_db()
     sql=data.cursor()
-    command= """SELECT * FROM Client WHERE id_client= ?
+    command= """SELECT id_client, name, last_name, role FROM Client WHERE id_client= ?
             """
     sql.execute(command,[id_c])
 
