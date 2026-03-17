@@ -96,7 +96,10 @@ def create_group_members_table():
     command = """CREATE TABLE IF NOT EXISTS GroupMembers(  
                 id_group_member INTEGER PRIMARY KEY AUTOINCREMENT,
                 id_g INTEGER NOT NULL,
-                id_c INTEGER NOT NULL
+                id_c INTEGER NOT NULL,
+                FOREIGN KEY(id_c) REFERENCES Client(id_client),
+                FOREIGN KEY(id_g) REFERENCES Groupes(id_groupe), 
+
                 )  
             """
     sql.execute(command)
