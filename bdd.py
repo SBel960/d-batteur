@@ -144,17 +144,6 @@ def select_all_discussions():
     result = sql.fetchall()
     return result
 
-def get_discussion_attribut(discussion_id):
-    data = get_db()
-    sql = data.cursor()
-    command="""SELECT * FROM Discussions WHERE id_discussion= ?;
-           """
-    
-    sql.execute(command, [discussion_id])
-    res=sql.fetchall()
- 
-    return res
-
 
 def select_comments(discussion_id):
     data = get_db()
@@ -273,3 +262,15 @@ def check_if_exists_client(email, company):
     sql.execute(command, [email, company])
     result = sql.fetchone()
     return result
+
+
+def get_user_by_id(id_c):
+    data = get_db()
+    sql=data.cursor()
+    command= """SELECT * FROM Client WHERE id_client= ?
+            """
+    sql.execute(command,[id_c])
+
+    res=sql.fetchone()
+
+    return res

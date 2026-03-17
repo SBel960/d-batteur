@@ -13,3 +13,8 @@
             (le directeur dune entreprise ne peut pas creer le compte d'un employer qui appartient a une autre entreprise)
             example: CEO de "facebook" ne peut pas creer le compte d'un employer de l'entreprise "tamerIsTheBest"
 
+
+
+
+BUG ENVOYER QUAND LE COM EST Cvide
+BUG ENVOYER QUAND LE COM EST Cvide

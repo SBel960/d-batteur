@@ -79,27 +79,30 @@
         <div class="commentInput">
           <form class="commentForm" method="post" action='{{url_for("commentaire", discussion_id=discussion_id)}}'>
             <label for="comment_input"> Commentaires </label>
-            <input type="text" class="form-control" name="commentaire" placeholder="Ajoutez votre commentaire..." id="comment_input">
+            <input type="text" class="form-control" name="commentaire" placeholder="Ajoutez votre commentaire..." id="comment_input" required>
             <input class="icon-btn submit-button" type="submit" value="Envoyer">
           </form>
         </div>
-        <div class="commentUser">
-          
-        </div>
-        {% for  comment in comments %}
-        <div class="commentTextList">
-          <div class="commentText">
-            {{ comment["content"] }}
-          </div>
-            <div class="commentLike">
-            <div class="btn-area">
-              {% set id=comment['id_c'] %}
-              <a class="likes-count" href="{{ url_for('like_comment', discussion_id=discussion_id , comment_id=id, action='like') }}">👍 {{comment['like']}}</a>
-              <a class="dislikes-count" href="{{ url_for('like_comment', discussion_id=discussion_id , comment_id=id, action='unlike')}}">👎 {{comment['dislike']}}</a>
-            </div>
 
+        {% for  comment in comments %}
+        
+          <div class="commentTextList">
+            <div class="commentBox">
+              <div class="commentUser">
+                {{comment['username']}}
+              </div>
+              <div class="commentText">
+                {{ comment["content"] }}
+              </div>
+              <div class="commentLike">
+                  <div class="btn-area">
+                    {% set id=comment['id_c'] %}
+                    <a class="likes-count" href="{{ url_for('like_comment', discussion_id=discussion_id , comment_id=id, action='like') }}">👍 {{comment['like']}}</a>
+                    <a class="dislikes-count" href="{{ url_for('like_comment', discussion_id=discussion_id , comment_id=id, action='unlike')}}">👎 {{comment['dislike']}}</a>
+                  </div>
+              </div>
+            </div>
           </div>
-          
           {% endfor %}
         </div>
       </div>
