@@ -78,18 +78,11 @@
             </div>
 
             <div class="groupList">
-              <div class="checkbox-group1">
-                <input type="checkbox" name="groupList" id="groupList">
-                <label for="groupList"> Groupe 1</label>
-              </div>
-              <div class="checkbox-group2">
-                <input type="checkbox" name="groupList" id="groupList">
-                <label for="groupList"> Groupe 2</label>
-              </div>
-              <div class="checkbox-group3">
-                <input type="checkbox" name="groupList" id="groupList">
-                <label for="groupList"> Groupe 3</label>
-              </div>
+              <select name="groupes" id="groupes_dropdown" multiple>
+                {% for groupe in groupes%}
+                    <option value="{{groupe[0]}}"> {{groupe[1]}} </option>
+                {% endfor %}
+            </select>
             </div>
           </div>
 
@@ -124,9 +117,16 @@
 
         <div class="card-desc">
           {{discussion[1]}}
+
         </div>
 
         <div class="card-bottom">
+          <div class="card-groups" style="display:flex; flex-direction: row;">
+            {% for groupe in discussion[5] %}
+              <a class="discussion-group" href="" style="color: cyan; margin-left:10px;"> {{groupe[1]}}</p>
+
+              {% endfor %}
+          </div>
           <div class="card-actions">
             <a class="btn" href="/main/{{discussion[2]}}">Ouvrir</a>
             <a id="likes-count" class="vote" href="{{ url_for('like_discussion', discussion_id=discussion[2] , action='like', origin_page='homepage') }}">👍 {{discussion[3]}}</a>
