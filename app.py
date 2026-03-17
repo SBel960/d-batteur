@@ -234,13 +234,8 @@ def registry():
     
     insert_clients_table(email, first_name, last_name, password, company, role)
 
-<<<<<<< app.py
-    return redirect(url_for('login_page'))
-
-=======
     
     return redirect(url_for('login_page')) #a changer quand on a hierarchy
->>>>>>> app.py
 
 
 @app.route('/logout', methods=['GET', 'POST'])
