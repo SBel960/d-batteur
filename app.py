@@ -26,10 +26,8 @@ def home():
     for row in result:
         likes, dislikes = get_discussion_likes(row[0])
         res_groupes = select_discussion_groups(row[0])
-        print("row[0} ", row[0])
         groupes = []
         for groupe_id in res_groupes:
-           print('select_dicsusiion groupe', groupe_id[0])
            groupes.append((groupe_id[0], select_groupe_from_id(groupe_id[0])[0]))
         discussions.append([row[2],row[3],str(row[0]),likes,dislikes, groupes])
 
@@ -79,7 +77,6 @@ def ajouter_discussion():
     content = request.form['discussionContent']
     
     groupes = request.form.getlist('groupes')
-    print(groupes)
     
     id_client = session['id_client']
 
@@ -89,8 +86,6 @@ def ajouter_discussion():
     discussion_id = select_newest_discussion_id(id_client)[0]
 
     for groupe_id in groupes:
-        print("groupe id", groupe_id)
-        print("discusion id ",discussion_id)
         insert_discussion_groups(groupe_id, discussion_id)
 
     return redirect(url_for("main", discussion_id= discussion_id))
@@ -181,7 +176,6 @@ def add_member_to_group(group_id):
         return redirect(url_for('login_page'))
     id_c_inserter= request.form['membres']
     id_groupe = group_id
-    print(id_c_inserter)
     if len(select_client_groupes_by_id(id_groupe, id_c_inserter)) == 0:
         insert_group_members(id_groupe, id_c_inserter)
     return redirect(url_for("groups_page"))
@@ -242,7 +236,6 @@ def login():
     
     session["logged_in"] = True
     session['id_client'], session['email'], session['first_name'], session['last_name'], session['company'], session['role'] = client_infos[1::]
-    print(session['id_client'])
     return redirect(url_for("home"))
 
 

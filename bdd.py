@@ -219,7 +219,6 @@ def reset_all_db():
 
 
     create_group_members_table()
-    print("bonjour")
 
 
 #--------------------------------- selections
@@ -372,7 +371,6 @@ def update_like(id_client, id_cible, cible, value):
         return 
     else:
         if result[0] != value:
-            print("je susi ici")
             command = """UPDATE Likes SET like=? WHERE id_c= ? AND id_target=? AND target=?;
                 """      
             sql.execute(command, [value, id_client, id_cible, cible])
@@ -394,7 +392,6 @@ def get_discussion_likes(id_discussion):
     likes = 0
     dislikes = 0
     for res in result:
-        print(res[0])
         if res[0] == 1:
             likes += 1
         else:
@@ -412,7 +409,6 @@ def get_comment_likes(id_comment):
     likes = 0
     dislikes = 0
     for res in result:
-        print(res[0])
         if res[0] == 1:
             likes += 1
         else:
