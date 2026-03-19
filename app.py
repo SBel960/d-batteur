@@ -26,10 +26,16 @@ def home():
     for row in result:
         likes, dislikes = get_discussion_likes(row[0])
         res_groupes = select_discussion_groups(row[0])
+        auteur = get_user_by_id(row[1])
+        auteur = "" +auteur[1] +" "+ auteur[2]
+        type = "Proposition"
+        if(row[4] == "ouvert"):
+            type = "Question"
+
         groupes = []
         for groupe_id in res_groupes:
            groupes.append((groupe_id[0], select_groupe_from_id(groupe_id[0])[0]))
-        discussions.append([row[2],row[3],str(row[0]),likes,dislikes, groupes])
+        discussions.append([row[2],row[3],str(row[0]),likes,dislikes, groupes, auteur, type, row[5], row[6]]) #row = [0:id, 1:id_client, 2:title, 3:content, 4:type, 5:date, 6: time]
 
     result = select_all_groupes()
     for row in result:
@@ -79,9 +85,10 @@ def ajouter_discussion():
     groupes = request.form.getlist('groupes')
     
     id_client = session['id_client']
+    type = request.form.get('discussionType')
 
     
-    insert_disscussions_table(id_client, title, content)
+    insert_disscussions_table(id_client, title, content, type)
     time.sleep(0.01)
     discussion_id = select_newest_discussion_id(id_client)[0]
 

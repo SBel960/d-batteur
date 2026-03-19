@@ -1,6 +1,7 @@
 import sqlite3
 from flask import g
-
+from datetime import date
+import time
 db_file = "approot/app.db"
 
 def get_db():
@@ -35,6 +36,9 @@ def create_discussions_table():
                 id_c INTEGER NOT NULL,
                 title TEXT NOT NULL,
                 content TEXT NOT NULL,
+                type TEXT NOT NULL,
+                date_creation DATE NOT NULL,
+                time_creation TIME NOT NULL,
                 FOREIGN KEY(id_c) REFERENCES Client(id_client)
                 )
                  
@@ -139,14 +143,18 @@ def insert_clients_table(email, name, last_name, password, company, role):
     data.commit()
 
 
-def insert_disscussions_table(id_c, title, content):
+def insert_disscussions_table(id_c, title, content, type):
     data = get_db()
     sql = data.cursor()
-    command = """INSERT INTO Discussions(id_c, title, content)
-                VALUES (?,?,?)
+    date_creation = date.today()
+    named_tuple = time.localtime() # get struct_time
+    time_creation = time.strftime("%H:%M", named_tuple)
+    print(time_creation)
+    command = """INSERT INTO Discussions(id_c, title, content, type, date_creation,time_creation)
+                VALUES (?,?,?,?,?,?)
 
             """
-    sql.execute(command, [id_c, title, content])
+    sql.execute(command, [id_c, title, content, type, date_creation, time_creation])
     data.commit()
 
 
