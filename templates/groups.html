@@ -52,7 +52,7 @@
 
   <!-- CONTENU -->
   <main class="container">
-    <h1>GROUPS</h1>
+    <h1>GROUPES</h1>
     <div>
         <h3 class="ajouter_group">Ajouter un nouveau groupe: (cette section doit normalement être seulement visible pour les membres de haut rang)</h3> 
         <form class="ajouter_group_form" action="{{url_for('groups_page')}}", method="POST">
@@ -70,6 +70,8 @@
     {% endfor %}
     <br><br>
     <h2> Tous les groupes </h2>
+    <p id="countInfo"></p>
+    <div id="groupsList" class="list"></div>
     {% for group in all_groups %}
       <div class="group">
         <div class="group_name"> {{group[1]}} </div>
@@ -85,6 +87,76 @@
     {% endfor %}
   </main>
 
+  <script>
+    
+    const state = {
+      groups: [
+        { id: 1, name: "Groupe A" },
+        { id: 2, name: "Groupe B" },
+        { id: 3, name: "Groupe C" },
+        { id: 4, name: "Groupe Maintenance" }
+      ]
+    };
+
+    localStorage.setItem("appState", JSON.stringify(state));
+
+
+    const list = document.getElementById("groupsList");
+    const countInfo = document.getElementById("countInfo");
+    const searchInput = document.getElementById("searchInput");
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  
+    function renderGroups(items) {
+      list.innerHTML = "";
+      countInfo.textContent = `${items.length} groupe(s)`;
+  
+      if (!items.length) {
+        list.innerHTML = `<div class="empty">Aucun groupe trouvé.</div>`;
+        return;
+      }
+  
+      items.forEach(g => {
+        const card = document.createElement("article");
+        card.className = "card";
+  
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="card-title">
+              <span class="title-text">${escapeHtml(g.name)}</span>
+            </div>
+          </div>
+  
+          <div class="card-bottom">
+            <div class="card-actions">
+              <a class="btn" href="/main/${g.id}">Ouvrir</a>
+            </div>
+          </div>
+        `;
+  
+        list.appendChild(card);
+      });
+    }
+
+
+  
+    function applySearchAndRender() {
+      const q = searchInput.value.trim().toLowerCase();
+      const filtered = state.groups.filter(g => g.name.toLowerCase().includes(q));
+      renderGroups(filtered);
+    }
+  
+    searchInput.addEventListener("input", applySearchAndRender);
+  
+    renderGroups(state.groups);
+  </script>
    
 </body>
 </html>
