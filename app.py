@@ -87,7 +87,10 @@ def ajouter_discussion():
     id_client = session['id_client']
     type = request.form.get('discussionType')
 
-    
+    if title =='' or content=='' or groupes==[] or type==None:
+        msg = 'tout les champs sont requises'
+        return msg
+
     insert_disscussions_table(id_client, title, content, type)
     time.sleep(0.01)
     discussion_id = select_newest_discussion_id(id_client)[0]

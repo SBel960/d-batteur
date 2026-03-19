@@ -59,26 +59,26 @@
         <form class="newDiscussionForm" method="post" action='{{url_for("ajouter_discussion")}}'>
           <label> Nouvelle discussion</label>
           <div class="discussionInformation">
-            <input type="text" class="questionBlock" name='discussionTitle' placeholder=" Ajouter un titre"> 
-            <textarea type="text" class="contentBlock" name="discussionContent" placeholder=" Ajouter une description"></textarea>
+            <input type="text" class="questionBlock" name='discussionTitle' placeholder=" Ajouter un titre" required> 
+            <textarea type="text" class="contentBlock" name="discussionContent" placeholder=" Ajouter une description" required></textarea>
           </div>
 
           <div class="form-choices">
             <div class="discussionType">
 
               <div>
-                <input type="radio" name="discussionType" id="ouvert" value="ouvert">
+                <input type="radio" name="discussionType" id="ouvert" value="ouvert" required>
                 <label for="ouvert"> Question ouverte </label>
               </div>
 
               <div>
-                <input type="radio" name="discussionType" id="yesno" value="ferme">   
+                <input type="radio" name="discussionType" id="yesno" value="ferme" required>   
                 <label for="ferme"> Question fermé </label>
               </div>
             </div>
 
             <div class="groupList">
-              <select name="groupes" id="groupes_dropdown" multiple>
+              <select name="groupes" id="groupes_dropdown" multiple required>
                 {% for groupe in groupes%}
                     <option value="{{groupe[0]}}"> {{groupe[1]}} </option>
                 {% endfor %}
@@ -97,7 +97,9 @@
 
   <!-- CONTENU -->
   <main class="container">
-    
+    {% if msg %}
+    <p class="error-msg" style="color:red"> {{msg}}</p>
+    {% endif %}
     <section class="section">
       <div class="section-head">
         <h2>Discussions</h2>
