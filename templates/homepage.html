@@ -24,8 +24,6 @@
 
     <!-- Centre : recherche (titre uniquement) -->
     <div class="topbar-center">
-      <a href="{{url_for('groups_page')}}"> Groupes </a>
-      <a href="{{url_for('membres')}}"> Membres </a>
       <div class="search">
         <span class="search-icon" aria-hidden="true">⌕</span>
         <input
@@ -101,6 +99,10 @@
       </dialog>
     </div>
   </header>
+  <div class="topbar-dropdown">
+      <a class="topbar-dropdown-btn" href="{{url_for('groups_page')}}"> Groupes </a>
+      <a class="topbar-dropdown-btn" href="{{url_for('membres')}}"> Membres </a>
+  </div>
 
   <!-- CONTENU -->
   <main class="container">
