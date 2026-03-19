@@ -1,6 +1,7 @@
 import sqlite3
 from flask import g
-
+from datetime import date
+import time
 db_file = "approot/app.db"
 
 def get_db():
@@ -35,6 +36,9 @@ def create_discussions_table():
                 id_c INTEGER NOT NULL,
                 title TEXT NOT NULL,
                 content TEXT NOT NULL,
+                type TEXT NOT NULL,
+                date_creation DATE NOT NULL,
+                time_creation TIME NOT NULL,
                 FOREIGN KEY(id_c) REFERENCES Client(id_client)
                 )
                  
@@ -96,12 +100,31 @@ def create_group_members_table():
     command = """CREATE TABLE IF NOT EXISTS GroupMembers(  
                 id_group_member INTEGER PRIMARY KEY AUTOINCREMENT,
                 id_g INTEGER NOT NULL,
-                id_c INTEGER NOT NULL
+                id_c INTEGER NOT NULL,
+
+                FOREIGN KEY(id_c) REFERENCES Client(id_client),
+                FOREIGN KEY(id_g) REFERENCES Groupes(id_groupe)
                 )  
             """
     sql.execute(command)
     data.commit()
 
+
+def create_discussion_groups_table():
+    data = get_db()
+    sql = data.cursor()
+    command = """CREATE TABLE IF NOT EXISTS DiscussionGroups(  
+                id_g INTEGER NOT NULL,
+                id_d INTEGER NOT NULL,
+
+                FOREIGN KEY(id_d) REFERENCES Discussions(id_discussion),
+                FOREIGN KEY(id_g) REFERENCES Groupes(id_groupe)
+    
+
+                )  
+            """
+    sql.execute(command)
+    data.commit()
 
 
 
@@ -120,14 +143,18 @@ def insert_clients_table(email, name, last_name, password, company, role):
     data.commit()
 
 
-def insert_disscussions_table(id_c, title, content):
+def insert_disscussions_table(id_c, title, content, type):
     data = get_db()
     sql = data.cursor()
-    command = """INSERT INTO Discussions(id_c, title, content)
-                VALUES (?,?,?)
+    date_creation = date.today()
+    named_tuple = time.localtime() # get struct_time
+    time_creation = time.strftime("%H:%M", named_tuple)
+    print(time_creation)
+    command = """INSERT INTO Discussions(id_c, title, content, type, date_creation,time_creation)
+                VALUES (?,?,?,?,?,?)
 
             """
-    sql.execute(command, [id_c, title, content])
+    sql.execute(command, [id_c, title, content, type, date_creation, time_creation])
     data.commit()
 
 
@@ -170,12 +197,23 @@ def insert_group_members(id_group, id_client):
             """
     sql.execute(command, [id_group, id_client])
     data.commit()
+
+
+
+def insert_discussion_groups(id_group, id_discussion):
+    data = get_db()
+    sql = data.cursor()
+    command = """INSERT INTO DiscussionGroups(id_g, id_d)
+                VALUES (?,?)
+            """
+    sql.execute(command, [id_group, id_discussion])
+    data.commit()
 #------------------------------- commandes
 
 def reset_all_db():
     data = get_db()
     sql = data.cursor()
-    tables = ["Client", "Discussions", "Comments", "Likes", "Groups", "GroupMembers"]
+    tables = ["Client", "Discussions", "Comments", "Likes", "Groups", "GroupMembers", "DiscussionGroups"]
     for table in tables:
         sql.execute(f"DROP TABLE IF EXISTS {table};")
     data.commit()
@@ -184,7 +222,10 @@ def reset_all_db():
     create_discussions_table()
     create_comments_table()
     create_likes_table()
+    create_discussion_groups_table()
     create_groups_table()
+
+
     create_group_members_table()
 
 
@@ -297,6 +338,25 @@ def select_groupe_from_name(name):
     return result
 
 
+def select_groupe_from_id(id_g):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT name FROM Groups WHERE id_group=?;
+            """
+    
+    sql.execute(command, [id_g])
+    result = sql.fetchone()
+    return result
+
+def select_discussion_groups(id_discussion):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT id_g FROM DiscussionGroups WHERE id_d=?;
+            """
+    
+    sql.execute(command, [id_discussion])
+    result = sql.fetchall()
+    return result
 
 
 #---------------------- likes
@@ -319,7 +379,6 @@ def update_like(id_client, id_cible, cible, value):
         return 
     else:
         if result[0] != value:
-            print("je susi ici")
             command = """UPDATE Likes SET like=? WHERE id_c= ? AND id_target=? AND target=?;
                 """      
             sql.execute(command, [value, id_client, id_cible, cible])
@@ -341,7 +400,6 @@ def get_discussion_likes(id_discussion):
     likes = 0
     dislikes = 0
     for res in result:
-        print(res[0])
         if res[0] == 1:
             likes += 1
         else:
@@ -359,7 +417,6 @@ def get_comment_likes(id_comment):
     likes = 0
     dislikes = 0
     for res in result:
-        print(res[0])
         if res[0] == 1:
             likes += 1
         else:

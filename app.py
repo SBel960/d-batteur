@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id
 
 import time
 app = Flask(__name__)
@@ -21,13 +21,27 @@ def home():
     result = select_all_discussions()
 
     discussions=[]
+    all_groupes = []
 
     for row in result:
         likes, dislikes = get_discussion_likes(row[0])
+        res_groupes = select_discussion_groups(row[0])
+        auteur = get_user_by_id(row[1])
+        auteur = "" +auteur[1] +" "+ auteur[2]
+        type = "Proposition"
+        if(row[4] == "ouvert"):
+            type = "Question"
 
-        discussions.append([row[2],row[3],str(row[0]),likes,dislikes])
-    print(discussions)
-    return render_template("homepage.html", discussions=discussions, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'])
+        groupes = []
+        for groupe_id in res_groupes:
+           groupes.append((groupe_id[0], select_groupe_from_id(groupe_id[0])[0]))
+        discussions.append([row[2],row[3],str(row[0]),likes,dislikes, groupes, auteur, type, row[5], row[6]]) #row = [0:id, 1:id_client, 2:title, 3:content, 4:type, 5:date, 6: time]
+
+    result = select_all_groupes()
+    for row in result:
+        all_groupes.append([row[0], row[1]])
+
+    return render_template("homepage.html", discussions=discussions, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'], groupes=all_groupes)
 
 @app.route("/main/<int:discussion_id>", methods=["GET", "POST"])
 def main(discussion_id):
@@ -68,11 +82,21 @@ def ajouter_discussion():
     title = request.form['discussionTitle']
     content = request.form['discussionContent']
     
-    id_client = session['id_client']
+    groupes = request.form.getlist('groupes')
     
-    insert_disscussions_table(id_client, title, content)
+    id_client = session['id_client']
+    type = request.form.get('discussionType')
+
+    if title =='' or content=='' or groupes==[] or type==None:
+        msg = 'tout les champs sont requises'
+        return msg
+
+    insert_disscussions_table(id_client, title, content, type)
     time.sleep(0.01)
     discussion_id = select_newest_discussion_id(id_client)[0]
+
+    for groupe_id in groupes:
+        insert_discussion_groups(groupe_id, discussion_id)
 
     return redirect(url_for("main", discussion_id= discussion_id))
 
@@ -140,7 +164,6 @@ def groups_page():
     id_client = session['id_client']
     groups_client = []
     res= select_client_groupes(id_client)
-    print(res)
     for row in res:
         groups_client.append(row[0])
 
@@ -163,7 +186,6 @@ def add_member_to_group(group_id):
         return redirect(url_for('login_page'))
     id_c_inserter= request.form['membres']
     id_groupe = group_id
-    print(id_c_inserter)
     if len(select_client_groupes_by_id(id_groupe, id_c_inserter)) == 0:
         insert_group_members(id_groupe, id_c_inserter)
     return redirect(url_for("groups_page"))
@@ -174,6 +196,20 @@ def membres():
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
     pass
+
+@app.route('/profile/<int:id_c>')
+def profile(id_c):
+    if not(session.get('logged_in')):
+        return redirect(url_for('login_page'))
+    my_profile = id_c == session["id_client"] #si la profile cible est le profile du user
+    id_c, name, last_name, role = get_user_by_id(id_c)
+    res = select_client_groupes_by_id(id_c)
+    groupes = []
+    for row in res:
+        groupes.append(row[0])
+    
+    return render_template("profile.html", my_profile=my_profile, name=name, last_name=last_name, role=role, groupes=groupes)
+    
 
 
 ########################## authentificatiojn
@@ -210,7 +246,6 @@ def login():
     
     session["logged_in"] = True
     session['id_client'], session['email'], session['first_name'], session['last_name'], session['company'], session['role'] = client_infos[1::]
-    print(session['id_client'])
     return redirect(url_for("home"))
 
 

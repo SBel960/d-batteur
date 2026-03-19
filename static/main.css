@@ -331,9 +331,7 @@ main{
 .commentText {
   width: fit-content;
   padding: 10px 10px;
-  border: 1px solid var(--border);
   background: rgba(255,255,255,0.045);
-  box-shadow: 0 8px 26px rgba(0,0,0,0.20);
   backdrop-filter: blur(10px);
 }
 
@@ -344,12 +342,18 @@ main{
 }
 
 .commentUser{
-  font-weight: 800;
-  color: lightblue;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
 }
 
 .commentBox{
-  border: 1px solid rgb(255, 255, 255)
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.045);
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 980px){
