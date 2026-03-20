@@ -233,7 +233,7 @@ def reset_all_db():
 def select_all_discussions():
     data = get_db()
     sql = data.cursor()
-    command = """SELECT * FROM Discussions;
+    command = """SELECT * FROM Discussions ORDER BY date_creation DESC;
             """
     sql.execute(command)
     result = sql.fetchall()
