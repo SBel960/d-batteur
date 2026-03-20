@@ -70,8 +70,7 @@
     {% endfor %}
     <br><br>
     <h2> Tous les groupes </h2>
-    <p id="countInfo"></p>
-    <div id="groupsList" class="list"></div>
+    
     {% for group in all_groups %}
       <div class="group">
         <div class="group_name"> {{group[1]}} </div>
@@ -85,6 +84,11 @@
         </form>
       </div>
     {% endfor %}
+
+    <br> <br>
+    <h3> la section si dessous est un placeholder pour tester la barre de recherche </h3>
+    <p id="countInfo"></p>
+    <div id="groupsList" class="list"></div>
   </main>
 
   <script>
