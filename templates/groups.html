@@ -65,7 +65,7 @@
 
     <h2> Vos groupes </h2>
     {% for group in groups_client %}
-        <div class="group"> {{group}} </div>
+        <a href="{{url_for('group_info', g_id=group['id']) }}" class="group"> {{group['name']}} </a>
         
     {% endfor %}
     <br><br>

@@ -307,7 +307,7 @@ def select_all_groupes():
 def select_client_groupes(id_c):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT Groups.name FROM Groups 
+    command = """SELECT * FROM Groups 
         JOIN GroupMembers ON Groups.id_group = GroupMembers.id_g 
         WHERE GroupMembers.id_c=?;
             """
@@ -357,6 +357,15 @@ def select_discussion_groups(id_discussion):
     sql.execute(command, [id_discussion])
     result = sql.fetchall()
     return result
+
+def select_member_by_id(id_g):
+    data = get_db()
+    sql=data.cursor()
+    command = """SELECT id_c from GroupMembers where id_g=?
+            """
+    sql.execute(command,[id_g])
+    res=sql.fetchall()
+    return res
 
 
 #---------------------- likes

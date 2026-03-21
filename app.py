@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id,select_member_by_id
 
 import time
 app = Flask(__name__)
@@ -165,7 +165,7 @@ def groups_page():
     groups_client = []
     res= select_client_groupes(id_client)
     for row in res:
-        groups_client.append(row[0])
+        groups_client.append(dict(id=row[0],name=row[1]))
 
     all_groups = []
     res = select_all_groupes()
@@ -189,6 +189,17 @@ def add_member_to_group(group_id):
     if len(select_client_groupes_by_id(id_groupe, id_c_inserter)) == 0:
         insert_group_members(id_groupe, id_c_inserter)
     return redirect(url_for("groups_page"))
+
+@app.route('/group_info/<int:g_id>',methods=['POST','GET'])
+def group_info(g_id):
+    members=[]
+    for member in select_member_by_id(g_id):
+        nom_c=get_user_by_id(member[0])[1]
+        last_name_c=get_user_by_id(member[0])[2]
+        members.append(nom_c+" "+last_name_c)
+    group_client=dict(name=select_groupe_from_id(g_id)[0],id=g_id,members=members)
+        
+    return render_template("groupinfo.html",group_client=group_client)
 
 
 @app.route('/membres', methods=["GET"])
