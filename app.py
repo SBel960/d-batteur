@@ -171,7 +171,7 @@ def groups_page():
     groups_client = []
     res= select_client_groupes(id_client)
     for row in res:
-        groups_client.append(row[0])
+        groups_client.append(dict(id=row[0],name=row[1]))
 
     all_groups = []
     res = select_all_groupes()
@@ -195,6 +195,17 @@ def add_member_to_group(group_id):
     if len(select_client_groupes_by_id(id_groupe, id_c_inserter)) == 0:
         insert_group_members(id_groupe, id_c_inserter)
     return redirect(url_for("groups_page"))
+
+@app.route('/group_info/<int:g_id>',methods=['POST','GET'])
+def group_info(g_id):
+    members=[]
+    for member in select_member_by_id(g_id):
+        nom_c=get_user_by_id(member[0])[1]
+        last_name_c=get_user_by_id(member[0])[2]
+        members.append(nom_c+" "+last_name_c)
+    group_client=dict(name=select_groupe_from_id(g_id)[0],id=g_id,members=members)
+        
+    return render_template("groupinfo.html",group_client=group_client)
 
 
 @app.route('/membres', methods=["GET"])
