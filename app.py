@@ -8,6 +8,12 @@ app = Flask(__name__)
 app.secret_key = "ITTorsdyP2Gfzss33gjoY34otqT5BWC5"
 
 
+roles_numeros= {
+    "CEO": 3,
+    "Manager": 2,
+    "Employe": 1
+}
+
 with app.app_context():
     create_client_table()
     create_discussions_table()
@@ -40,8 +46,9 @@ def home():
     result = select_all_groupes()
     for row in result:
         all_groupes.append([row[0], row[1]])
+    print(session['role'])
 
-    return render_template("homepage.html", discussions=discussions, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'], groupes=all_groupes)
+    return render_template("homepage.html", discussions=discussions, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'], groupes=all_groupes)
 
 @app.route("/main/<int:discussion_id>", methods=["GET", "POST"])
 def main(discussion_id):
@@ -60,7 +67,7 @@ def main(discussion_id):
         comments.append(dict(id_c=id_comment,content=content_comment,like=like_c,dislike=dislike_c,username=username))
 
     likes, dislikes = get_discussion_likes(discussion_id)
-    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'])
+    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'])
 
 
 
@@ -176,7 +183,7 @@ def groups_page():
     res =select_all_clients()
     for row in res:
         membres.append([row[0], row[1], row[2]])
-    return render_template("groups.html", groups_client=groups_client, all_groups=all_groups, members=membres, msg=msg)
+    return render_template("groups.html", groups_client=groups_client, all_groups=all_groups, members=membres, msg=msg, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'])
 
 
 
@@ -195,7 +202,7 @@ def add_member_to_group(group_id):
 def membres():
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    pass
+    return 
 
 @app.route('/profile/<int:id_c>')
 def profile(id_c):
@@ -350,5 +357,5 @@ def reset_database():
     "resets the database tables"
     print("Dropping Database")
     reset_all_db()
-    insert_clients_table("test@test", 'test', 'test', 'test', 'test', 'test')
+    insert_clients_table("test@test", 'test', 'test', 'test', 'test', 'CEO')
     print("reset successful")

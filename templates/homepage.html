@@ -39,13 +39,15 @@
     <div class="topbar-right">
       <div class="user">
         <div id="userFullName" class="user-name">{{first_name}} {{last_name}}</div>
-        <div id="userGroup" class="user-group">Groupe : {{group_name}}</div>
+        <div id="userGroup" class="user-group">Role : {{role_name}}</div>
       </div>
       <a class="logout" href="{{url_for('logout')}}"> Logout </a>
 
+      {% if role>= 2 %}
       <button id="addDiscussionBtn" commandfor='newDiscussion'command="show-modal" class="icon-btn" title="Ajouter une discussion" style="display:none;">
         +
       </button>
+      
 
       <dialog id="newDiscussion">
         <!-- Pour fermer la page -->
@@ -90,6 +92,7 @@
 
 
       </dialog>
+      {% endif %}
     </div>
   </header>
   <div class="topbar-dropdown">
@@ -237,10 +240,9 @@
     
 
     // Afficher le + pour PDG/MANAGER
-    const addBtn = document.getElementById("addDiscussionBtn");
+    
     const canAdd = (state.user.role === "PDG" || state.user.role === "MANAGER");
-    addBtn.style.display = canAdd ? "inline-flex" : "none";
-
+    
 
 
     // Utils
