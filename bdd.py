@@ -56,7 +56,7 @@ def create_comments_table():
                 id_d INTEGER NOT NULL,
                 content TEXT NOT NULL,
                 FOREIGN KEY(id_c) REFERENCES Client(id_client),
-                FOREIGN KEY(id_d) REFERENCES Client(id_discussion)
+                FOREIGN KEY(id_d) REFERENCES Discussions(id_discussion)
                 )
                  
             """
@@ -103,7 +103,7 @@ def create_group_members_table():
                 id_c INTEGER NOT NULL,
 
                 FOREIGN KEY(id_c) REFERENCES Client(id_client),
-                FOREIGN KEY(id_g) REFERENCES Groupes(id_groupe)
+                FOREIGN KEY(id_g) REFERENCES Groups(id_groupe)
                 )  
             """
     sql.execute(command)
@@ -118,7 +118,7 @@ def create_discussion_groups_table():
                 id_d INTEGER NOT NULL,
 
                 FOREIGN KEY(id_d) REFERENCES Discussions(id_discussion),
-                FOREIGN KEY(id_g) REFERENCES Groupes(id_groupe)
+                FOREIGN KEY(id_g) REFERENCES Groups(id_groupe)
     
 
                 )  
@@ -236,6 +236,19 @@ def select_all_discussions():
     command = """SELECT * FROM Discussions ORDER BY date_creation DESC;
             """
     sql.execute(command)
+    result = sql.fetchall()
+    return result
+
+def select_all_group_discussions(id_client):
+    data = get_db()
+    sql = data.cursor()
+    command = """ SELECT DISTINCT Discussions.* FROM Discussions
+            JOIN DiscussionGroups ON Discussions.id_discussion = DiscussionGroups.id_d 
+            JOIN GroupMembers ON DiscussionGroups.id_g = GroupMembers.id_g
+            WHERE GroupMembers.id_c = ? 
+            ORDER BY date_creation DESC;
+            """
+    sql.execute(command, [id_client])
     result = sql.fetchall()
     return result
 
