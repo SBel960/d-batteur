@@ -43,11 +43,11 @@
       </div>
       <a class="logout" href="{{url_for('logout')}}"> Logout </a>
 
-      {% if role>= 2 %}
+     {% if role>= 2 %}
       <button id="addDiscussionBtn" commandfor='newDiscussion'command="show-modal" class="icon-btn" title="Ajouter une discussion" style="display:none;">
         +
       </button>
-      
+     
 
       <dialog id="newDiscussion">
         <!-- Pour fermer la page -->
@@ -92,7 +92,7 @@
 
 
       </dialog>
-      {% endif %}
+       {% endif %}
     </div>
   </header>
   <div class="topbar-dropdown">
@@ -184,6 +184,9 @@
      *  - GENERAL = visible à tous les groupes
      *  - GROUPS = visible à une liste de groupes
      */
+
+    
+
     const state = {
       companyName: "ACME Corp",
       user: {
@@ -241,8 +244,12 @@
 
     // Afficher le + pour PDG/MANAGER
     
+    const addBtn = document.getElementById("addDiscussionBtn");
     const canAdd = (state.user.role === "PDG" || state.user.role === "MANAGER");
-    
+    addBtn.style.display = canAdd ? "inline-flex" : "none";
+
+
+
 
 
     // Utils
