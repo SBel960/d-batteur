@@ -184,6 +184,13 @@ def groups_page():
         membres.append([row[0], row[1], row[2]])
     return render_template("groups.html", groups_client=groups_client, all_groups=all_groups, members=membres, msg=msg, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'])
 
+@app.route('/allgroups', methods=['POST', 'GET'])
+def take_all_groupes():
+    all_groups = []
+    res=select_all_groupes()
+    for row in res :
+        all_groups.append([row[0], row[1]])
+    return all_groups
 
 
 @app.route('/addgroupe/<int:group_id>', methods=['POST'])

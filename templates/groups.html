@@ -10,20 +10,18 @@
 
   <!-- HEADER / TOOLBAR -->
   <header class="topbar">
-    <!-- Gauche : Entreprise + emplacement logo + logo -->
     <div class="topbar-left">
-      <a  class="icon-btn" href="{{url_for('home')}}">Home</a>
+      <a class="icon-btn" href="{{ url_for('home') }}">Home</a>
       <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
 
       <div class="company">
-        <div id="companyName" class="company-name">{{company}}</div>
+        <div id="companyName" class="company-name">{{ company }}</div>
         <div class="company-sub">Groupes</div>
       </div>
 
       <div class="company-mark" aria-hidden="true">🏢</div>
     </div>
 
-    <!-- Centre : recherche (titre uniquement) -->
     <div class="topbar-center">
       <div class="search">
         <span class="search-icon" aria-hidden="true">⌕</span>
@@ -36,82 +34,72 @@
       </div>
     </div>
 
-    <!-- Droite : user + groupe + bouton + -->
     <div class="topbar-right">
       <div class="user">
-        <div id="userFullName" class="user-name">{{first_name}} {{last_name}}</div>
-        <div id="userGroup" class="user-group">Role : {{role_name}}</div>
+        <div id="userFullName" class="user-name">{{ first_name }} {{ last_name }}</div>
+        <div id="userGroup" class="user-group">Role : {{ role_name }}</div>
       </div>
-      <a class="logout" href="{{url_for('logout')}}"> Logout </a>
+      <a class="logout" href="{{ url_for('logout') }}">Logout</a>
     </div>
   </header>
+
   <div class="topbar-dropdown">
-      <a class="topbar-dropdown-btn" href="{{url_for('groups_page')}}"> Groupes </a>
-      <a class="topbar-dropdown-btn" href="{{url_for('membres')}}"> Membres </a>
+    <a class="topbar-dropdown-btn" href="{{ url_for('groups_page') }}">Groupes</a>
+    <a class="topbar-dropdown-btn" href="{{ url_for('membres') }}">Membres</a>
   </div>
 
-  <!-- CONTENU -->
   <main class="container">
     <h1>GROUPES</h1>
-    {% if role>= 2 %}
+
+    {% if role >= 2 %}
     <div>
-        <h3 class="ajouter_group">Ajouter un nouveau groupe: (cette section doit normalement être seulement visible pour les membres de haut rang)</h3> 
-        <form class="ajouter_group_form" action="{{url_for('groups_page')}}", method="POST">
-            <label> Créer un nouveau groupe </label>
-            <input type="text" class="groupTextInput" name='groupName' placeholder="Nom du groupe"> 
-            <input type="submit" class="addGroup-btn" value="ajouter groupe">
-            <p class="error-msg" style="color:red;"> {{msg}}</p>
-        </form> 
+      <h3 class="ajouter_group">
+        Ajouter un nouveau groupe :
+        (cette section doit normalement être seulement visible pour les membres de haut rang)
+      </h3>
+
+      <form class="ajouter_group_form" action="{{ url_for('groups_page') }}" method="POST">
+        <label for="groupNameInput">Créer un nouveau groupe</label>
+        <input
+          id="groupNameInput"
+          type="text"
+          class="groupTextInput"
+          name="groupName"
+          placeholder="Nom du groupe"
+        >
+        <input type="submit" class="addGroup-btn" value="ajouter groupe">
+        <p class="error-msg" style="color:red;">{{ msg }}</p>
+      </form>
     </div>
     {% endif %}
 
-    <h2> Vos groupes </h2>
+    <h2>Vos groupes</h2>
     {% for group in groups_client %}
-        <a href="{{url_for('group_info', g_id=group['id']) }}" class="group"> {{group['name']}} </a>
-        
-    {% endfor %}
-    <br><br>
-    <h2> Tous les groupes </h2>
-    
-    {% for group in all_groups %}
-      <div class="group">
-        <div class="group_name"> {{group[1]}} </div>
-        {% if role>= 2 %}
-        <form action="{{url_for('add_member_to_group', group_id=group[0]) }}" method="post" class="ajouter_membres_groupes_form">
-            <select name="membres" id="membres">
-              {% for member in members%}
-                <option value="{{member[0]}}" style="color:black"> {{member[1]}} {{member[2]}} </option>
-              {% endfor %}
-            </select>
-            <input type="submit" value="Ajouter cette personne">
-        </form>
-        {% endif %}
-      </div>
+      <a href="{{ url_for('group_info', g_id=group['id']) }}" class="group">
+        {{ group['name'] }}
+      </a>
     {% endfor %}
 
-    <br> <br>
-    <h3> la section si dessous est un placeholder pour tester la barre de recherche </h3>
+    <br><br>
+
+    <h2>Tous les groupes</h2>
     <p id="countInfo"></p>
     <div id="groupsList" class="list"></div>
   </main>
 
   <script>
-    
-    const state = {
-      groups: [
-        { id: 1, name: "Groupe A" },
-        { id: 2, name: "Groupe B" },
-        { id: 3, name: "Groupe C" },
-        { id: 4, name: "Groupe Maintenance" }
-      ]
-    };
-
-    localStorage.setItem("appState", JSON.stringify(state));
-
-
-    const list = document.getElementById("groupsList");
     const countInfo = document.getElementById("countInfo");
     const searchInput = document.getElementById("searchInput");
+    const list = document.getElementById("groupsList");
+
+    const baseGroups = [
+      { id: 1, name: "Groupe A" },
+      { id: 2, name: "Groupe B" },
+      { id: 3, name: "Groupe C" },
+      { id: 4, name: "Groupe Maintenance" }
+    ];
+
+    let all_groups = [];
 
     function escapeHtml(str) {
       return String(str)
@@ -121,50 +109,93 @@
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
     }
-  
+
     function renderGroups(items) {
       list.innerHTML = "";
       countInfo.textContent = `${items.length} groupe(s)`;
-  
+
       if (!items.length) {
         list.innerHTML = `<div class="empty">Aucun groupe trouvé.</div>`;
         return;
       }
-  
+
       items.forEach(g => {
-        const card = document.createElement("article");
-        card.className = "card";
-  
-        card.innerHTML = `
-          <div class="card-top">
-            <div class="card-title">
-              <span class="title-text">${escapeHtml(g.name)}</span>
-            </div>
-          </div>
-  
-          <div class="card-bottom">
-            <div class="card-actions">
-              <a class="btn" href="/main/${g.id}">Ouvrir</a>
-            </div>
-          </div>
+        const card = document.createElement("div");
+        card.className = "group";
+      
+        let memberForm = "";
+      
+        {% if role|int >= 2 %}
+        memberForm = `
+          <form action="/addgroupe/${g.id}" method="post" class="ajouter_membres_groupes_form">
+            <select name="membres" class="membres">
+              {% for member in members %}
+                <option value="{{ member[0] }}" style="color:black">
+                  {{ member[1] }} {{ member[2] }}
+                </option>
+              {% endfor %}
+            </select>
+            <input type="submit" value="Ajouter cette personne">
+          </form>
         `;
-  
+        {% endif %}
+      
+        card.innerHTML = `
+          <div class="group_name">${escapeHtml(g.name)}</div>
+          ${memberForm}
+        `;
+      
         list.appendChild(card);
       });
     }
 
+    async function chargerGroupesBDD() {
+      const reponse = await fetch("/allgroups");
+      const data = await reponse.json();
 
-  
-    function applySearchAndRender() {
-      const q = searchInput.value.trim().toLowerCase();
-      const filtered = state.groups.filter(g => g.name.toLowerCase().includes(q));
-      renderGroups(filtered);
+      all_groups = data.map(group => ({
+        id: group[0],
+        name: group[1]
+      }));
     }
-  
-    searchInput.addEventListener("input", applySearchAndRender);
-  
-    renderGroups(state.groups);
+
+    async function remplirBDDSiVide() {
+      await chargerGroupesBDD();
+
+      if (all_groups.length === 0) {
+        for (const group of baseGroups) {
+          const formData = new FormData();
+          formData.append("groupName", group.name);
+
+          await fetch(`/addgroupe/${group.id}`, {
+            method: "POST",
+            body: formData
+          });
+        }
+
+        await chargerGroupesBDD();
+      }
+    }
+
+    async function initialiserGroupes() {
+      await remplirBDDSiVide();
+      renderGroups(all_groups);
+    }
+
+    function appliquerRecherche() {
+      const q = searchInput.value.trim().toLowerCase();
+
+      const filtres = all_groups.filter(group =>
+        group.name.toLowerCase().includes(q)
+      );
+
+      renderGroups(filtres);
+    }
+
+    searchInput.addEventListener("input", appliquerRecherche);
+
+    initialiserGroupes();
   </script>
-   
+
 </body>
 </html>
