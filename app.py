@@ -58,6 +58,7 @@ def main(discussion_id):
     res=select_comments(discussion_id)
     if discussion_type == 'ferme': 
         res = select_comments_ferme(discussion_id)
+        print("je susi ici main")
     for comment in res:
         id_comment=comment[0]
         id_client=comment[1]
@@ -86,7 +87,7 @@ def commentaire(discussion_id):
         return redirect(url_for('login_page'))
     content = request.form['commentaire']
     id_client = session['id_client'] 
-    
+    print("je suis ici")
     insert_comments_table(id_client, discussion_id, content)
     return redirect(url_for("main", discussion_id= discussion_id))
 
