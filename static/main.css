@@ -222,12 +222,30 @@ main{
 }
 .icon-btn:active{ transform: translateY(0px); }
 
+
+.topic-type{
+  margin-bottom: 10px;
+}
+
+.type{
+  border: dashed 1px;
+  font-size: 30px;
+  border-color: rgba(34,211,238,0.35)
+}
+.ferme{
+  color: rgb(34, 211, 238);
+}
+.ouvert{
+  color: rgb(99, 101, 241);
+}
+
 .topic-title-container{
   height: 250px;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 50px;
+  flex-direction: column;
 }
 
 .topic-title{
@@ -355,15 +373,25 @@ main{
   background: rgba(255,255,255,0.045);
   display: flex;
   flex-direction: column;
+
 }
 
 .commentBox_pour{
-  background-color: #66cca3;
+  background-color: #40bf8c88;
+  border: solid 3px #a7c9578e;
 }
 
 .commentBox_contre{
-  background-color: #ed5e5e;
+  background-color: #ed5e5e8f;
+  border: solid 3px #bf0603c9;
 }
+
+
+.commentBox_neutre{
+  background-color: #8c8c8ca4;
+  border: solid 3px rgba(245, 245, 245, 0.582);
+}
+
 @media (max-width: 980px){
   .topbar{
     flex-wrap: wrap;

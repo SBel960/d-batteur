@@ -51,6 +51,15 @@
   <main>
     <section class="information-section">
       <div class="topic-title-container">
+        <div>
+          <span class="type {{discussion_type}}">
+            {% if discussion_type == 'ouvert' %}
+             Question Ouverte
+             {% else %}
+             Question Ferme
+             {% endif %}
+          </span>
+        </div>
         <span class="topic-title">
          {{title}}
         </span>
