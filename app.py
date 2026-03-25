@@ -33,9 +33,9 @@ def home():
         res_groupes = select_discussion_groups(row[0])
         auteur = get_user_by_id(row[1])
         auteur = "" +auteur[1] +" "+ auteur[2]
-        type = "Proposition"
+        type = "FERMÉ"
         if(row[4] == "ouvert"):
-            type = "Question"
+            type = "OUVERT"
 
         groupes = []
         for groupe_id in res_groupes:
