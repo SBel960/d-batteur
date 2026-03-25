@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Home | Discussions</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='groupinfo.css') }}" />
 </head>
 <body>
 
@@ -92,7 +92,7 @@
               </div>
             </div>
           </div>
-
+          
           <input class="postButton" type="submit" value="Poster">
         </form>
 
@@ -103,14 +103,65 @@
   </header>
 
   <body>
-    <div class="list">
-        <span class="groupName">  {{group_client['name']}}  </span> 
+      <button commandfor='AddMember'command='show-modal' class="icon-btn" title="Ajouter des membres">
+        Ajouter
+      </button>
+
+      <dialog id="AddMember">
+        
+        <button id="closePage" commandfor='AddMember' command="request-close"> 
+          x
+        </button>
+        <form class="AddGroupForm" method="post" action="{{url_for('add_member_to_group', group_id=group_client['id']) }}">
+          
+          {% for membre in other %}
+              <input type=checkbox name="memberList" id="memberList" value="{{membre['id']}}" >
+              <label for="memberList"> {{membre['name']}} {{membre['last_name']}} </label>
+          {%endfor%}
+
+          <input class="postButton" type="submit" value="Ajouter">
+
+        </form>
+
+
+      </dialog>
+
+      <button commandfor='DeleteMember'command='show-modal' class="icon-btn" title="Supprimer des membres">
+        Supprimer
+      </button>
+
+      <dialog id="DeleteMember">
+        
+        <button id="closePage" commandfor='DeleteMember' command="request-close"> 
+          x
+        </button>
+        <form class="DeleteGroupForm" method="post" action="{{url_for('delete_member_from_group', group_id=group_client['id']) }}">
+          
+          {% for membre in members %}
+            {% if membre['id'] != id_client %}
+              <input type=checkbox name="memberList" id="memberList" value="{{membre['id']}}" >
+              <label for="memberList"> {{membre['name']}} {{membre['last_name']}} </label>
+            {%endif%}
+          {%endfor%}
+
+          <input class="postButton" type="submit" value="Retirer">
+
+        </form>
+
+
+      </dialog>
+    <div class="container">
+        <div class="groupTitle">  {{group_client['name']}}  </div> 
 
         <br>
+        <h2>Chefs de projet</h2>
+
+        <h2>Membres</h2>
+        <br>
+          {% for membre in members%}
+              <a href="" class="membre">{{membre['name']}} {{membre['last_name']}}</a> <!-- A redirige vers profile-->
+              
+          {% endfor %}
         
-        {% for membre in group_client['members']%}
-            {{membre}}
-            <br>
-        {% endfor %}
-  </div>
+    </div>
   </body>

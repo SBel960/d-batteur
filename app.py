@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id,select_member_by_id
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id,select_member_by_id,select_clients_not_in_group,delete_member
 
 import time
 app = Flask(__name__)
@@ -161,12 +161,13 @@ def groups_page():
             msg="Ce group existe deja"
         else:
             insert_groups_table(group_name)
+            insert_group_members(select_groupe_from_name(group_name)[0]['id_group'],session['id_client'])
     id_client = session['id_client']
     groups_client = []
     res= select_client_groupes(id_client)
     for row in res:
         groups_client.append(dict(id=row[0],name=row[1]))
-
+    
     all_groups = []
     res = select_all_groupes()
     for row in res:
@@ -176,7 +177,7 @@ def groups_page():
     res =select_all_clients()
     for row in res:
         membres.append([row[0], row[1], row[2]])
-    return render_template("groups.html", groups_client=groups_client, all_groups=all_groups, members=membres, msg=msg)
+    return render_template("groups.html", groups_client=groups_client, all_groups=all_groups, members=membres, msg=msg,id_client=session['id_client'], first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'])
 
 
 
@@ -184,22 +185,43 @@ def groups_page():
 def add_member_to_group(group_id):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    id_c_inserter= request.form['membres']
+    id_c_inserter=  request.form.getlist('memberList')
     id_groupe = group_id
-    if len(select_client_groupes_by_id(id_groupe, id_c_inserter)) == 0:
-        insert_group_members(id_groupe, id_c_inserter)
-    return redirect(url_for("groups_page"))
+    for membre in id_c_inserter:
+        if len(select_client_groupes_by_id(id_groupe, membre)) == 0:
+            insert_group_members(id_groupe, membre)
+    return redirect(url_for("group_info",g_id=id_groupe))
+
+@app.route('/deletemember/<int:group_id>',methods=['POST'])
+
+def delete_member_from_group(group_id):
+    if not(session.get('logged_in')):
+        return redirect(url_for('login_page'))
+    id_c=request.form.getlist('memberList')
+    for membre in id_c:
+        if len(select_client_groupes_by_id(group_id, membre)) == 1:
+            delete_member(group_id,membre)
+    return redirect(url_for("group_info",g_id=group_id))
+    
+    
+            
 
 @app.route('/group_info/<int:g_id>',methods=['POST','GET'])
 def group_info(g_id):
+    if not(session.get('logged_in')):
+        return redirect(url_for('login_page'))
     members=[]
+    other=[]
     for member in select_member_by_id(g_id):
-        nom_c=get_user_by_id(member[0])[1]
-        last_name_c=get_user_by_id(member[0])[2]
-        members.append(nom_c+" "+last_name_c)
-    group_client=dict(name=select_groupe_from_id(g_id)[0],id=g_id,members=members)
+        id_c,nom_c,last_name,role=get_user_by_id(member[0])
+        members.append(dict(id=id_c,name=nom_c,last_name=last_name,role=role))
+    group_client=dict(name=select_groupe_from_id(g_id)[0],id=g_id)
+
+    for member in select_clients_not_in_group(g_id):
+        other.append(dict(id=member[0],name=member[1],last_name=member[2]))
+
         
-    return render_template("groupinfo.html",group_client=group_client)
+    return render_template("groupinfo.html",group_client=group_client,other=other,members=members,id_client=session['id_client'],first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'])
 
 
 @app.route('/membres', methods=["GET"])

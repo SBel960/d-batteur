@@ -72,17 +72,9 @@
     <h2> Tous les groupes </h2>
     
     {% for group in all_groups %}
-      <div class="group">
-        <div class="group_name"> {{group[1]}} </div>
-        <form action="{{url_for('add_member_to_group', group_id=group[0]) }}" method="post" class="ajouter_membres_groupes_form">
-            <select name="membres" id="membres">
-              {% for member in members%}
-                <option value="{{member[0]}}"> {{member[1]}} {{member[2]}} {{member[0]}}</option>
-              {% endfor %}
-            </select>
-            <input type="submit" value="Ajouter cette personne">
-        </form>
-      </div>
+      
+        <a href="{{url_for('group_info', g_id=group[0]) }}" class="group"> {{group[1]}} </a>
+
     {% endfor %}
 
     <br> <br>

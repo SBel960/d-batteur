@@ -275,9 +275,13 @@ def select_discussion_by_id(id_discussion):
 def select_clients_not_in_group(id_group):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT Client.id_client, Client.name, Clients.last_name
-                 FROM Client JOIN Groupes ON Client.id_client = Groupes.id_c 
-                WHERE Groupes.id_g != ?;
+    command = """SELECT id_client, name,last_name
+                 FROM Client 
+                 WHERE id_client NOT IN(
+                    SELECT id_c
+                    FROM GroupMembers
+                    WHERE id_g = ?
+                );
             """
     
     sql.execute(command, [id_group])
@@ -330,7 +334,7 @@ def select_client_groupes_by_id(id_g, id_c):
 def select_groupe_from_name(name):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT name FROM Groups WHERE name=?;
+    command = """SELECT id_group FROM Groups WHERE name=?;
             """
     
     sql.execute(command, [name])
@@ -366,6 +370,15 @@ def select_member_by_id(id_g):
     sql.execute(command,[id_g])
     res=sql.fetchall()
     return res
+
+def delete_member(id_g,id_c):
+    data =get_db()
+    sql=data.cursor()
+    command ="""DELETE FROM GroupMembers where id_g=? AND id_c=?
+        """
+    sql.execute(command,[id_g,id_c])
+    data.commit()
+    sql.close()
 
 
 #---------------------- likes
