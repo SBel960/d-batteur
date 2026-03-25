@@ -88,9 +88,9 @@
         {% for  comment in comments %}
         
           <div class="commentTextList">
-            <div class="commentBox">
+            <div class="commentBox_{{comment['opinion']}}">
               <div class="commentUser">
-                {{comment['username']}}
+                {{comment['username']}} 
               </div>
               <div class="commentText">
                 {{ comment["content"] }}

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id, get_user_opinion
 
 import time
 app = Flask(__name__)
@@ -53,7 +53,7 @@ def home():
 def main(discussion_id):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    id_poster, title, content = select_discussion_by_id(discussion_id)
+    id_poster, title, content, discussion_type = select_discussion_by_id(discussion_id)
     comments = []
     for comment in select_comments(discussion_id):
         id_comment=comment[0]
@@ -61,12 +61,19 @@ def main(discussion_id):
         content_comment=comment[3]
         like_c=get_comment_likes(id_comment)[0]
         dislike_c=get_comment_likes(id_comment)[1]
-        username=get_user_by_id(id_client)[2]+" "+get_user_by_id(id_client)[3]
 
-        comments.append(dict(id_c=id_comment,content=content_comment,like=like_c,dislike=dislike_c,username=username))
+        username=get_user_by_id(id_client)[2]+" "+get_user_by_id(id_client)[3]
+        opinion = get_user_opinion(discussion_id, id_client)
+        if opinion == None:
+            opinion = "neutre"
+        elif opinion[0] == 1:
+            opinion = 'pour'
+        else:
+            opinion = 'contre'
+        comments.append(dict(id_c=id_comment,content=content_comment,like=like_c,dislike=dislike_c,username=username, opinion=opinion))
 
     likes, dislikes = get_discussion_likes(discussion_id)
-    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'])
+    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'], discussion_type=discussion_type)
 
 
 
