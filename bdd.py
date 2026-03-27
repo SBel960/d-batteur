@@ -55,6 +55,7 @@ def create_comments_table():
                 id_c INTEGER NOT NULL,
                 id_d INTEGER NOT NULL,
                 content TEXT NOT NULL,
+                id_reply INTEGER NOT NULL,
                 FOREIGN KEY(id_c) REFERENCES Client(id_client),
                 FOREIGN KEY(id_d) REFERENCES Discussions(id_discussion)
                 )
@@ -158,13 +159,13 @@ def insert_disscussions_table(id_c, title, content, type):
     data.commit()
 
 
-def insert_comments_table(id_c, id_d, content):
+def insert_comments_table(id_c, id_d, content, id_reply):
     data = get_db()
     sql = data.cursor()
-    command = """INSERT INTO Comments(id_c, id_d, content)
-                VALUES (?,?,?)
+    command = """INSERT INTO Comments(id_c, id_d, content, id_reply)
+                VALUES (?,?,?,?)
             """
-    sql.execute(command, [id_c, id_d, content])
+    sql.execute(command, [id_c, id_d, content, id_reply])
     data.commit()
 
 def insert_likes_table(id_c, target, id_target, like):
@@ -256,13 +257,38 @@ def select_all_group_discussions(id_client):
 def select_comments(discussion_id):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT * FROM Comments WHERE id_d= ?;
-            """
+    command = """SELECT * FROM Comments WHERE id_d= ? AND id_reply=0;
+        """
     
     sql.execute(command, [discussion_id])
     result = sql.fetchall()
     return result
 
+
+def select_comments_ferme(discussion_id):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT * FROM Comments 
+            FULL JOIN Likes ON Comments.id_comment = Likes.id_target AND Likes.target='comment'
+            WHERE Comments.id_d= ? AND id_reply=0
+            GROUP BY Comments.id_comment
+            ORDER BY SUM(CASE WHEN Likes.like = 1 THEN 1 ELSE 0 END) DESC, SUM(CASE WHEN Likes.like = -1 THEN 1 ELSE 0 END);
+            """
+    
+    sql.execute(command, [discussion_id])
+    result = sql.fetchall()
+    return result  
+
+def select_comment_replies(comment_id):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT * FROM Comments WHERE id_reply=?;
+            """
+    
+    sql.execute(command, [comment_id])
+    result = sql.fetchall()
+    return result
+            
 
 def select_newest_discussion_id(id_client):
     data = get_db()
