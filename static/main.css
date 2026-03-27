@@ -228,15 +228,20 @@ main{
 }
 
 .type{
-  border: dashed 1px;
+  margin-bottom: 20px;
   font-size: 30px;
-  border-color: rgba(34,211,238,0.35)
+  padding: 5px 9px;
+  border: 1px solid var(--border);
+  color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.05);
 }
 .ferme{
-  color: rgb(34, 211, 238);
+  background: rgba(34,211,238,0.18);
+  border-color: rgba(34,211,238,0.35);
 }
 .ouvert{
-  color: rgb(99, 101, 241);
+  background: rgba(99,102,241,0.22);
+  border-color: rgba(99,102,241,0.35);
 }
 
 .topic-title-container{
@@ -288,7 +293,7 @@ main{
   background: #bf0603;
 }
 .bar-for, .bar-for::after {
-  background: #a7c957;
+  background: #40bf8c;
 }
 
 .bar-against::after, .bar-for::after {
@@ -358,38 +363,32 @@ main{
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: fit-content;
 }
 
 .commentUser{
+  margin-bottom: 10px;
   font-weight: 700;
   display: flex;
   align-items: center;
 }
 
-.commentBox{
-  gap: 10px;
-  padding: 20px;
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.045);
-  display: flex;
-  flex-direction: column;
-
-}
-
 .commentBox_pour{
+  padding: 20px;
   background-color: #40bf8c88;
-  border: solid 3px #a7c9578e;
+  border: solid 1px #a7c9578e;
 }
 
 .commentBox_contre{
-  background-color: #ed5e5e8f;
-  border: solid 3px #bf0603c9;
+  padding: 20px;
+  background-color: #e032328f;
+  border: solid 1px #bf0603c9;
 }
 
-
 .commentBox_neutre{
+  padding: 20px;
   background-color: #8c8c8ca4;
-  border: solid 3px rgba(245, 245, 245, 0.582);
+  border: solid 1px rgba(245, 245, 245, 0.582);
 }
 
 @media (max-width: 980px){
@@ -405,5 +404,8 @@ main{
   .topbar-center{
     flex: 1 1 100%;
     order: 3;
+  }
+  .topic-title-container {
+    margin: 40px 0px;
   }
 }
