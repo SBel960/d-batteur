@@ -245,6 +245,42 @@ def profile(id_c):
     
     return render_template("profile.html", my_profile=my_profile, name=name, last_name=last_name, role=role, groupes=groupes)
     
+    
+@app.route('/alldiscussions', methods=["GET"])
+def alldiscussions():
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+
+    result = select_all_group_discussions(session["id_client"])
+    discussions = []
+
+    for row in result:
+        likes, dislikes = get_discussion_likes(row[0])
+        auteur = get_user_by_id(row[1])
+        auteur_nom = auteur[1] + " " + auteur[2]
+        type_disc = "Question" if row[4] == "ouvert" else "Proposition"
+
+        groupes = []
+        for groupe_id in select_discussion_groups(row[0]):
+            groupes.append({
+                "id": groupe_id[0],
+                "nom": select_groupe_from_id(groupe_id[0])[0]
+            })
+
+        discussions.append({
+            "id": row[0],
+            "titre": row[2],
+            "contenu": row[3],
+            "type": type_disc,
+            "likes": likes,
+            "dislikes": dislikes,
+            "groupes": groupes,
+            "auteur": auteur_nom,
+            "date": row[5],
+            "heure": row[6]
+        })
+
+    return jsonify(discussions)
 
 
 ########################## authentificatiojn

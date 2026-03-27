@@ -9,9 +9,7 @@
 <body>
 
   <!-- HEADER / TOOLBAR -->
-  <section class="navbar">
   <header class="topbar">
-    <!-- Gauche : Entreprise + emplacement logo + logo -->
     <div class="topbar-left">
       <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
 
@@ -23,7 +21,6 @@
       <div class="company-mark" aria-hidden="true">🏢</div>
     </div>
 
-    <!-- Centre : recherche (titre uniquement) -->
     <div class="topbar-center">
       <div class="search">
         <span class="search-icon" aria-hidden="true">⌕</span>
@@ -36,7 +33,6 @@
       </div>
     </div>
 
-    <!-- Droite : user + groupe + bouton + -->
     <div class="topbar-right">
       <div class="user">
         <div id="userFullName" class="user-name">{{first_name}} {{last_name}}</div>
@@ -44,255 +40,82 @@
       </div>
       <a class="logout" href="{{url_for('logout')}}"> Logout </a>
 
-     {% if role>= 2 %}
-      <button id="addDiscussionBtn" commandfor='newDiscussion'command="show-modal" class="icon-btn" title="Ajouter une discussion" style="display:none;">
+      {% if role >= 2 %}
+      <button id="addDiscussionBtn" commandfor="newDiscussion" command="show-modal" class="icon-btn" title="Ajouter une discussion">
         +
       </button>
-     
 
       <dialog id="newDiscussion">
-        <!-- Pour fermer la page -->
-        <button id="closePage" commandfor='newDiscussion' command="request-close"> 
+        <button id="closePage" commandfor="newDiscussion" command="request-close">
           x
         </button>
 
-        <!-- Création d'une discussion  -->
         <form class="newDiscussionForm" method="post" action='{{url_for("ajouter_discussion")}}'>
           <label> Nouvelle discussion</label>
           <div class="discussionInformation">
-            <input type="text" class="questionBlock" name='discussionTitle' placeholder=" Ajouter un titre" required> 
+            <input type="text" class="questionBlock" name='discussionTitle' placeholder=" Ajouter un titre" required>
             <textarea type="text" class="contentBlock" name="discussionContent" placeholder=" Ajouter une description" required></textarea>
           </div>
 
           <div class="form-choices">
             <div class="discussionType">
-
               <div>
                 <input type="radio" name="discussionType" id="ouvert" value="ouvert" required>
                 <label for="ouvert"> Question ouverte </label>
               </div>
-
               <div>
-                <input type="radio" name="discussionType" id="yesno" value="ferme" required>   
+                <input type="radio" name="discussionType" id="yesno" value="ferme" required>
                 <label for="ferme"> Question fermé </label>
               </div>
             </div>
 
             <div class="groupList">
-              <select class="selectGroupList" name="groupes" id="groupes_dropdown" multiple required>
-                {% for groupe in groupes%}
-                    <option value="{{groupe[0]}}"> {{groupe[1]}} </option>
+              <select name="groupes" id="groupes_dropdown" multiple required>
+                {% for groupe in groupes %}
+                  <option value="{{groupe[0]}}"> {{groupe[1]}} </option>
                 {% endfor %}
-            </select>
+              </select>
             </div>
           </div>
 
           <input class="postButton" type="submit" value="Poster">
         </form>
-
-
-
       </dialog>
-       {% endif %}
+      {% endif %}
     </div>
   </header>
+
   <div class="topbar-dropdown">
-      <a class="topbar-dropdown-btn" href="{{url_for('groups_page')}}"> Groupes </a>
-      <a class="topbar-dropdown-btn" href="{{url_for('membres')}}"> Membres </a>
+    <a class="topbar-dropdown-btn" href="{{url_for('groups_page')}}"> Groupes </a>
+    <a class="topbar-dropdown-btn" href="{{url_for('membres')}}"> Membres </a>
   </div>
-  </section>
 
   <!-- CONTENU -->
   <main class="container">
-    {% if msg %}
-    <p class="error-msg" style="color:red"> {{msg}}</p>
-    {% endif %}
     <section class="section">
       <div class="section-head">
         <h2>Discussions</h2>
-        <div id="countInfo" class="muted"> 0 discussion(s) </div>
-      </div>
-        
-      <div class="list">
-
-      {% for discussion in discussions %}
-        
-       <div class="card">
-        <div class="card-top">
-          <div class="card-title">
-            {% if discussion[7] == 'OUVERT' %}
-              <span class="badge badge-q">{{discussion[7]}}</span>
-            {% else %}
-              <span class="badge badge-prop">{{discussion[7]}}</span>
-            {% endif %}
-            <span class="title-text">{{discussion[0]}}</span>
-          </div>
-          <div class="card-date">{{discussion[8]}}, {{discussion[9]}}</div>
-        </div>
-
-        <div class="card-desc">
-          {{discussion[1]}}
-
-        </div>
-
-        <div class="card-bottom">
-          <div class="card-meta">
-            <span> Groupes: </span>
-            {% for groupe in discussion[5] %}
-              <a class="discussion-group" href="" style="color: rgba(0, 204, 255, 0.829);"> {{groupe[1]}}</a>
-
-              {% endfor %}
-              <span class="dot">•</span>
-              <span>Auteur: {{discussion[6]}}</span>
-          </div>
-          <div class="card-actions">
-            <a class="btn" href="/main/{{discussion[2]}}">Ouvrir</a>
-            <a id="likes-count" class="vote" href="{{ url_for('like_discussion', discussion_id=discussion[2] , action='like', origin_page='homepage') }}">👍 {{discussion[3]}}</a>
-            <a id="dislikes-count" class="vote" href="{{ url_for('like_discussion', discussion_id=discussion[2] , action='unlike', origin_page='homepage') }}">👎 {{discussion[4]}}</a>
-          </div>
-        </div> 
-       </div> 
-        
-      {% endfor %}
-
+        <div id="countInfo" class="muted"></div>
       </div>
 
-      <!-- A enlever une fois les discussions finies et bien implémentées avec les bonnes fonctionnalités -->
-
-      <div class="temporary-comments">
-        <span> La section ci-dessous est un placeholder </span>
-        <span> A enlever une fois les discussions implémentées avec toutes les fonctionnalités </span>
-      </div>
-
-      <div id="discussionsList" class="list">
-
-        {% for discussion in discussions %}
-        {% endfor %}
-
-      </div>
-
-      <!-- Fin de la section à enlever -->
-
+      <div id="discussionsList" class="list"></div>
     </section>
-
   </main>
 
   <script>
-    /**
-     * Données DEMO -> à remplacer par votre backend Java
-     * Rôles: "EMPLOYE", "MANAGER", "PDG"
-     * type: "QUESTION" ou "PROPOSITION"
-     * scope:
-     *  - GENERAL = visible à tous les groupes
-     *  - GROUPS = visible à une liste de groupes
-     */
+    let all_discussions = [];
 
-    
-
-    const state = {
-      companyName: "ACME Corp",
-      user: {
-        firstName: "Sara",
-        lastName: "Dupont",
-        group: "Groupe A",
-        role: "MANAGER",
-        managedGroups: ["Groupe A", "Groupe C"]
-      },
-      discussions: [
-        {
-          id: 101,
-          title: "Nouvelle procédure congés",
-          description: "Merci de lire la nouvelle procédure et poser vos questions ici.",
-          type: "QUESTION",
-          scope: { kind: "GENERAL" },
-          createdByRole: "PDG",
-          updatedAtISO: "2026-01-29T10:12:00Z"
-        },
-        {
-          id: 102,
-          title: "Proposition : horaire flexible",
-          description: "Pour/contre : mise en place d’horaires flexibles sur 2 jours/semaine.",
-          type: "PROPOSITION",
-          scope: { kind: "GROUPS", groups: ["Groupe A"] },
-          createdByRole: "MANAGER",
-          votes: { up: 5, down: 2 },
-          updatedAtISO: "2026-01-28T18:40:00Z"
-        },
-        {
-          id: 103,
-          title: "Questions projet site web",
-          description: "Ajoutez vos questions techniques (frontend, backend, DB).",
-          type: "QUESTION",
-          scope: { kind: "GROUPS", groups: ["Groupe A", "Groupe C"] },
-          createdByRole: "MANAGER",
-          updatedAtISO: "2026-01-27T09:05:00Z"
-        },
-        {
-          id: 105,
-          title: "Rubrique test",
-          description: "Ceci est une description",
-          type: "QUESTION",
-          scope: { kind: "GROUPS", groups: ["Groupe A", "Groupe B"] },
-          createdByRole: "PDG",
-          updatedAtISO: "2026-01-29T22:56:00Z"
-        }
-      ]
-    };
-
-    localStorage.setItem("appState", JSON.stringify(state));
-
-    // Header infos
-    
-
-    // Afficher le + pour PDG/MANAGER
-    
-    const addBtn = document.getElementById("addDiscussionBtn");
-    const canAdd = (state.user.role === "PDG" || state.user.role === "MANAGER");
-    addBtn.style.display = canAdd ? "inline-flex" : "none";
-
-
-
-
-
-    // Utils
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    async function chargerDiscussions() {
+      const reponse = await fetch("/alldiscussions");
+      const data = await reponse.json();
+      all_discussions = data;
     }
-
-    function formatDate(iso) {
-      const d = new Date(iso);
-      if (Number.isNaN(d.getTime())) return iso;
-      return d.toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
-    }
-
-    function scopeLabel(scope) {
-      if (!scope || !scope.kind) return "—";
-      if (scope.kind === "GENERAL") return "Générale (tous groupes)";
-      if (scope.kind === "GROUPS") return `Groupes: ${scope.groups.join(", ")}`;
-      return "—";
-    }
-
-    // Tri récent -> ancien
-    function getSortedDiscussions(items) {
-      return [...items].sort((a, b) => {
-        const da = new Date(a.updatedAtISO).getTime();
-        const db = new Date(b.updatedAtISO).getTime();
-        return db - da;
-      });
-    }
-
-    // Render
-    const list = document.getElementById("discussionsList");
-    const countInfo = document.getElementById("countInfo");
 
     function renderDiscussions(items) {
+      const list = document.getElementById("discussionsList");
+      const countInfo = document.getElementById("countInfo");
       list.innerHTML = "";
-      countInfo.textContent = `${items.length} discussion(s)`;
+      countInfo.textContent = items.length + " discussion(s)";
 
       if (!items.length) {
         list.innerHTML = `<div class="empty">Aucune discussion trouvée.</div>`;
@@ -300,79 +123,55 @@
       }
 
       items.forEach(d => {
-        const isProposal = d.type === "PROPOSITION";
-        const votes = d.votes || { up: 0, down: 0 };
-
-        const card = document.createElement("article");
+        const card = document.createElement("div");
         card.className = "card";
+
+        const badgeClass = d.type === "Question" ? "badge-q" : "badge-prop";
+        const groupesHtml = d.groupes.map(g =>
+          `<a style="color: rgba(0,204,255,0.83);">${g.nom}</a>`
+        ).join(" ");
 
         card.innerHTML = `
           <div class="card-top">
             <div class="card-title">
-              <span class="badge ${isProposal ? "badge-prop" : "badge-q"}">
-                ${escapeHtml(d.type)}
-              </span>
-              <span class="title-text">${escapeHtml(d.title)}</span>
+              <span class="badge ${badgeClass}">${d.type}</span>
+              <span class="title-text">${d.titre}</span>
             </div>
-            <div class="card-date">${escapeHtml(formatDate(d.updatedAtISO))}</div>
+            <div class="card-date">${d.date}, ${d.heure}</div>
           </div>
-
-          <div class="card-desc">${escapeHtml(d.description)}</div>
-
+          <div class="card-desc">${d.contenu}</div>
           <div class="card-bottom">
             <div class="card-meta">
-              <span>${escapeHtml(scopeLabel(d.scope))}</span>
+              <span>Groupes:</span> ${groupesHtml}
               <span class="dot">•</span>
-              <span>Auteur: ${escapeHtml(d.createdByRole || "—")}</span>
+              <span>Auteur: ${d.auteur}</span>
             </div>
-
             <div class="card-actions">
               <a class="btn" href="/main/${d.id}">Ouvrir</a>
-
-              ${isProposal ? `
-                <button class="vote" data-id="${escapeHtml(d.id)}" data-vote="up" title="Avis positif">
-                  👍 <span id="up-${escapeHtml(d.id)}">${votes.up}</span>
-                </button>
-                <button class="vote" data-id="${escapeHtml(d.id)}" data-vote="down" title="Avis négatif">
-                  👎 <span id="down-${escapeHtml(d.id)}">${votes.down}</span>
-                </button>
-              ` : ``}
+              <a class="vote" href="/like_discussion/${d.id}/like?origin_page=homepage">👍 ${d.likes}</a>
+              <a class="vote" href="/like_discussion/${d.id}/unlike?origin_page=homepage">👎 ${d.dislikes}</a>
             </div>
           </div>
         `;
 
         list.appendChild(card);
       });
-
-      // Vote demo (front)
-      document.querySelectorAll("button[data-vote]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const id = btn.getAttribute("data-id");
-          const vote = btn.getAttribute("data-vote");
-          const disc = state.discussions.find(x => String(x.id) === String(id));
-          if (!disc) return;
-
-          disc.votes = disc.votes || { up: 0, down: 0 };
-          if (vote === "up") disc.votes.up += 1;
-          if (vote === "down") disc.votes.down += 1;
-
-          document.getElementById("up-" + id).textContent = disc.votes.up;
-          document.getElementById("down-" + id).textContent = disc.votes.down;
-        });
-      });
     }
 
-    // Recherche : titre uniquement
-    const searchInput = document.getElementById("searchInput");
-    function applySearchAndRender() {
-      const q = searchInput.value.trim().toLowerCase();
-      const filtered = state.discussions.filter(d => d.title.toLowerCase().includes(q));
-      renderDiscussions(getSortedDiscussions(filtered));
+    function appliquerRecherche() {
+      const q = document.getElementById("searchInput").value.trim().toLowerCase();
+      const filtres = all_discussions.filter(d => d.titre.toLowerCase().includes(q));
+      renderDiscussions(filtres);
     }
-    searchInput.addEventListener("input", applySearchAndRender);
 
-    // Initial
-    renderDiscussions(getSortedDiscussions(state.discussions));
+    document.getElementById("searchInput").addEventListener("input", appliquerRecherche);
+
+    async function initialiserDiscussions() {
+      await chargerDiscussions();
+      renderDiscussions(all_discussions);
+    }
+
+    initialiserDiscussions();
   </script>
 </body>
 </html>

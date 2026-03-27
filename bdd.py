@@ -2,7 +2,7 @@ import sqlite3
 from flask import g
 from datetime import date
 import time
-db_file = "approot/app.db"
+db_file = "./app.db"
 
 def get_db():
     if "db" not in g:
@@ -55,8 +55,6 @@ def create_comments_table():
                 id_c INTEGER NOT NULL,
                 id_d INTEGER NOT NULL,
                 content TEXT NOT NULL,
-                id_reply INTEGER NOT NULL,
-
                 FOREIGN KEY(id_c) REFERENCES Client(id_client),
                 FOREIGN KEY(id_d) REFERENCES Discussions(id_discussion)
                 )
@@ -160,15 +158,14 @@ def insert_disscussions_table(id_c, title, content, type):
     data.commit()
 
 
-def insert_comments_table(id_c, id_d, content, id_reply):
+def insert_comments_table(id_c, id_d, content):
     data = get_db()
     sql = data.cursor()
-    command = """INSERT INTO Comments(id_c, id_d, content, id_reply)
-                VALUES (?,?,?,?)
+    command = """INSERT INTO Comments(id_c, id_d, content)
+                VALUES (?,?,?)
             """
-    sql.execute(command, [id_c, id_d, content, id_reply])
+    sql.execute(command, [id_c, id_d, content])
     data.commit()
-
 
 def insert_likes_table(id_c, target, id_target, like):
     data = get_db()
@@ -259,38 +256,13 @@ def select_all_group_discussions(id_client):
 def select_comments(discussion_id):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT * FROM Comments WHERE id_d= ? AND id_reply=0;
+    command = """SELECT * FROM Comments WHERE id_d= ?;
             """
     
     sql.execute(command, [discussion_id])
     result = sql.fetchall()
     return result
 
-
-def select_comments_ferme(discussion_id):
-    data = get_db()
-    sql = data.cursor()
-    command = """SELECT * FROM Comments 
-            FULL JOIN Likes ON Comments.id_comment = Likes.id_target AND Likes.target='comment'
-            WHERE Comments.id_d= ? AND id_reply=0
-            GROUP BY Comments.id_comment
-            ORDER BY SUM(CASE WHEN Likes.like = 1 THEN 1 ELSE 0 END) DESC, SUM(CASE WHEN Likes.like = -1 THEN 1 ELSE 0 END);
-            """
-    
-    sql.execute(command, [discussion_id])
-    result = sql.fetchall()
-    return result
-
-
-def select_comment_replies(comment_id):
-    data = get_db()
-    sql = data.cursor()
-    command = """SELECT * FROM Comments WHERE id_reply=?;
-            """
-    
-    sql.execute(command, [comment_id])
-    result = sql.fetchall()
-    return result
 
 def select_newest_discussion_id(id_client):
     data = get_db()
@@ -305,7 +277,7 @@ def select_newest_discussion_id(id_client):
 def select_discussion_by_id(id_discussion):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT id_c, title, content, type FROM Discussions WHERE id_discussion= ?;
+    command = """SELECT id_c, title, content FROM Discussions WHERE id_discussion= ?;
             """
     
     sql.execute(command, [id_discussion])
@@ -473,15 +445,6 @@ def get_comment_likes(id_comment):
             dislikes += 1
 
     return (likes, dislikes)
-
-def get_user_opinion(id_discussion, id_client):
-    data = get_db()
-    sql = data.cursor()
-    command = """SELECT like FROM Likes WHERE id_target=? AND target =? AND id_c = ?;
-            """
-    sql.execute(command, [id_discussion, "discussion", id_client])
-    result = sql.fetchone()
-    return result
 
 
 #-------------------------------authentificattion
