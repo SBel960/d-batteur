@@ -1,6 +1,6 @@
-from flask import Flask, render_template, url_for, redirect, request, session
+from flask import Flask, render_template, url_for, redirect, request, session, jsonify
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id, get_user_opinion, select_comments_ferme
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id, get_user_opinion, select_comments_ferme, select_comment_replies
 
 import time
 app = Flask(__name__)
@@ -81,14 +81,14 @@ def main(discussion_id):
 
 
 
-@app.route("/commentaire/<int:discussion_id>", methods=["POST"])
-def commentaire(discussion_id):
+@app.route("/commentaire/<int:discussion_id>/<int:reply>", methods=["POST"])
+def commentaire(discussion_id, reply):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
     content = request.form['commentaire']
     id_client = session['id_client'] 
-    print("je suis ici")
-    insert_comments_table(id_client, discussion_id, content)
+    print(content)
+    insert_comments_table(id_client, discussion_id, content, reply)
     return redirect(url_for("main", discussion_id= discussion_id))
 
 
@@ -230,7 +230,7 @@ def group_info(g_id):
 def membres():
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    return 
+    return "bonjour"
 
 @app.route('/profile/<int:id_c>')
 def profile(id_c):
@@ -315,6 +315,29 @@ def logout():
 
 
 #--------------------------- 
+@app.route("/show_all_replies/<int:discussion_id>/<int:comment_id>")
+def show_all_replies(discussion_id, comment_id):
+    res = select_comment_replies(comment_id)
+    result = []
+    for reply in res:
+        opinion = get_user_opinion(discussion_id, reply[1])
+        if opinion == None:
+            opinion = "neutre"
+        elif opinion[0] == 1:
+            opinion = 'pour'
+        else:
+            opinion = 'contre'
+        result.append({
+            "id_c": reply[0],
+            "id_client": reply[1],
+            "content": reply[3],
+            "like": get_comment_likes(reply[0])[0],
+            "dislike": get_comment_likes(reply[0])[1],
+            "username": get_user_by_id(reply[1])[2] + " " + get_user_by_id(reply[1])[3],
+            "opinion": opinion  # adapt depending on your schema
+        })
+
+    return jsonify(result)
 
 @app.route("/create_client_table")
 def create_client():
