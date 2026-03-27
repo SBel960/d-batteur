@@ -240,7 +240,7 @@
     color: var(--muted);
     background: rgba(255,255,255,0.045);
     padding: 14px 14px;
-    box-shadow: 0 8px 26px rgba(0,0,0,0.20);
+    box-shadow: 0 0 0 1600px rgba(0,0,0,0.65);
     backdrop-filter: blur(40px);
   }
 
@@ -310,6 +310,12 @@
     display: flex;
     flex-direction: column;
     padding-left: 10px;
+  }
+  
+  .selectGroupList {
+    background: rgba(255,255,255,0);
+    border: 0px;
+    color: var(--muted);
   }
 
   .postButton {

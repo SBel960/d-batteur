@@ -79,7 +79,7 @@
             </div>
 
             <div class="groupList">
-              <select name="groupes" id="groupes_dropdown" multiple required>
+              <select class="selectGroupList" name="groupes" id="groupes_dropdown" multiple required>
                 {% for groupe in groupes%}
                     <option value="{{groupe[0]}}"> {{groupe[1]}} </option>
                 {% endfor %}

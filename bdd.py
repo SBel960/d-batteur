@@ -268,8 +268,8 @@ def select_comments_ferme(discussion_id):
     data = get_db()
     sql = data.cursor()
     command = """SELECT * FROM Comments 
-            JOIN Likes ON Comments.id_comment = Likes.id_target 
-            WHERE Comments.id_d= ?  AND Likes.target='comment'
+            FULL JOIN Likes ON Comments.id_comment = Likes.id_target AND Likes.target='comment'
+            WHERE Comments.id_d= ? 
             GROUP BY Comments.id_comment
             ORDER BY SUM(CASE WHEN Likes.like = 1 THEN 1 ELSE 0 END) DESC, SUM(CASE WHEN Likes.like = -1 THEN 1 ELSE 0 END);
             """
