@@ -26,3 +26,10 @@ idee: fonctionalite add group (manager/ceo)
 
 
 reply to a comment fonctionalite
+
+
+
+
+FONCTIONALITE: Rank users in terms of their contributions.
+    idee: le manager qui a commencer une question ouverte/ ferme peut donner un badge au user qui repond le plus pertinemment
+    idee 2: un commenter peut donner un reply_badge au reply qui l'a fait changer d'avis
