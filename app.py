@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id,select_member_by_id,select_clients_not_in_group,delete_member
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group
 
 import time
 app = Flask(__name__)
@@ -197,7 +197,7 @@ def add_member_to_group(group_id):
 def delete_member_from_group(group_id):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    id_c=request.form.getlist('memberList')
+    id_c=request.form.getlist("memberList")
     for membre in id_c:
         if len(select_client_groupes_by_id(group_id, membre)) == 1:
             delete_member(group_id,membre)
@@ -222,6 +222,28 @@ def group_info(g_id):
 
         
     return render_template("groupinfo.html",group_client=group_client,other=other,members=members,id_client=session['id_client'],first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'])
+
+@app.route('/updategroup/<int:group_id>',methods=['POST'])
+def change_group_name(group_id):
+    if not(session.get('logged_in')):
+        return redirect(url_for('login_page'))
+    new_name=request.form["groupName"]
+    update_group(new_name,group_id)
+    return redirect(url_for("group_info",g_id=group_id))
+
+
+@app.route('/deletegroup/<int:group_id>',methods=['POST'])
+def delete_group_from_db(group_id):
+    if not(session.get('logged_in')):
+        return redirect(url_for('login_page'))
+    
+    for member in select_member_by_id(group_id):
+        delete_member(group_id,member[0])
+    
+    delete_group(group_id)
+
+    return redirect(url_for("groups_page"))
+
 
 
 @app.route('/membres', methods=["GET"])

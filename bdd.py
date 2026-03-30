@@ -365,7 +365,7 @@ def select_discussion_groups(id_discussion):
 def select_member_by_id(id_g):
     data = get_db()
     sql=data.cursor()
-    command = """SELECT id_c from GroupMembers where id_g=?
+    command = """SELECT id_c from GroupMembers WHERE id_g=?
             """
     sql.execute(command,[id_g])
     res=sql.fetchall()
@@ -374,12 +374,31 @@ def select_member_by_id(id_g):
 def delete_member(id_g,id_c):
     data =get_db()
     sql=data.cursor()
-    command ="""DELETE FROM GroupMembers where id_g=? AND id_c=?
+    command ="""DELETE FROM GroupMembers WHERE id_g=? AND id_c=?
         """
     sql.execute(command,[id_g,id_c])
     data.commit()
     sql.close()
 
+def delete_group(id_g):
+    data =get_db()
+    sql=data.cursor()
+    command ="""DELETE FROM Groups WHERE id_group=?
+        """
+    sql.execute(command,[id_g])
+    data.commit()
+    sql.close()
+
+
+def update_group(name,id_g):
+    data=get_db()
+    sql=data.cursor()
+    command="""UPDATE Groups SET name=? WHERE id_group=?
+        """
+    
+    sql.execute(command,[name,id_g])
+    data.commit()
+    sql.close()
 
 #---------------------- likes
 

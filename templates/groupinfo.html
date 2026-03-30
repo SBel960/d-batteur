@@ -103,9 +103,24 @@
   </header>
 
   <body>
-      <button commandfor='AddMember'command='show-modal' class="icon-btn" title="Ajouter des membres">
+    <details>
+
+    <summary class="icon-btn">Gérer</summary>
+      <li><button commandfor='AddMember'command='show-modal' title="Ajouter des membres">
         Ajouter
-      </button>
+      </button></li>
+      <li><button commandfor='DeleteMember'command='show-modal' title="Supprimer des membres">
+        Supprimer un membre
+      </button></li>
+      <li><button commandfor='UpdateGroup'command='show-modal' title="Modifier le groupe">
+        Modifier
+      </button></li>
+      <li><button commandfor='DeleteGroup'command='show-modal' title="Supprimer le groupe">
+        Supprimer le groupe
+      </button></li>
+    </details>
+
+<!-- Ajouter des membres  -->
 
       <dialog id="AddMember">
         
@@ -126,16 +141,15 @@
 
       </dialog>
 
-      <button commandfor='DeleteMember'command='show-modal' class="icon-btn" title="Supprimer des membres">
-        Supprimer
-      </button>
+
+<!-- Supprimer des membres  -->
 
       <dialog id="DeleteMember">
         
         <button id="closePage" commandfor='DeleteMember' command="request-close"> 
           x
         </button>
-        <form class="DeleteGroupForm" method="post" action="{{url_for('delete_member_from_group', group_id=group_client['id']) }}">
+        <form class="DeleteMemberForm" method="post" action="{{url_for('delete_member_from_group', group_id=group_client['id']) }}">
           
           {% for membre in members %}
             {% if membre['id'] != id_client %}
@@ -147,9 +161,33 @@
           <input class="postButton" type="submit" value="Retirer">
 
         </form>
-
-
       </dialog>
+<!-- Modifier le groupe  -->
+        <dialog id="UpdateGroup">
+            <button id="closePage" commandfor='UpdateGroup' command="request-close"> 
+              x
+            </button>
+
+            <form class="ajouter_group_form" action="{{url_for('change_group_name', group_id=group_client['id']) }}", method="POST"> 
+              <label> Changer le titre du groupe </label> 
+              <input type="text" class="groupTextInput" name='groupName' placeholder="Nom du groupe" value="{{group_client['name']}}" > 
+              <input type="submit" value="modifier">
+            </form> 
+        </dialog>
+
+  <!-- Supprimer le groupe -->
+        <dialog id="DeleteGroup">
+          <p>Etes vous sûr de vouloir supprimer le groupe</p>
+            <button id="closePage" commandfor='DeleteGroup' command="request-close"> 
+              Annuler
+            </button>
+
+            <form action="{{url_for('delete_group_from_db', group_id=group_client['id']) }}", method="POST"> 
+              <input type="submit" value="Supprimer">
+            </form> 
+        </dialog>
+
+      
     <div class="container">
         <div class="groupTitle">  {{group_client['name']}}  </div> 
 
