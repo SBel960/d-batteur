@@ -303,7 +303,7 @@ def select_newest_discussion_id(id_client):
 def select_discussion_by_id(id_discussion):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT id_c, title, content FROM Discussions WHERE id_discussion= ?;
+    command = """SELECT id_c, title, content, type FROM Discussions WHERE id_discussion= ?;
             """
     
     sql.execute(command, [id_discussion])
@@ -471,6 +471,15 @@ def get_comment_likes(id_comment):
             dislikes += 1
 
     return (likes, dislikes)
+
+def get_user_opinion(id_discussion, id_client):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT like FROM Likes WHERE id_target=? AND target =? AND id_c = ?;
+            """
+    sql.execute(command, [id_discussion, "discussion", id_client])
+    result = sql.fetchone()
+    return result
 
 
 #-------------------------------authentificattion
