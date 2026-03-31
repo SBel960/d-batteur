@@ -222,6 +222,34 @@ main{
 }
 .icon-btn:active{ transform: translateY(0px); }
 
+.topbar-dropdown {
+  max-width: 1180px;
+  height: 60px;
+  margin: auto;
+  background: rgba(255,255,255,0.08);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  backdrop-filter: blur(10px);
+  padding: 14px 14px;
+}
+
+.topbar-dropdown-btn {
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 10px;
+}
+
+/* Content */
 
 .topic-type{
   margin-bottom: 10px;
@@ -342,6 +370,10 @@ main{
 
 .commentForm label {
   font-size: 20px;
+}
+
+.commentForm textarea {
+  resize: vertical;
 }
 
 .submit-button {

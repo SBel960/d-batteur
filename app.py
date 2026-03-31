@@ -230,7 +230,7 @@ def group_info(g_id):
 def membres():
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    return "bonjour"
+    return render_template("membres.html", first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'])
 
 @app.route('/profile/<int:id_c>')
 def profile(id_c):

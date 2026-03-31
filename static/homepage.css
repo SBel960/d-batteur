@@ -282,6 +282,10 @@
     height: 30px;
   }
 
+  .discussionInformation textarea {
+    resize: vertical;
+  }
+
   .newDiscussionForm label {
     text-align: center;
     margin-bottom: 30px;
