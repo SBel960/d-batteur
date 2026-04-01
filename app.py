@@ -245,7 +245,7 @@ def group_info(g_id):
         other.append(dict(id=member[0],name=member[1],last_name=member[2]))
 
         
-    return render_template("groupinfo.html",group_client=group_client,other=other,members=members,id_client=session['id_client'],first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=session['role'])
+    return render_template("groupinfo.html",group_client=group_client,other=other,members=members,id_client=session['id_client'], first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'])
 
 @app.route('/updategroup/<int:group_id>',methods=['POST'])
 def change_group_name(group_id):
