@@ -66,7 +66,7 @@ def main(discussion_id):
         like_c=get_comment_likes(id_comment)[0]
         dislike_c=get_comment_likes(id_comment)[1]
 
-        username=get_user_by_id(id_client)[2]+" "+get_user_by_id(id_client)[3]
+        username=get_user_by_id(id_client)[1]+" "+get_user_by_id(id_client)[2]
         opinion = get_user_opinion(discussion_id, id_client)
         if opinion == None:
             opinion = "neutre"

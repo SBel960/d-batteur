@@ -130,7 +130,7 @@
 
         const badgeClass = d.type === "Question" ? "badge-q" : "badge-prop";
         const groupesHtml = d.groupes.map(g =>
-          `<a style="color: rgba(0,204,255,0.83);">${g.nom}</a>`
+          `<a href="/group_info/${g.id}" style="color: rgba(0,204,255,0.83);">${g.nom}</a>`
         ).join(" ");
 
         card.innerHTML = `
