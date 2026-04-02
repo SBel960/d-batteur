@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="../static/login.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
 </head>
 
 <body>
@@ -46,10 +46,12 @@
                 />
                 </svg>
             </div>
-            <button class="icon-btn" type="submit-class">Login</button>
+            <button class="icon-btn" type="submit">Login</button>
 
             <p class="error-msg" style="color:red;"> {{message}} </p>
             <p  style="color:white;"> pour tester: <br>
                 <br> email: test@test <br> password: test <br> <br> /insert_client_table </p>
         </form>
-        </body>
+    </div>
+</body>
+</html>

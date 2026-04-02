@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies, get_score_proposition, create_groups_table, create_group_members_table, create_discussion_groups_table
 
 import time
 app = Flask(__name__)
@@ -19,6 +19,9 @@ with app.app_context():
     create_discussions_table()
     create_comments_table()
     create_likes_table()
+    create_groups_table()
+    create_group_members_table()
+    create_discussion_groups_table()
     
 @app.route("/")
 def home():
@@ -63,8 +66,14 @@ def main(discussion_id):
         id_comment=comment[0]
         id_client=comment[1]
         content_comment=comment[3]
+        type_comment=comment[4]
+        avis_comment=comment[5]
         like_c=get_comment_likes(id_comment)[0]
         dislike_c=get_comment_likes(id_comment)[1]
+        if type_comment == 'proposition':
+            score = (like_c - dislike_c) + get_score_proposition(id_comment)
+        else :
+            score = None
 
         username=get_user_by_id(id_client)[1]+" "+get_user_by_id(id_client)[2]
         opinion = get_user_opinion(discussion_id, id_client)
@@ -74,7 +83,8 @@ def main(discussion_id):
             opinion = 'pour'
         else:
             opinion = 'contre'
-        comments.append(dict(id_c=id_comment,content=content_comment,like=like_c,dislike=dislike_c,username=username, opinion=opinion))
+        reply_count = len(select_comment_replies(id_comment))
+        comments.append(dict(id_c=id_comment, content=content_comment, like=like_c, dislike=dislike_c, username=username, opinion=opinion, type=type_comment, avis=avis_comment, score=score, reply_count=reply_count))
 
     likes, dislikes = get_discussion_likes(discussion_id)
     return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'], discussion_type=discussion_type)
@@ -86,9 +96,11 @@ def commentaire(discussion_id, reply):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
     content = request.form['commentaire']
-    id_client = session['id_client'] 
+    id_client = session['id_client']
+    type = request.form.get('type', 'normal')
+    avis = request.form.get('avis') 
     print(content)
-    insert_comments_table(id_client, discussion_id, content, reply)
+    insert_comments_table(id_client, discussion_id, content, type, avis, reply)
     return redirect(url_for("main", discussion_id= discussion_id))
 
 
@@ -129,7 +141,7 @@ def like_discussion(discussion_id, action):
     elif(action == "unlike"):
         action = -1
     else:
-        return 
+        return redirect(url_for("home"))
     
 # a changer
     origin_page = request.args.get('origin_page')
@@ -153,7 +165,7 @@ def like_comment(discussion_id,comment_id, action):
     elif(action == "unlike"):
         action = -1
     else:
-        return 
+        return redirect(url_for("main", discussion_id=discussion_id))
     
 # a changer
     target = "comment"
@@ -275,6 +287,20 @@ def membres():
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
     return render_template("membres.html", first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'])
+
+@app.route('/allmembers', methods=['GET'])
+def get_all_members():
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    result = select_all_clients()
+    members = []
+    for row in result:
+        members.append({
+            "id": row[0],
+            "name": row[1],
+            "last_name": row[2]
+        })
+    return jsonify(members)
 
 @app.route('/profile/<int:id_c>')
 def profile(id_c):
@@ -411,10 +437,13 @@ def show_all_replies(discussion_id, comment_id):
             "id_c": reply[0],
             "id_client": reply[1],
             "content": reply[3],
+            "type": reply[4],
+            "avis": reply[5],
             "like": get_comment_likes(reply[0])[0],
             "dislike": get_comment_likes(reply[0])[1],
-            "username": get_user_by_id(reply[1])[2] + " " + get_user_by_id(reply[1])[3],
-            "opinion": opinion  # adapt depending on your schema
+            "username": get_user_by_id(reply[1])[1] + " " + get_user_by_id(reply[1])[2],
+            "opinion": opinion,
+            "reply_count": len(select_comment_replies(reply[0]))
         })
 
     return jsonify(result)

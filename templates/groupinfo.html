@@ -31,7 +31,7 @@
         <input
           id="searchInput"
           type="search"
-          placeholder="Rechercher par titre de discussion..."
+          placeholder="Rechercher un membre..."
           aria-label="Rechercher"
         />
       </div>
@@ -102,7 +102,7 @@
     </div>
   </header>
 
-  <body>
+  <main>
     <details>
 
     <summary class="icon-btn">Gérer</summary>
@@ -189,17 +189,38 @@
 
       
     <div class="container">
-        <div class="groupTitle">  {{group_client['name']}}  </div> 
+        <div class="groupTitle">  {{group_client['name']}}  </div>
 
         <br>
-        <h2>Chefs de projet</h2>
-
         <h2>Membres</h2>
+        <p id="countInfo" style="color: rgba(255,255,255,0.62); font-size:12px;"></p>
         <br>
-          {% for membre in members%}
-              <a href="" class="membre">{{membre['name']}} {{membre['last_name']}}</a> <!-- A redirige vers profile-->
-              
+        <div id="membresContainer">
+          {% for membre in members %}
+              <a href="/profile/{{membre['id']}}" class="membre">{{membre['name']}} {{membre['last_name']}}</a>
           {% endfor %}
-        
+        </div>
+
     </div>
-  </body>
+  </main>
+
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const countInfo = document.getElementById("countInfo");
+    const allMembres = document.querySelectorAll(".membre");
+
+    countInfo.textContent = allMembres.length + " membre(s)";
+
+    searchInput.addEventListener("input", function() {
+      const q = this.value.trim().toLowerCase();
+      let visibles = 0;
+      allMembres.forEach(function(el) {
+        const match = el.textContent.trim().toLowerCase().includes(q);
+        el.style.display = match ? "" : "none";
+        if (match) visibles++;
+      });
+      countInfo.textContent = visibles + " membre(s)";
+    });
+  </script>
+</body>
+</html>

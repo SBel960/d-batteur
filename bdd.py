@@ -55,6 +55,8 @@ def create_comments_table():
                 id_c INTEGER NOT NULL,
                 id_d INTEGER NOT NULL,
                 content TEXT NOT NULL,
+                type TEXT NOT NULL,
+                avis TEXT,
                 id_reply INTEGER NOT NULL,
                 FOREIGN KEY(id_c) REFERENCES Client(id_client),
                 FOREIGN KEY(id_d) REFERENCES Discussions(id_discussion)
@@ -159,13 +161,13 @@ def insert_disscussions_table(id_c, title, content, type):
     data.commit()
 
 
-def insert_comments_table(id_c, id_d, content, id_reply):
+def insert_comments_table(id_c, id_d, content, type, avis, id_reply):
     data = get_db()
     sql = data.cursor()
-    command = """INSERT INTO Comments(id_c, id_d, content, id_reply)
-                VALUES (?,?,?,?)
+    command = """INSERT INTO Comments(id_c, id_d, content, type, avis, id_reply)
+                VALUES (?,?,?,?,?,?)
             """
-    sql.execute(command, [id_c, id_d, content, id_reply])
+    sql.execute(command, [id_c, id_d, content, type, avis, id_reply])
     data.commit()
 
 def insert_likes_table(id_c, target, id_target, like):
@@ -269,7 +271,7 @@ def select_comments_ferme(discussion_id):
     data = get_db()
     sql = data.cursor()
     command = """SELECT * FROM Comments 
-            FULL JOIN Likes ON Comments.id_comment = Likes.id_target AND Likes.target='comment'
+            LEFT JOIN Likes ON Comments.id_comment = Likes.id_target AND Likes.target='comment'
             WHERE Comments.id_d= ? AND id_reply=0
             GROUP BY Comments.id_comment
             ORDER BY SUM(CASE WHEN Likes.like = 1 THEN 1 ELSE 0 END) DESC, SUM(CASE WHEN Likes.like = -1 THEN 1 ELSE 0 END);
@@ -546,3 +548,16 @@ def get_user_by_id(id_c):
     res=sql.fetchone()
 
     return res
+
+def get_score_proposition(id_commentaire):
+    score = 0
+    enfants =select_comment_replies(id_commentaire)
+    for enfant in enfants:
+        likes, dislikes = get_comment_likes(enfant['id_comment'])
+        net = likes - dislikes
+        if enfant['avis'] == 'pour':
+            score += net
+        elif enfant['avis'] == 'contre':
+            score -= net
+        score += get_score_proposition(enfant['id_comment'])
+    return score  

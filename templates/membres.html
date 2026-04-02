@@ -29,7 +29,7 @@
         <input
           id="searchInput"
           type="search"
-          placeholder="Rechercher par nom de groupe..."
+          placeholder="Rechercher par nom de membre..."
           aria-label="Rechercher"
         />
       </div>
@@ -50,4 +50,65 @@
   </div>
 
   </section>
+
+  <main class="container">
+    <section class="section">
+      <div class="section-head">
+        <h2>Membres</h2>
+        <div id="countInfo" class="muted"></div>
+      </div>
+      <div id="membersList" class="members-grid"></div>
+    </section>
+  </main>
+
+  <script>
+    let all_members = [];
+
+    async function chargerMembres() {
+      const reponse = await fetch("/allmembers");
+      const data = await reponse.json();
+      all_members = data;
+    }
+
+    function renderMembres(items) {
+      const list = document.getElementById("membersList");
+      const countInfo = document.getElementById("countInfo");
+      list.innerHTML = "";
+      countInfo.textContent = items.length + " membre(s)";
+
+      if (!items.length) {
+        list.innerHTML = `<div class="empty">Aucun membre trouvé.</div>`;
+        return;
+      }
+
+      items.forEach(m => {
+        const card = document.createElement("a");
+        card.className = "member-card";
+        card.href = `/profile/${m.id}`;
+        const initiales = m.name[0].toUpperCase() + m.last_name[0].toUpperCase();
+        card.innerHTML = `
+          <div class="member-avatar">${initiales}</div>
+          <div class="member-name">${m.name} ${m.last_name}</div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function appliquerRecherche() {
+      const q = document.getElementById("searchInput").value.trim().toLowerCase();
+      const filtres = all_members.filter(m =>
+        (m.name + " " + m.last_name).toLowerCase().includes(q)
+      );
+      renderMembres(filtres);
+    }
+
+    document.getElementById("searchInput").addEventListener("input", appliquerRecherche);
+
+    async function initialiserMembres() {
+      await chargerMembres();
+      renderMembres(all_members);
+    }
+
+    initialiserMembres();
+  </script>
 </body>

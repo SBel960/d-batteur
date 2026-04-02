@@ -32,7 +32,7 @@
         <input
           id="searchInput"
           type="search"
-          placeholder="Rechercher par titre de discussion..."
+          placeholder="Rechercher dans les commentaires..."
           aria-label="Rechercher"
         />
       </div>
@@ -91,43 +91,89 @@
       </div>
       <div class="comments">
         <div class="commentInput">
-          <form class="commentForm" method="post" action='{{url_for("commentaire", discussion_id=discussion_id, reply=0)}}'>
-            <label for="comment_input"> Commentaires </label>
-            <textarea type="text" class="form-control" name="commentaire" placeholder="Ajoutez votre commentaire..." id="comment_input" required></textarea>
-            <input class="icon-btn submit-button" type="submit" value="Envoyer">
-          </form>
+          {% if discussion_type == 'ouvert' %}
+            <form class="commentForm" method="post" action='{{ url_for("commentaire", discussion_id=discussion_id, reply=0) }}'>
+              <input type="hidden" name="type" value="proposition">
+              <label>Proposer une réponse</label>
+              <textarea class="form-control" name="commentaire" placeholder="Votre proposition..." required></textarea>
+              <input class="icon-btn submit-button" type="submit" value="Proposer">
+            </form>
+            
+            <form class="commentForm" method="post" action='{{ url_for("commentaire", discussion_id=discussion_id, reply=0) }}'>
+              <input type="hidden" name="type" value="normal">
+              <label>Commenter</label>
+              <textarea class="form-control" name="commentaire" placeholder="Votre commentaire..." required></textarea>
+              <input class="icon-btn submit-button" type="submit" value="Commenter">
+            </form>
+          
+          {% else %}
+            <form class="commentForm" method="post" action='{{ url_for("commentaire", discussion_id=discussion_id, reply=0) }}'>
+              <label for="comment_input">Commentaires</label>
+              <textarea class="form-control" name="commentaire" placeholder="Ajoutez votre commentaire..." id="comment_input" required></textarea>
+              <input class="icon-btn submit-button" type="submit" value="Envoyer">
+            </form>
+
+          {% endif %}
         </div>
 
         {% for  comment in comments %}
         
           <div class="commentTextList">
-            <div class="commentBox_{{comment['opinion']}}">
+            <div class="commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['avis'] %}{{comment['avis']}}{% else %}normal{% endif %}">
               <div class="commentUser">
                 {{comment['username']}} 
               </div>
               <div class="commentText">
                 {{ comment["content"] }}
               </div>
+
               <div class="commentLike">
                   <div class="btn-area">
                     {% set id=comment['id_c'] %}
                     <a class="likes-count" href="{{ url_for('like_comment', discussion_id=discussion_id , comment_id=id, action='like') }}">👍 {{comment['like']}}</a>
                     <a class="dislikes-count" href="{{ url_for('like_comment', discussion_id=discussion_id , comment_id=id, action='unlike')}}">👎 {{comment['dislike']}}</a>
+                    {% if comment['type'] == 'proposition' %}
+                      <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
+                        Score : {{ comment['score'] }}
+                      </span>
+                    {% endif %}
                     <a class="icon-btn" onclick="toggleCommentForm(event, {{id}})"> reply </a>
-                    
-                  </div>
-                  <form class="commentForm reply" id="replyForm-{{id}}" method="post" action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' style="display: none;">
-                        <label for="comment_input"> Reply </label>
-                        <textarea type="text" class="form-control" name="commentaire" placeholder="Ajoutez votre reply..." id="reply_input" required></textarea>
-                        <input class="icon-btn submit-button" type="submit" value="Envoyer">
-                    </form>    
+
+                  </div>  
+                   {% if comment['type'] == 'proposition' %}
+                    <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
+                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' 
+                          style="display: none;">
+                      <input type="hidden" name="type" value="normal">
+                      <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
+                      <div class="avis-choice">
+                        <label><input type="radio" name="avis" value="pour" required> Pour</label>
+                        <label><input type="radio" name="avis" value="contre"> Contre</label>
+                        <label><input type="radio" name="avis" value="neutre"> Neutre</label>
+                      </div>
+                      <input class="icon-btn submit-button" type="submit" value="Envoyer">
+                    </form>
+
+                  {% else %}
+                    <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
+                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' 
+                          style="display: none;">
+                      <input type="hidden" name="type" value="normal">
+                      <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
+                      <input class="icon-btn submit-button" type="submit" value="Envoyer">
+                    </form>
+                  {% endif %}
                     
                     
               </div>
               <div class="commentReplies" id="commentReplies-{{comment['id_c']}}"></div>
             </div>
           </div>
-          <a href="" onclick="show_comment_replies(event, {{discussion_id}}, {{id}})" style="color:white">show (nb_replies) replies</a>
+          {% if comment['reply_count'] > 0 %}
+          <a id="repliesBtn-{{comment['id_c']}}" href="" data-count="{{comment['reply_count']}}" onclick="toggleReplies(event, {{discussion_id}}, {{comment['id_c']}})" style="color:white">
+            {{comment['reply_count']}} réponse{% if comment['reply_count'] > 1 %}s{% endif %}
+          </a>
+          {% endif %}
           
           {% endfor %}
         </div>
@@ -136,6 +182,16 @@
   </main>
 
   <script>
+
+    // Search bar : filtre les commentaires par auteur ou contenu
+    document.getElementById("searchInput").addEventListener("input", function() {
+      const q = this.value.trim().toLowerCase();
+      document.querySelectorAll(".commentTextList").forEach(function(el) {
+        const auteur = el.querySelector(".commentUser")?.textContent.toLowerCase() || "";
+        const texte  = el.querySelector(".commentText")?.textContent.toLowerCase() || "";
+        el.style.display = (auteur.includes(q) || texte.includes(q)) ? "" : "none";
+      });
+    });
 
     /*Script JS à remplir*/
 
@@ -174,64 +230,84 @@
     }
 
 
-    async function show_comment_replies(event, discussion_id, comment_id){
-      event.preventDefault(); 
+    async function toggleReplies(event, discussion_id, comment_id){
+      event.preventDefault();
       const container = document.getElementById(`commentReplies-${comment_id}`);
+      const btn = document.getElementById(`repliesBtn-${comment_id}`);
+      const count = btn ? parseInt(btn.dataset.count) : 0;
 
-        // Toggle behavior (click again = hide)
       if (container.dataset.loaded === "true") {
         container.innerHTML = "";
         container.dataset.loaded = "false";
+        if (btn) btn.textContent = count + (count > 1 ? " réponses" : " réponse");
         return;
       }
+
       const response = await fetch(`/show_all_replies/${discussion_id}/${comment_id}`);
       const replies = await response.json();
       let html = "";
-
-      replies.forEach(reply => {
-        html += renderComment(reply);
-      });
-
+      replies.forEach(reply => { html += renderComment(reply); });
       container.innerHTML = html;
       container.dataset.loaded = "true";
+      if (btn) btn.textContent = "Masquer les réponses";
     }
 
     function renderComment(comment) {
+        let replyForm = '';
+
+        if (comment.avis === 'pour' || comment.avis === 'contre') {
+            replyForm = `
+                <input type="hidden" name="type" value="normal">
+                <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
+                <div class="avis-choice">
+                    <label><input type="radio" name="avis" value="pour" required> Pour</label>
+                    <label><input type="radio" name="avis" value="contre"> Contre</label>
+                    <label><input type="radio" name="avis" value="neutre"> Neutre</label>
+                </div>
+            `;
+        } else if (comment.avis === 'neutre') {
+            replyForm = `
+                <input type="hidden" name="type" value="normal">
+                <input type="hidden" name="avis" value="neutre">
+                <textarea class="form-control" name="commentaire" placeholder="Votre réponse neutre..." required></textarea>
+            `;
+        } else {
+            replyForm = `
+                <input type="hidden" name="type" value="normal">
+                <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
+            `;
+        }
+
+        const repliesBtnHtml = comment.reply_count > 0
+            ? `<a id="repliesBtn-${comment.id_c}" href="#" data-count="${comment.reply_count}"
+                  onclick="toggleReplies(event, {{discussion_id}}, ${comment.id_c})" style="color:white">
+                  ${comment.reply_count} réponse${comment.reply_count > 1 ? 's' : ''}
+               </a>`
+            : '';
+
         return `
             <div class="commentTextList">
-                <div class="commentBox_${comment.opinion}">
-                    <div class="commentUser">
-                        ${comment.username}
-                    </div>
-
-                    <div class="commentText">
-                        ${comment.content}
-                    </div>
-
+                <div class="commentBox_${comment.avis || 'normal'}">
+                    <div class="commentUser">${comment.username}</div>
+                    <div class="commentText">${comment.content}</div>
                     <div class="commentLike">
                         <div class="btn-area">
                             <a href="/like_comment/{{discussion_id}}/${comment.id_c}/like">👍 ${comment.like}</a>
                             <a href="/like_comment/{{discussion_id}}/${comment.id_c}/unlike">👎 ${comment.dislike}</a>
-
-                           <a class="icon-btn" onclick="toggleCommentForm(event, ${comment.id_c})"> reply </a>
+                            <a class="icon-btn" onclick="toggleCommentForm(event, ${comment.id_c})"> reply </a>
                         </div>
-
-                       <form class="commentForm reply" id="replyForm-${comment.id_c}" method="post" action="/commentaire/{{discussion_id}}/${comment.id_c}" style="display: none;">
-                          <label for="comment_input"> Reply </label>
-                          <textarea type="text" class="form-control" name="commentaire" placeholder="Ajoutez votre reply..." id="reply_input" required></textarea>
-                          <input class="icon-btn submit-button" type="submit" value="Envoyer">
-                      </form>    
-
-                        <a href="#" onclick="show_comment_replies(event, {{discussion_id}}, ${comment.id_c})">
-                            show replies
-                        </a>
+                        <form class="commentForm reply" id="replyForm-${comment.id_c}" method="post"
+                              action="/commentaire/{{discussion_id}}/${comment.id_c}" style="display: none;">
+                            ${replyForm}
+                            <input class="icon-btn submit-button" type="submit" value="Envoyer">
+                        </form>
+                        ${repliesBtnHtml}
                     </div>
-
                     <div class="commentReplies" id="commentReplies-${comment.id_c}"></div>
                 </div>
             </div>
         `;
-    }   
+      }
 
   </script>
 </body>
