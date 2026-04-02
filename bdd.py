@@ -409,6 +409,7 @@ def select_member_by_id(id_g):
     sql.execute(command,[id_g])
     res=sql.fetchall()
     return res
+# DELETE FUNCTION
 
 def delete_member(id_g,id_c):
     data =get_db()
@@ -428,6 +429,26 @@ def delete_group(id_g):
     data.commit()
     sql.close()
 
+def delete_discussiongroups(id_g,id_d):
+    data =get_db()
+    sql=data.cursor()
+    command ="""DELETE FROM DiscussionGroups WHERE id_g=? AND id_d=?
+        """
+    sql.execute(command,[id_g,id_d])
+    data.commit()
+    sql.close()
+
+def delete_discussiongroups(id_g,id_d):
+    data =get_db()
+    sql=data.cursor()
+    command ="""DELETE FROM DiscussionGroups WHERE id_g=? AND id_d=?
+        """
+    sql.execute(command,[id_g,id_d])
+    data.commit()
+    sql.close()
+
+# UPDATE FUNCTION
+
 
 def update_group(name,id_g):
     data=get_db()
@@ -439,6 +460,17 @@ def update_group(name,id_g):
     data.commit()
     sql.close()
 
+def update_discussion(title,content,type,d_id):
+    data=get_db()
+    sql=data.cursor()
+    command="""UPDATE Discussions SET title=?, content=?, type=? WHERE id_discussion=?
+        """
+    
+    sql.execute(command,[title,content,type,d_id])
+    data.commit()
+    sql.close()
+
+    
 #---------------------- likes
 
 def update_like(id_client, id_cible, cible, value):
