@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies, get_score_proposition, create_groups_table, create_group_members_table, create_discussion_groups_table
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies,update_discussion,delete_discussiongroups, get_score_proposition, create_groups_table, create_group_members_table, create_discussion_groups_table
 
 import time
 app = Flask(__name__)
@@ -42,7 +42,7 @@ def home():
 
         groupes = []
         for groupe_id in res_groupes:
-           groupes.append((groupe_id[0], select_groupe_from_id(groupe_id[0])[0]))
+           groupes.append([groupe_id[0], select_groupe_from_id(groupe_id[0])[0]])
         discussions.append([row[2],row[3],str(row[0]),likes,dislikes, groupes, auteur, type, row[5], row[6]]) #row = [0:id, 1:id_client, 2:title, 3:content, 4:type, 5:date, 6: time]
 
     result = select_all_groupes()
@@ -130,6 +130,39 @@ def ajouter_discussion():
     return redirect(url_for("main", discussion_id= discussion_id))
 
 
+@app.route("/modifier_discussion/<int:d_id>", methods=["POST"])
+def modifier_discussion(d_id):
+    if not(session.get('logged_in')):
+        return redirect(url_for('login_page'))
+
+    title = request.form['discussionTitle']
+    content = request.form['discussionContent']
+    new_groupes = set(request.form.getlist('groupes'))
+    type = request.form.get('discussionType')
+    old_groupes=set()
+
+    update_discussion(title,content,type,d_id)
+    for g in select_discussion_groups(d_id):
+        old_groupes.add(g[0])
+    print("OLD GROUP")
+    print(old_groupes)
+    new_groupes = set((map(int, new_groupes)))
+    print("NEW GROUP")
+    print(new_groupes)
+    del_group=list(old_groupes-new_groupes)
+    add_group=list(new_groupes-old_groupes)
+
+    print(del_group)
+    print(add_group)
+    for d in del_group:
+        delete_discussiongroups(d,d_id)
+    
+    for a in add_group:
+        insert_discussion_groups(a,d_id)
+    
+    return redirect(url_for("home"))
+
+
 
 @app.route("/like_discussion/<int:discussion_id>/<action>")
 def like_discussion(discussion_id, action):
@@ -190,7 +223,6 @@ def groups_page():
             msg="Ce group existe deja"
         else:
             insert_groups_table(group_name)
-            insert_group_members(select_groupe_from_name(group_name)[0]['id_group'],session['id_client'])
     id_client = session['id_client']
     groups_client = []
     res= select_client_groupes(id_client)
@@ -257,11 +289,11 @@ def group_info(g_id):
         other.append(dict(id=member[0],name=member[1],last_name=member[2]))
 
         
-    return render_template("groupinfo.html",group_client=group_client,other=other,members=members,id_client=session['id_client'], first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'])
+    return render_template("groupinfo.html",group_client=group_client,other=other,members=members,id_client=session['id_client'],first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'],role=roles_numeros[session['role']], role_name=session['role'])
 
 @app.route('/updategroup/<int:group_id>',methods=['POST'])
 def change_group_name(group_id):
-    if not(session.get('logged_in')):
+    if not(session.get('logged_in')):   
         return redirect(url_for('login_page'))
     new_name=request.form["groupName"]
     update_group(new_name,group_id)

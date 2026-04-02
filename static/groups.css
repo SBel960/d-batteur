@@ -265,18 +265,18 @@
     letter-spacing: 0.2px;
   }
   
-  .list{
+  /* .list{
     display: flex;
     flex-direction: column;
     gap: 10px;
-  }
+  } */
 
-  .groupList {
+  /* .groupList {
     width: 50%;
     display: flex;
     flex-direction: column;
     padding-left: 10px;
-  }
+  } */
 
   .groupTextInput {
     padding: 10px;
