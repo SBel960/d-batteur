@@ -99,7 +99,7 @@ def commentaire(discussion_id, reply):
     id_client = session['id_client']
     type = request.form.get('type', 'normal')
     avis = request.form.get('avis') 
-    print(content)
+    print(avis)
     insert_comments_table(id_client, discussion_id, content, type, avis, reply)
     return redirect(url_for("main", discussion_id= discussion_id))
 

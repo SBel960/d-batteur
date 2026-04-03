@@ -2,7 +2,7 @@ import sqlite3
 from flask import g
 from datetime import date
 import time
-db_file = "./app.db"
+db_file = "approot/app.db"
 
 def get_db():
     if "db" not in g:
