@@ -89,7 +89,7 @@
 
     <h2>Tous les groupes</h2>
     <p id="countInfo"></p>
-    <div id="groupsList" class="list"></div>
+    <div id="groupsList" class="groupContainer"></div>
   </main>
 
   <script>
@@ -125,29 +125,12 @@
       }
 
       items.forEach(g => {
-        const card = document.createElement("div");
-        card.className = "group";
-      
-        let memberForm = "";
-      
-        {% if role|int >= 2 %}
-        memberForm = `
-          <form action="/addgroupe/${g.id}" method="post" class="ajouter_membres_groupes_form">
-            <select name="membres" class="membres">
-              {% for member in members %}
-                <option value="{{ member[0] }}" style="color:black">
-                  {{ member[1] }} {{ member[2] }}
-                </option>
-              {% endfor %}
-            </select>
-            <input type="submit" value="Ajouter cette personne">
-          </form>
-        `;
-        {% endif %}
-      
-        card.innerHTML = `
-          <div class="group_name">${escapeHtml(g.name)}</div>
-          ${memberForm}
+        const card = document.createElement("a");
+          card.href="/group_info/${g.id}";
+          card.className="group";
+
+          card.innerHTML = `
+            ${ g.name }
         `;
       
         list.appendChild(card);
