@@ -45,6 +45,30 @@
         <div id="userGroup" class="user-group">Role : {{role_name}}</div>
       </div>
       <a class="logout" href="{{url_for('logout')}}"> Logout </a>
+    {% if role >= 2%}
+    <details>
+      <summary class="icon-btn">Gérer</summary>
+        <div class="gererDropdown">
+
+          <button commandfor='AddMember'command='show-modal' title="Ajouter des membres" class="dropdownChoice">
+            Ajouter
+          </button>
+
+          <button commandfor='DeleteMember'command='show-modal' title="Supprimer des membres" class="dropdownChoice">
+            Supprimer un membre
+          </button>
+
+          <button commandfor='UpdateGroup'command='show-modal' title="Modifier le groupe" class="dropdownChoice">
+            Modifier
+          </button>
+
+
+          <button commandfor='DeleteGroup'command='show-modal' title="Supprimer le groupe" class="dropdownChoice">
+            Supprimer le groupe
+          </button>
+        </div>
+    </details>
+    {% endif %}
     </div>
   </header>
   <div class="topbar-dropdown">
@@ -56,23 +80,8 @@
   </header>
 
   <body>
-  {% if role >= 2%}
-    <details>
   
-    <summary class="icon-btn">Gérer</summary>
-      <li><button commandfor='AddMember'command='show-modal' title="Ajouter des membres">
-        Ajouter
-      </button></li>
-      <li><button commandfor='DeleteMember'command='show-modal' title="Supprimer des membres">
-        Supprimer un membre
-      </button></li>
-      <li><button commandfor='UpdateGroup'command='show-modal' title="Modifier le groupe">
-        Modifier
-      </button></li>
-      <li><button commandfor='DeleteGroup'command='show-modal' title="Supprimer le groupe">
-        Supprimer le groupe
-      </button></li>
-    </details>
+
  
 <!-- Ajouter des membres  -->
 
@@ -115,6 +124,7 @@
           <input class="postButton" type="submit" value="Retirer">
 
         </form>
+      {% if role >=2 %}
       </dialog>
 <!-- Modifier le groupe  -->
         <dialog id="UpdateGroup">
@@ -123,7 +133,7 @@
             </button>
 
             <form class="ajouter_group_form" action="{{url_for('change_group_name', group_id=group_client['id']) }}", method="POST"> 
-              <label> Changer le titre du groupe </label> 
+              <label> Changer le nom du groupe </label> 
               <input type="text" class="groupTextInput" name='groupName' placeholder="Nom du groupe" value="{{group_client['name']}}" > 
               <input type="submit" value="modifier">
             </form> 

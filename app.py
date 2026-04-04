@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies,update_discussion,delete_discussiongroups, get_score_proposition, create_groups_table, create_group_members_table, create_discussion_groups_table
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies,update_discussion,delete_discussiongroups, get_score_proposition, create_groups_table, create_group_members_table, create_discussion_groups_table,get_email
 
 import time
 app = Flask(__name__)
@@ -306,8 +306,10 @@ def delete_group_from_db(group_id):
         return redirect(url_for('login_page'))
     
     for member in select_member_by_id(group_id):
+        print(member[0])
         delete_member(group_id,member[0])
     
+    delete_discussiongroups(group_id)
     delete_group(group_id)
 
     return redirect(url_for("groups_page"))
@@ -330,7 +332,8 @@ def get_all_members():
         members.append({
             "id": row[0],
             "name": row[1],
-            "last_name": row[2]
+            "last_name": row[2],
+            "role": row[3]
         })
     return jsonify(members)
 
@@ -340,12 +343,12 @@ def profile(id_c):
         return redirect(url_for('login_page'))
     my_profile = id_c == session["id_client"] #si la profile cible est le profile du user
     id_c, name, last_name, role = get_user_by_id(id_c)
-    res = select_client_groupes_by_id(id_c)
+    res = select_client_groupes(id_c)
     groupes = []
     for row in res:
-        groupes.append(row[0])
+        groupes.append(dict(id=row[0],name=row[1]))
     
-    return render_template("profile.html", my_profile=my_profile, name=name, last_name=last_name, role=role, groupes=groupes)
+    return render_template("profile.html", my_profile=my_profile, name_p=name, last_name_p=last_name, role_p=role,email_p=get_email(id_c)   [0], groupes=groupes,first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'])
     
     
 @app.route('/alldiscussions', methods=["GET"])

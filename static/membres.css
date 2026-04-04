@@ -296,3 +296,15 @@
     padding: 32px;
     text-align: center;
   }
+  .companyNameBox{
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+
+  .companyName{
+    width:fit-content;
+    font-weight: bolder;
+    font-size: 40px;
+    
+  }
