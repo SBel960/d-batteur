@@ -207,7 +207,7 @@
     let likesCount = Number(likesText.slice(2)); 
     let dislikesCount = Number(dislikesText.slice(2)); 
     
-    const total = likesCount + dislikesCount; 
+    let total = likesCount + dislikesCount; 
 
     if (total > 0) {
       barFor.style.width = (likesCount * 100 / total) + "%";
@@ -220,6 +220,26 @@
       barAgainst.style.width = "50%"; 
       barAgainst.style.setProperty("--dislikesCount", `"50%"`);
     }
+    async function updateBar(){
+      likesText = document.getElementById('likes-count').textContent; 
+      dislikesText = document.getElementById('dislikes-count').textContent; 
+      likesCount = Number(likesText.slice(2)); 
+      dislikesCount = Number(dislikesText.slice(2)); 
+      
+      total = likesCount + dislikesCount; 
+
+      if (total > 0) {
+        barFor.style.width = (likesCount * 100 / total) + "%";
+        barFor.style.setProperty("--likesCount", `"${likesCount * 100 / total}%"`);
+        barAgainst.style.width = (dislikesCount * 100 / total) + "%";
+        barAgainst.style.setProperty("--dislikesCount", `"${dislikesCount * 100 / total}%"`);
+      } else {
+        barFor.style.width = "50%"; 
+        barFor.style.setProperty("--likesCount", `"50%"`);
+        barAgainst.style.width = "50%"; 
+        barAgainst.style.setProperty("--dislikesCount", `"50%"`);
+      }
+    }
 
     async function likeDiscussion(event, discussion_id, action){
       event.preventDefault();
@@ -229,6 +249,7 @@
       document.getElementById(`d-likes-count-${discussion_id}`).innerText = data.likes;
       document.getElementById(`d-dislikes-count-${discussion_id}`).innerText = data.dislikes;
       event.target.disabled = false;
+      updateBar();
     }
 
     async function likeComment(event, discussion_id,comment_id, action){
