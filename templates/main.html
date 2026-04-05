@@ -130,8 +130,8 @@
               <div class="commentLike">
                   <div class="btn-area">
                     {% set id=comment['id_c'] %}
-                    <a class="likes-count" href="{{ url_for('like_comment', discussion_id=discussion_id , comment_id=id, action='like') }}">👍 {{comment['like']}}</a>
-                    <a class="dislikes-count" href="{{ url_for('like_comment', discussion_id=discussion_id , comment_id=id, action='unlike')}}">👎 {{comment['dislike']}}</a>
+                    <a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'like')">👍 <span id="likes-count-{{id}}"> {{comment['like']}}</span></a>
+                    <a class="dislikes-count" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'unlike')">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
                     {% if comment['type'] == 'proposition' %}
                       <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
                         Score : {{ comment['score'] }}
@@ -217,6 +217,16 @@
       barAgainst.style.setProperty("--dislikesCount", `"50%"`);
     }
 
+    async function likeComment(event, discussion_id,comment_id, action){
+      event.preventDefault();
+      event.target.disabled = true;
+      const response = await fetch(`/like_comment/${discussion_id}/${comment_id}/${action}`);
+      const data = await response.json()
+      document.getElementById(`likes-count-${comment_id}`).innerText = data.likes;
+      document.getElementById(`dislikes-count-${comment_id}`).innerText = data.dislikes;
+      event.target.disabled = false;
+    }
+
     function toggleCommentForm(event, id) {
       event.preventDefault(); 
 
@@ -292,8 +302,8 @@
                     <div class="commentText"><p>${comment.content}</p></div>
                     <div class="commentLike">
                         <div class="btn-area">
-                            <a href="/like_comment/{{discussion_id}}/${comment.id_c}/like">👍 ${comment.like}</a>
-                            <a href="/like_comment/{{discussion_id}}/${comment.id_c}/unlike">👎 ${comment.dislike}</a>
+                            <a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, ${comment.id_c}, 'like')">👍 <span id="likes-count-${comment.id_c}"> ${comment.like}</span></a>
+                            <a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, ${comment.id_c}, 'unlike')">👎 <span id="dislikes-count-${comment.id_c}">${comment.dislike}</span></a>
                             <a class="icon-btn" onclick="toggleCommentForm(event, ${comment.id_c})"> reply </a>
                         </div>
                         <form class="commentForm reply" id="replyForm-${comment.id_c}" method="post"
@@ -308,6 +318,8 @@
             </div>
         `;
       }
+
+
 
   </script>
 </body>

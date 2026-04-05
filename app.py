@@ -69,7 +69,6 @@ def main(discussion_id):
         like_c=get_comment_likes(id_comment)[0]
         dislike_c=get_comment_likes(id_comment)[1]
         if type_comment == 'proposition':
-            print('bonjour prop')
             score = (like_c - dislike_c) + get_score_proposition(id_comment)
         else :
             score = None
@@ -201,11 +200,11 @@ def like_comment(discussion_id,comment_id, action):
     else:
         return redirect(url_for("main", discussion_id=discussion_id))
     
-# a changer
     target = "comment"
     id_target = comment_id
     update_like(id_client, id_target, target, action)
-    return redirect(url_for("main", discussion_id=discussion_id))
+    likes, dislikes = get_comment_likes(comment_id)
+    return jsonify({"likes": likes, "dislikes":dislikes})
 
 
 
