@@ -176,7 +176,6 @@ def like_discussion(discussion_id, action):
     else:
         return redirect(url_for("home"))
     
-# a changer
     origin_page = request.args.get('origin_page')
     target = "discussion"
     id_target = discussion_id
@@ -184,8 +183,8 @@ def like_discussion(discussion_id, action):
 
     if origin_page == 'homepage':
         return redirect(url_for("home"))
-    elif origin_page == 'main':
-        return redirect(url_for("main", discussion_id=discussion_id))
+    likes, dislikes = get_discussion_likes(discussion_id)
+    return jsonify({"likes": likes, "dislikes":dislikes})
 
 @app.route("/like_comment/<int:discussion_id>/<int:comment_id>/<action>")
 def like_comment(discussion_id,comment_id, action):
