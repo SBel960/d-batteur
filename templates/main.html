@@ -120,9 +120,12 @@
         
           <div class="commentTextList">
             <div class="commentBox commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['opinion'] and discussion_type=='ferme' %}{{comment['opinion']}}{% else %}normal{% endif %}">
+              
               <div class="commentUser">
                 {{comment['username']}} 
+                
               </div>
+              
               <div class="commentText">
                <p> {{ comment["content"] }}</p>
               </div>
@@ -130,17 +133,18 @@
               <div class="commentLike">
                   <div class="btn-area">
                     {% set id=comment['id_c'] %}
-                    <a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'like')">👍 <span id="likes-count-{{id}}"> {{comment['like']}}</span></a>
-                    <a class="dislikes-count" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'unlike')">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
+                    <a class="likes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'like')">👍 <span id="likes-count-{{id}}"> {{comment['like']}}</span></a>
+                    <a class="dislikes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'unlike')">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
                     {% if comment['type'] == 'proposition' %}
                       <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
-                        Score : {{ comment['score'] }}
+                        Score :&nbsp; <span id="score-count"> {{ comment['score'] }}</span>
                       </span>
-                    {% endif %}
+                     {% endif %}
                     <a class="icon-btn" onclick="toggleCommentForm(event, {{id}})"> reply </a>
 
                   </div>  
                    {% if comment['type'] == 'proposition' %}
+                   
                     <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
                           action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' 
                           style="display: none;">
@@ -234,6 +238,10 @@
       const data = await response.json()
       document.getElementById(`likes-count-${comment_id}`).innerText = data.likes;
       document.getElementById(`dislikes-count-${comment_id}`).innerText = data.dislikes;
+      score = document.getElementById(`score-count`)
+      if(score != null){
+        score.innerText = data.score;
+      }
       event.target.disabled = false;
     }
 

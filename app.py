@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies,update_discussion,delete_discussiongroups, get_score_proposition, create_groups_table, create_group_members_table, create_discussion_groups_table,get_email
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies,update_discussion,delete_discussiongroups, get_score_proposition, create_groups_table, create_group_members_table, create_discussion_groups_table,get_email, select_comment_by_id
 
 import time
 app = Flask(__name__)
@@ -203,7 +203,10 @@ def like_comment(discussion_id,comment_id, action):
     id_target = comment_id
     update_like(id_client, id_target, target, action)
     likes, dislikes = get_comment_likes(comment_id)
-    return jsonify({"likes": likes, "dislikes":dislikes})
+    #type_comment = select_comment_by_id(comment_id)[4]
+
+    score = (likes - dislikes) + get_score_proposition(comment_id)
+    return jsonify({"likes": likes, "dislikes":dislikes, 'score':score})
 
 
 

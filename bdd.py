@@ -313,6 +313,16 @@ def select_discussion_by_id(id_discussion):
     return result
 
 
+def select_comment_by_id(id_comment):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT * FROM Comments WHERE id_comment= ?;
+            """
+    
+    sql.execute(command, [id_comment])
+    result = sql.fetchone()
+    return result
+
 def select_clients_not_in_group(id_group):
     data = get_db()
     sql = data.cursor()
