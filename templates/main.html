@@ -289,7 +289,7 @@
             <div class="commentTextList">
                 <div class="commentBox commentBox_${comment.avis || comment.discussion_type == 'ferme' && comment.opinion || 'normal'}">
                     <div class="commentUser">${comment.username}</div>
-                    <div class="commentText">${comment.content}</div>
+                    <div class="commentText"><p>${comment.content}</p></div>
                     <div class="commentLike">
                         <div class="btn-area">
                             <a href="/like_comment/{{discussion_id}}/${comment.id_c}/like">👍 ${comment.like}</a>

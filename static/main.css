@@ -446,6 +446,7 @@ main{
   padding:20px;
   margin-top: 10px;
   max-width: 1000px;
+  width:auto;
 }
 
 /* Score affiché sur les propositions */
