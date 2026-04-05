@@ -41,12 +41,6 @@
       </div>
       <a class="logout" href="{{url_for('logout')}}"> Logout </a>
 
-      {% if role >= 3 %}
-      <a class="icon-btn" href="{{url_for('registry_page')}}" title="Ajouter un employé" style="font-size: 13px; width: auto; padding: 0 14px;">
-        + Employé
-      </a>
-      {% endif %}
-
       {% if role >= 2 %}
       <button id="addDiscussionBtn" commandfor="newDiscussion" command="show-modal" class="icon-btn" title="Ajouter une discussion">
         +

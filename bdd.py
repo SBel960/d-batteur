@@ -332,7 +332,7 @@ def select_clients_not_in_group(id_group):
 def select_all_clients():
     data = get_db()
     sql = data.cursor()
-    command = """SELECT id_client, name, last_name FROM Client;
+    command = """SELECT id_client, name, last_name,role FROM Client;
             """
     
     sql.execute(command)
@@ -431,7 +431,7 @@ def delete_group(id_g):
     data.commit()
     sql.close()
 
-def delete_discussiongroups(id_g,id_d):
+def delete_discussiongroups(id_g):
     data =get_db()
     sql=data.cursor()
     command ="""DELETE FROM DiscussionGroups WHERE id_g=? AND id_d=?
@@ -440,12 +440,12 @@ def delete_discussiongroups(id_g,id_d):
     data.commit()
     sql.close()
 
-def delete_discussiongroups(id_g,id_d):
+def delete_discussiongroups(id_g):
     data =get_db()
     sql=data.cursor()
-    command ="""DELETE FROM DiscussionGroups WHERE id_g=? AND id_d=?
+    command ="""DELETE FROM DiscussionGroups WHERE id_g=?
         """
-    sql.execute(command,[id_g,id_d])
+    sql.execute(command,[id_g])
     data.commit()
     sql.close()
 
@@ -574,6 +574,17 @@ def get_user_by_id(id_c):
     data = get_db()
     sql=data.cursor()
     command= """SELECT id_client, name, last_name, role FROM Client WHERE id_client= ?
+            """
+    sql.execute(command,[id_c])
+
+    res=sql.fetchone()
+
+    return res
+
+def get_email(id_c):
+    data = get_db()
+    sql=data.cursor()
+    command= """SELECT email FROM Client WHERE id_client= ?
             """
     sql.execute(command,[id_c])
 

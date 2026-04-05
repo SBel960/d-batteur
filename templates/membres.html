@@ -40,8 +40,16 @@
         <div id="userFullName" class="user-name">{{ first_name }} {{ last_name }}</div>
         <div id="userGroup" class="user-group">Role : {{ role_name }}</div>
       </div>
+            {% if role >= 3 %}
+      <a class="icon-btn" href="{{url_for('registry_page')}}" title="Ajouter un employé" style="font-size: 13px; width: auto; padding: 0 14px;">
+        + Employé
+      </a>
+      {% endif %}
+
       <a class="logout" href="{{ url_for('logout') }}">Logout</a>
+
     </div>
+    
   </header>
 
   <div class="topbar-dropdown">
@@ -52,9 +60,22 @@
   </section>
 
   <main class="container">
+    <div class="companyNameBox">
+      <div class="companyName">{{session['company']}}</div>
+    </div>
     <section class="section">
       <div class="section-head">
-        <h2>Membres</h2>
+        <h2>Ceo</h2>
+        <div id="countInfo" class="muted"></div>
+      </div>
+      <div id="ceoList" class="members-grid"></div>
+      <div class="section-head">
+        <h2>Manager</h2>
+        <div id="countInfo" class="muted"></div>
+      </div>
+      <div id="managerList" class="members-grid"></div>
+      <div class="section-head">
+        <h2>Employé</h2>
         <div id="countInfo" class="muted"></div>
       </div>
       <div id="membersList" class="members-grid"></div>
@@ -71,13 +92,16 @@
     }
 
     function renderMembres(items) {
-      const list = document.getElementById("membersList");
+      const ceolist = document.getElementById("ceoList");
+      const managerlist=document.getElementById("managerList")
+      const memberlist=document.getElementById("memberList")
+
       const countInfo = document.getElementById("countInfo");
-      list.innerHTML = "";
+      ceolist.innerHTML = "";
       countInfo.textContent = items.length + " membre(s)";
 
       if (!items.length) {
-        list.innerHTML = `<div class="empty">Aucun membre trouvé.</div>`;
+        ceolist.innerHTML = `<div class="empty">Aucun membre trouvé.</div>`;
         return;
       }
 
@@ -90,7 +114,10 @@
           <div class="member-avatar">${initiales}</div>
           <div class="member-name">${m.name} ${m.last_name}</div>
         `;
-        list.appendChild(card);
+        if(m.role=="CEO") ceolist.appendChild(card);
+        if(m.role=="Manager") managerlist.appendChild(card);
+        if(m.role=="Employe") memberlist.append(card);
+        
       });
     }
 
@@ -108,7 +135,6 @@
       await chargerMembres();
       renderMembres(all_members);
     }
-
     initialiserMembres();
   </script>
 </body>
