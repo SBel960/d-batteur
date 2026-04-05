@@ -48,7 +48,6 @@ def home():
     result = select_all_groupes()
     for row in result:
         all_groupes.append([row[0], row[1]])
-    print(roles_numeros[session['role']])
 
     return render_template("homepage.html", discussions=discussions, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'], groupes=all_groupes)
 
@@ -61,7 +60,6 @@ def main(discussion_id):
     res=select_comments(discussion_id)
     if discussion_type == 'ferme': 
         res = select_comments_ferme(discussion_id)
-        print("je susi ici main")
     for comment in res:
         id_comment=comment[0]
         id_client=comment[1]
@@ -71,6 +69,7 @@ def main(discussion_id):
         like_c=get_comment_likes(id_comment)[0]
         dislike_c=get_comment_likes(id_comment)[1]
         if type_comment == 'proposition':
+            print('bonjour prop')
             score = (like_c - dislike_c) + get_score_proposition(id_comment)
         else :
             score = None
@@ -102,7 +101,6 @@ def commentaire(discussion_id, reply):
     id_client = session['id_client']
     type = request.form.get('type', 'normal')
     avis = request.form.get('avis') 
-    print(avis)
     insert_comments_table(id_client, discussion_id, content, type, avis, reply)
     return redirect(url_for("main", discussion_id= discussion_id))
 
@@ -309,7 +307,6 @@ def delete_group_from_db(group_id):
         return redirect(url_for('login_page'))
     
     for member in select_member_by_id(group_id):
-        print(member[0])
         delete_member(group_id,member[0])
     
     delete_discussiongroups(group_id)
@@ -465,6 +462,7 @@ def show_all_replies(discussion_id, comment_id):
     result = []
     for reply in res:
         opinion = get_user_opinion(discussion_id, reply[1])
+        discussion_type= select_discussion_by_id(discussion_id)[3]
         if opinion == None:
             opinion = "neutre"
         elif opinion[0] == 1:
@@ -481,6 +479,7 @@ def show_all_replies(discussion_id, comment_id):
             "dislike": get_comment_likes(reply[0])[1],
             "username": get_user_by_id(reply[1])[1] + " " + get_user_by_id(reply[1])[2],
             "opinion": opinion,
+            "discussion_type": discussion_type,
             "reply_count": len(select_comment_replies(reply[0]))
         })
 

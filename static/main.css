@@ -385,12 +385,22 @@ main{
 }
 
 .commentText {
-  width: fit-content;
+  max-width: 500px;
   padding: 10px 10px;
   background: rgba(255,255,255,0.045);
   backdrop-filter: blur(10px);
+  display:flex;
+  flex-wrap: wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
+.commentText p{
+  max-width: 100%;
+  width:fit-content;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
 .commentTextList {
   display: flex;
   flex-direction: column;
@@ -412,21 +422,30 @@ main{
 }
 
 .commentBox_contre{
-  padding: 20px;
   background-color: #e032328f;
   border: solid 1px #bf0603c9;
 }
 
 .commentBox_neutre{
-  padding: 20px;
   background-color: #8c8c8ca4;
   border: solid 1px rgba(245, 245, 245, 0.582);
 }
 
 .commentBox_proposition{
-  padding: 20px;
   background: rgba(99,102,241,0.12);
   border: solid 1px rgba(99,102,241,0.40);
+}
+
+
+.commentBox_normal{
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+  border: 1px solid rgba(255,255,255,0.35);
+
+}
+.commentBox{
+  padding:20px;
+  margin-top: 10px;
+  max-width: 1000px;
 }
 
 /* Score affiché sur les propositions */
