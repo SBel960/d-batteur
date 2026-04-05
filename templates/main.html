@@ -85,8 +85,8 @@
           <div id="bar-against" class="bar-against"></div>
         </div>
         <div class="btn-area">
-          <a id="likes-count" class="icon-btn" href="{{ url_for('like_discussion', discussion_id=discussion_id , action='like', origin_page='main') }}">👍 {{likes}}</a>
-          <a id="dislikes-count" class="icon-btn" href="{{ url_for('like_discussion', discussion_id=discussion_id , action='unlike', origin_page='main') }}">👎 {{dislikes}}</a>
+          <a  id="likes-count" class="icon-btn" href="#" onclick="likeDiscussion(event, {{discussion_id}}, 'like')">👍 <span id="d-likes-count-{{discussion_id}}"> {{likes}}</span></a>
+          <a  id="dislikes-count" class="icon-btn" href="#" onclick="likeDiscussion(event, {{discussion_id}}, 'unlike')">👎 <span id="d-dislikes-count-{{discussion_id}}"> {{dislikes}}</span></a>
         </div>
       </div>
       <div class="comments">
@@ -120,9 +120,12 @@
         
           <div class="commentTextList">
             <div class="commentBox commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['opinion'] and discussion_type=='ferme' %}{{comment['opinion']}}{% else %}normal{% endif %}">
+              
               <div class="commentUser">
                 {{comment['username']}} 
+                
               </div>
+              
               <div class="commentText">
                <p> {{ comment["content"] }}</p>
               </div>
@@ -130,17 +133,18 @@
               <div class="commentLike">
                   <div class="btn-area">
                     {% set id=comment['id_c'] %}
-                    <a class="likes-count" href="{{ url_for('like_comment', discussion_id=discussion_id , comment_id=id, action='like') }}">👍 {{comment['like']}}</a>
-                    <a class="dislikes-count" href="{{ url_for('like_comment', discussion_id=discussion_id , comment_id=id, action='unlike')}}">👎 {{comment['dislike']}}</a>
+                    <a class="likes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'like')">👍 <span id="likes-count-{{id}}"> {{comment['like']}}</span></a>
+                    <a class="dislikes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'unlike')">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
                     {% if comment['type'] == 'proposition' %}
                       <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
-                        Score : {{ comment['score'] }}
+                        Score :&nbsp; <span id="score-count"> {{ comment['score'] }}</span>
                       </span>
-                    {% endif %}
+                     {% endif %}
                     <a class="icon-btn" onclick="toggleCommentForm(event, {{id}})"> reply </a>
 
                   </div>  
                    {% if comment['type'] == 'proposition' %}
+                   
                     <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
                           action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' 
                           style="display: none;">
@@ -203,7 +207,7 @@
     let likesCount = Number(likesText.slice(2)); 
     let dislikesCount = Number(dislikesText.slice(2)); 
     
-    const total = likesCount + dislikesCount; 
+    let total = likesCount + dislikesCount; 
 
     if (total > 0) {
       barFor.style.width = (likesCount * 100 / total) + "%";
@@ -215,6 +219,51 @@
       barFor.style.setProperty("--likesCount", `"50%"`);
       barAgainst.style.width = "50%"; 
       barAgainst.style.setProperty("--dislikesCount", `"50%"`);
+    }
+    async function updateBar(){
+      likesText = document.getElementById('likes-count').textContent; 
+      dislikesText = document.getElementById('dislikes-count').textContent; 
+      likesCount = Number(likesText.slice(2)); 
+      dislikesCount = Number(dislikesText.slice(2)); 
+      
+      total = likesCount + dislikesCount; 
+
+      if (total > 0) {
+        barFor.style.width = (likesCount * 100 / total) + "%";
+        barFor.style.setProperty("--likesCount", `"${likesCount * 100 / total}%"`);
+        barAgainst.style.width = (dislikesCount * 100 / total) + "%";
+        barAgainst.style.setProperty("--dislikesCount", `"${dislikesCount * 100 / total}%"`);
+      } else {
+        barFor.style.width = "50%"; 
+        barFor.style.setProperty("--likesCount", `"50%"`);
+        barAgainst.style.width = "50%"; 
+        barAgainst.style.setProperty("--dislikesCount", `"50%"`);
+      }
+    }
+
+    async function likeDiscussion(event, discussion_id, action){
+      event.preventDefault();
+      event.target.disabled = true;
+      const response = await fetch(`/like_discussion/${discussion_id}/${action}`);
+      const data = await response.json()
+      document.getElementById(`d-likes-count-${discussion_id}`).innerText = data.likes;
+      document.getElementById(`d-dislikes-count-${discussion_id}`).innerText = data.dislikes;
+      event.target.disabled = false;
+      updateBar();
+    }
+
+    async function likeComment(event, discussion_id,comment_id, action){
+      event.preventDefault();
+      event.target.disabled = true;
+      const response = await fetch(`/like_comment/${discussion_id}/${comment_id}/${action}`);
+      const data = await response.json()
+      document.getElementById(`likes-count-${comment_id}`).innerText = data.likes;
+      document.getElementById(`dislikes-count-${comment_id}`).innerText = data.dislikes;
+      score = document.getElementById(`score-count`)
+      if(score != null){
+        score.innerText = data.score;
+      }
+      event.target.disabled = false;
     }
 
     function toggleCommentForm(event, id) {
@@ -289,11 +338,11 @@
             <div class="commentTextList">
                 <div class="commentBox commentBox_${comment.avis || comment.discussion_type == 'ferme' && comment.opinion || 'normal'}">
                     <div class="commentUser">${comment.username}</div>
-                    <div class="commentText">${comment.content}</div>
+                    <div class="commentText"><p>${comment.content}</p></div>
                     <div class="commentLike">
                         <div class="btn-area">
-                            <a href="/like_comment/{{discussion_id}}/${comment.id_c}/like">👍 ${comment.like}</a>
-                            <a href="/like_comment/{{discussion_id}}/${comment.id_c}/unlike">👎 ${comment.dislike}</a>
+                            <a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, ${comment.id_c}, 'like')">👍 <span id="likes-count-${comment.id_c}"> ${comment.like}</span></a>
+                            <a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, ${comment.id_c}, 'unlike')">👎 <span id="dislikes-count-${comment.id_c}">${comment.dislike}</span></a>
                             <a class="icon-btn" onclick="toggleCommentForm(event, ${comment.id_c})"> reply </a>
                         </div>
                         <form class="commentForm reply" id="replyForm-${comment.id_c}" method="post"
@@ -308,6 +357,8 @@
             </div>
         `;
       }
+
+
 
   </script>
 </body>
