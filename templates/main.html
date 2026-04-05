@@ -59,9 +59,9 @@
       <div class="topic-title-container">
         <span class="type {{discussion_type}}">
           {% if discussion_type == 'ouvert' %}
-           Question ouverte
+           <p>Question ouverte</p>
            {% else %}
-           Question fermée
+           <p>Question fermée</p> 
            {% endif %}
         </span>
         <span class="topic-title">
@@ -119,12 +119,12 @@
         {% for  comment in comments %}
         
           <div class="commentTextList">
-            <div class="commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['avis'] %}{{comment['avis']}}{% else %}normal{% endif %}">
+            <div class="commentBox commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['opinion'] and discussion_type=='ferme' %}{{comment['opinion']}}{% else %}normal{% endif %}">
               <div class="commentUser">
                 {{comment['username']}} 
               </div>
               <div class="commentText">
-                {{ comment["content"] }}
+               <p> {{ comment["content"] }}</p>
               </div>
 
               <div class="commentLike">
@@ -287,7 +287,7 @@
 
         return `
             <div class="commentTextList">
-                <div class="commentBox_${comment.avis || 'normal'}">
+                <div class="commentBox commentBox_${comment.avis || comment.discussion_type == 'ferme' && comment.opinion || 'normal'}">
                     <div class="commentUser">${comment.username}</div>
                     <div class="commentText">${comment.content}</div>
                     <div class="commentLike">
