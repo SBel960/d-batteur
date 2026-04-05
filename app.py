@@ -86,6 +86,9 @@ def main(discussion_id):
         reply_count = len(select_comment_replies(id_comment))
         comments.append(dict(id_c=id_comment, content=content_comment, like=like_c, dislike=dislike_c, username=username, opinion=opinion, type=type_comment, avis=avis_comment, score=score, reply_count=reply_count))
 
+    if discussion_type == 'ouvert':
+        comments.sort(key=lambda c: c['score'] if c['score'] is not None else (c['like'] - c['dislike']), reverse=True)
+
     likes, dislikes = get_discussion_likes(discussion_id)
     return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'], discussion_type=discussion_type)
 
