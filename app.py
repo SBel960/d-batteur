@@ -144,16 +144,10 @@ def modifier_discussion(d_id):
     update_discussion(title,content,type,d_id)
     for g in select_discussion_groups(d_id):
         old_groupes.add(g[0])
-    print("OLD GROUP")
-    print(old_groupes)
     new_groupes = set((map(int, new_groupes)))
-    print("NEW GROUP")
-    print(new_groupes)
     del_group=list(old_groupes-new_groupes)
     add_group=list(new_groupes-old_groupes)
 
-    print(del_group)
-    print(add_group)
     for d in del_group:
         delete_discussiongroups(d,d_id)
     
@@ -249,30 +243,27 @@ def take_all_groupes():
     return all_groups
 
 
-@app.route('/addgroupe/<int:group_id>', methods=['POST'])
-def add_member_to_group(group_id):
+@app.route('/changemember/<int:group_id>', methods=['POST'])
+def change_member_group(group_id):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    id_c_inserter=  request.form.getlist('memberList')
-    id_groupe = group_id
-    for membre in id_c_inserter:
-        if len(select_client_groupes_by_id(id_groupe, membre)) == 0:
-            insert_group_members(id_groupe, membre)
-    return redirect(url_for("group_info",g_id=id_groupe))
+    new_members= set(request.form.getlist('memberList'))
 
-@app.route('/deletemember/<int:group_id>',methods=['POST'])
+    old_members=set()
+    print(select_member_by_id(group_id)[0])
+    for m in select_member_by_id(group_id):
+        old_members.add(m[0])
 
-def delete_member_from_group(group_id):
-    if not(session.get('logged_in')):
-        return redirect(url_for('login_page'))
-    id_c=request.form.getlist("memberList")
-    for membre in id_c:
-        if len(select_client_groupes_by_id(group_id, membre)) == 1:
-            delete_member(group_id,membre)
+    del_members=list(old_members-new_members)
+    add_members=list(new_members-old_members)
+
+    for d in del_members:
+        delete_member(group_id,d)
+    
+    for a in add_members:
+        insert_group_members(group_id,a)
+   
     return redirect(url_for("group_info",g_id=group_id))
-    
-    
-            
 
 @app.route('/group_info/<int:g_id>',methods=['POST','GET'])
 def group_info(g_id):
@@ -314,7 +305,21 @@ def delete_group_from_db(group_id):
 
     return redirect(url_for("groups_page"))
 
-
+@app.route('/allgroupmembers/<int:group_id>', methods=['GET'])
+def get_all_members_groups(group_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    result = select_member_by_id(group_id)
+    members = []
+    for row in result:
+        id_c, name, last_name, role = get_user_by_id(row[0])
+        members.append({
+            "id": id_c,
+            "name": name,
+            "last_name": last_name,
+            "role": role
+        })
+    return jsonify(members)
 
 @app.route('/membres', methods=["GET"])
 def membres():

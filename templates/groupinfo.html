@@ -50,12 +50,8 @@
       <summary class="icon-btn">Gérer</summary>
         <div class="gererDropdown">
 
-          <button commandfor='AddMember'command='show-modal' title="Ajouter des membres" class="dropdownChoice">
-            Ajouter
-          </button>
-
-          <button commandfor='DeleteMember'command='show-modal' title="Supprimer des membres" class="dropdownChoice">
-            Supprimer un membre
+          <button commandfor='ChangeMember'command='show-modal' title="Ajouter des membres" class="dropdownChoice">
+            Gérer membres
           </button>
 
           <button commandfor='UpdateGroup'command='show-modal' title="Modifier le groupe" class="dropdownChoice">
@@ -85,18 +81,39 @@
  
 <!-- Ajouter des membres  -->
 
-      <dialog id="AddMember">
-        
-        <button id="closePage" commandfor='AddMember' command="request-close"> 
+      <dialog id="ChangeMember">
+
+        <button id="closePage" commandfor='ChangeMember' command="request-close"> 
           x
         </button>
-        <form class="AddGroupForm" method="post" action="{{url_for('add_member_to_group', group_id=group_client['id']) }}">
+        <div class="search">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          id="searchInputAddMember"
+          type="search"
+          placeholder="Rechercher par nom de membre..."
+          aria-label="Rechercher"
+        />
+      </div>
+        <form class="ChangeGroupForm" method="post" action="{{url_for('change_member_group', group_id=group_client['id']) }}">
           
-          {% for membre in other %}
-              <input type=checkbox name="memberList" id="memberList" value="{{membre['id']}}" >
-              <label for="memberList"> {{membre['name']}} {{membre['last_name']}} </label>
-          {%endfor%}
-
+          <div class="DialogHead"> Membres du groupe </div>
+          <div class="memberList">
+           
+            {% for membre in members %}
+                <input type=checkbox name="memberList" id="memberList_{{membre['id']}}" value="{{membre['id']}} " checked>
+                <label for="memberList_{{membre['id']}}" class="nameSelect"> {{membre['name']}} {{membre['last_name']}} </label>
+            {%endfor%}
+          </div>
+          <div class="DialogHead"> Autres membres </div>
+          <div class="memberList">
+            
+            {% for membre in other %}
+                <input type=checkbox name="memberList" id="memberList_{{membre['id']}}" value="{{membre['id']}}">
+                <label for="memberList_{{membre['id']}}" class="nameSelect"> {{membre['name']}} {{membre['last_name']}} </label>
+            {%endfor%}
+            
+          </div>
           <input class="postButton" type="submit" value="Ajouter">
 
         </form>
@@ -104,28 +121,6 @@
 
       </dialog>
 
-
-<!-- Supprimer des membres  -->
-
-      <dialog id="DeleteMember">
-        
-        <button id="closePage" commandfor='DeleteMember' command="request-close"> 
-          x
-        </button>
-        <form class="DeleteMemberForm" method="post" action="{{url_for('delete_member_from_group', group_id=group_client['id']) }}">
-          
-          {% for membre in members %}
-            {% if membre['id'] != id_client %}
-              <input type=checkbox name="memberList" id="memberList" value="{{membre['id']}}" >
-              <label for="memberList"> {{membre['name']}} {{membre['last_name']}} </label>
-            {%endif%}
-          {%endfor%}
-
-          <input class="postButton" type="submit" value="Retirer">
-
-        </form>
-      {% if role >=2 %}
-      </dialog>
 <!-- Modifier le groupe  -->
         <dialog id="UpdateGroup">
             <button id="closePage" commandfor='UpdateGroup' command="request-close"> 
@@ -150,31 +145,67 @@
               <input type="submit" value="Supprimer">
             </form> 
         </dialog>
-    
-     {%endif%}
       
     <div class="container">
+      <section class="section">
         <div class="groupTitle">  {{group_client['name']}}  </div>
-
-        <br>
+      <div class="section-head">
         <h2>Membres</h2>
-        <p id="countInfo" style="color: rgba(255,255,255,0.62); font-size:12px;"></p>
-        <br>
-        <div id="membresContainer">
-          {% for membre in members %}
-              <a href="/profile/{{membre['id']}}" class="membre">{{membre['name']}} {{membre['last_name']}}</a>
-          {% endfor %}
-        </div>
-
+        <div id="countInfo" class="muted"></div>
+      </div>
+      <div id="memberList" class="members-grid"></div>
+    </section>
     </div>
   </main>
 
   <script>
     const searchInput = document.getElementById("searchInput");
+    const searchInputAddMember=document.getElementById("searchInputAddMember");
+    const otherMembres = document.querySelectorAll(".nameSelect");
+
     const countInfo = document.getElementById("countInfo");
-    const allMembres = document.querySelectorAll(".membre");
+    const allMembres = document.querySelectorAll(".membre-grid");
 
     countInfo.textContent = allMembres.length + " membre(s)";
+    
+    let groupmember= [];
+    const path = window.location.pathname;
+    part=path.split("/")
+    id=part[2]
+
+
+    async function chargerGroupeMembre() {
+      const reponse = await fetch("/allgroupmembers/"+id);
+      const data = await reponse.json();
+      groupmember = data;
+    }
+
+    
+ function renderMembres(items) {
+      const memberlist=document.getElementById("memberList");
+
+      const countInfo = document.getElementById("countInfo");
+      countInfo.textContent = items.length + " membre(s)";
+
+      if (!items.length) {
+        memberlist.innerHTML = `<div class="empty">Aucun membre trouvé.</div>`;
+        return;
+      }
+
+      items.forEach(m => {
+        const card = document.createElement("a");
+        card.className = "member-card";
+        card.href = `/profile/${m.id}`;
+        const initiales = m.name[0].toUpperCase() + m.last_name[0].toUpperCase();
+        card.innerHTML = `
+          <div class="member-avatar">${initiales}</div>
+          <div class="member-name">${m.name} ${m.last_name}</div>
+          <div class="memberRole">${m.role}</div>
+        `;
+        memberlist.append(card);
+        
+      });
+    }
 
     searchInput.addEventListener("input", function() {
       const q = this.value.trim().toLowerCase();
@@ -186,6 +217,21 @@
       });
       countInfo.textContent = visibles + " membre(s)";
     });
+
+    searchInputAddMember.addEventListener("input", function() {
+      const q = this.value.trim().toLowerCase();
+      otherMembres.forEach(function(el) {
+        const match = el.textContent.trim().toLowerCase().includes(q);
+        el.style.display = match ? "" : "none";
+      });
+    });
+
+    async function initialiserMembres() {
+      await chargerGroupeMembre();
+      renderMembres(groupmember);
+    }
+
+    initialiserMembres()
   </script>
 </body>
 </html>
