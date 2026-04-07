@@ -80,9 +80,7 @@
   </header>
 
   <body>
-  
 
- 
 <!-- Ajouter des membres  -->
 
       <dialog id="AddMember">
@@ -103,7 +101,6 @@
 
 
       </dialog>
-
 
 <!-- Supprimer des membres  -->
 
@@ -126,7 +123,9 @@
         </form>
       {% if role >=2 %}
       </dialog>
+
 <!-- Modifier le groupe  -->
+
         <dialog id="UpdateGroup">
             <button id="closePage" commandfor='UpdateGroup' command="request-close"> 
               x
@@ -135,19 +134,20 @@
             <form class="ajouter_group_form" action="{{url_for('change_group_name', group_id=group_client['id']) }}", method="POST"> 
               <label> Changer le nom du groupe </label> 
               <input type="text" class="groupTextInput" name='groupName' placeholder="Nom du groupe" value="{{group_client['name']}}" > 
-              <input type="submit" value="modifier">
+              <input class="postButton" type="submit" value="Modifier">
             </form> 
         </dialog>
 
   <!-- Supprimer le groupe -->
+
         <dialog id="DeleteGroup">
           <p>Etes vous sûr de vouloir supprimer le groupe</p>
-            <button id="closePage" commandfor='DeleteGroup' command="request-close"> 
+            <button class="postButton" id="closePage" commandfor='DeleteGroup' command="request-close"> 
               Annuler
             </button>
 
             <form action="{{url_for('delete_group_from_db', group_id=group_client['id']) }}", method="POST"> 
-              <input type="submit" value="Supprimer">
+              <input class="postButton deleteGroup" type="submit" value="Supprimer">
             </form> 
         </dialog>
     
@@ -160,7 +160,7 @@
         <h2>Membres</h2>
         <p id="countInfo" style="color: rgba(255,255,255,0.62); font-size:12px;"></p>
         <br>
-        <div id="membresContainer">
+        <div class="membresContainer" id="membresContainer">
           {% for membre in members %}
               <a href="/profile/{{membre['id']}}" class="membre">{{membre['name']}} {{membre['last_name']}}</a>
           {% endfor %}

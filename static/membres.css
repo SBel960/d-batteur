@@ -240,7 +240,7 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: 12px;
-    margin: 6px 2px 12px;
+    margin: 20px 2px 20px;
   }
 
   .section-head h2 {
@@ -303,6 +303,7 @@
   }
 
   .companyName{
+    margin-top: 10px;
     width:fit-content;
     font-weight: bolder;
     font-size: 40px;
