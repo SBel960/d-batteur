@@ -295,6 +295,10 @@ main{
   padding: 20px;
 }
 
+.description {
+  overflow-wrap: anywhere;
+}
+
 .voting-results{
   display: flex;
   justify-content: center;
@@ -368,6 +372,10 @@ main{
   padding: 20px;
 }
 
+.reply {
+  margin-top: 10px;
+}
+
 .commentForm label {
   font-size: 20px;
 }
@@ -385,7 +393,6 @@ main{
 }
 
 .commentText {
-  max-width: 500px;
   padding: 10px 10px;
   background: rgba(255,255,255,0.045);
   backdrop-filter: blur(10px);
@@ -445,7 +452,6 @@ main{
 .commentBox{
   padding:20px;
   margin-top: 10px;
-  max-width: 1000px;
   width:auto;
 }
 
