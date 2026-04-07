@@ -148,12 +148,14 @@
       
     <div class="container">
       <section class="section">
-        <div class="groupTitle">  {{group_client['name']}}  </div>
+        <div class="groupTitleBox">
+          <div class="groupTitle">  {{group_client['name']}}  </div>
+        </div>
       <div class="section-head">
         <h2>Membres</h2>
         <div id="countInfo" class="muted"></div>
       </div>
-      <div id="memberList" class="members-grid"></div>
+      <div id="memberGroupList" class="members-grid"></div>
     </section>
     </div>
   </main>
@@ -161,10 +163,11 @@
   <script>
     const searchInput = document.getElementById("searchInput");
     const searchInputAddMember=document.getElementById("searchInputAddMember");
+
     const otherMembres = document.querySelectorAll(".nameSelect");
 
     const countInfo = document.getElementById("countInfo");
-    const allMembres = document.querySelectorAll(".membre-grid");
+    const allMembres = document.querySelectorAll(".member-card");
 
     countInfo.textContent = allMembres.length + " membre(s)";
     
@@ -182,7 +185,7 @@
 
     
  function renderMembres(items) {
-      const memberlist=document.getElementById("memberList");
+      const memberlist=document.getElementById("memberGroupList");
 
       const countInfo = document.getElementById("countInfo");
       countInfo.textContent = items.length + " membre(s)";
@@ -211,7 +214,8 @@
       const q = this.value.trim().toLowerCase();
       let visibles = 0;
       allMembres.forEach(function(el) {
-        const match = el.textContent.trim().toLowerCase().includes(q);
+        console.log(el);
+        const match = el.firstElementChild.trim().toLowerCase().includes(q);
         el.style.display = match ? "" : "none";
         if (match) visibles++;
       });
@@ -221,6 +225,7 @@
     searchInputAddMember.addEventListener("input", function() {
       const q = this.value.trim().toLowerCase();
       otherMembres.forEach(function(el) {
+        console.log(el);
         const match = el.textContent.trim().toLowerCase().includes(q);
         el.style.display = match ? "" : "none";
       });

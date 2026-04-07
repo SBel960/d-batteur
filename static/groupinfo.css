@@ -351,14 +351,16 @@
     }
   }
 
+  .groupTitleBox{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
   .groupTitle{
     font-size:50px;
     width: fit-content;
-    justify-content: center;
-    align-items: center;
-
-  }
+    }
 
   .membre{
     display: inline;
@@ -421,7 +423,7 @@
     display: flex;
     flex-direction: column;
     width: 625px;
-    height: 400px;
+    height: fit-content;
     gap: 10px;  
     margin-top: 10px;
   }
@@ -533,4 +535,8 @@
     border: 1px solid var(--border);
     border-color: rgba(255,255,255,0.20);
     padding: 5px 10px;
+  }
+
+  #ChangerMember{
+    width: fit-content;
   }
