@@ -143,6 +143,40 @@
             
               </form>
             </dialog>
+            <dialog id="clotreDiscussion_{{d[2]}}">
+              <p>etes vous sur de vouloir clotre la discussion <br> <b>Personne ne pourra agir avec la discussion apres la cloture</b></p>
+              <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2])}}">
+               <input class="postButton" type="submit" name="yes" value="Oui">
+               <button type="button" class="postButton" commandfor="clotreDiscussion_{{d[2]}}" command="request-close">Non</button>
+              </form>
+            </dialog>
+            <dialog id="cloneDiscussion_{{d[2]}}">
+              <p>Choisissez vers quel groupe cloner la discussion</p>
+              <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2])}}">
+               <div class="groupList">
+                      <select class="selectGroupList" name="groupes" id="groupes_dropdown" multiple required>
+                        {% for groupe in groupes %}
+                          {% if groupe in d[5] %}
+                            <option value="{{groupe[0]}}" selected> {{groupe[1]}} </option>
+                          {%else%}
+                            <option value="{{groupe[0]}}" > {{groupe[1]}} </option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <input class="postButton" type="submit" value="Poster">
+                    <button type="button" class="postButton" commandfor="cloneDiscussion_{{d[2]}}" command="request-close">Annuler</button>
+              </form>
+            </dialog>
+
+            <dialog id="deleteDiscussion_{{d[2]}}">
+              <p>etes vous sur de vouloir supprimer cette discussion <br> <b>Vous ne pourriez pas revenir en arriere</b></p>
+              <form class="newDiscussionForm" method="post" action="{{url_for('delete_discussion',d_id=d[2])}}">
+               <input class="postButton" type="submit" name="yes" value="Oui">
+               <button type="button" class="postButton" commandfor="deleteDiscussion_{{d[2]}}" command="request-close">Non</button>
+              </form>
+            </dialog>
+
           {% endfor %}
       </div>
     </section>
@@ -198,9 +232,12 @@
               <a class="vote" href="/like_discussion/${d.id}/unlike?origin_page=homepage">👎 ${d.dislikes}</a>
               {%if role >= 2 %}
               <div class="dropdown-options dropdown">
-                <button class="btn dropbtn">..</button>
+                <button class="btn dropbtn" onclick="toggleDropdown(event, ${d.id})">..</button>
                 <div id="showDiscussionOptions_${d.id}" class="dropdown-content">
-                <button class="btn" commandfor="editDiscussion_${d.id}" command="show-modal" href='#'>Editer</button>
+                  <button class="btn" commandfor="editDiscussion_${d.id}" command="show-modal" href='#'>Editer</button>
+                  <button class="btn" commandfor="clotreDiscussion_${d.id}" command="show-modal" href='#'>Clôtre</button>
+                  <button class="btn" commandfor="cloneDiscussion_${d.id}" command="show-modal" href='#'>Cloner </button>
+                  <button class="btn" commandfor="deleteDiscussion_${d.id}" command="show-modal" href='#'>Supprimer</button>
                 
                 </div>
               </div>
@@ -224,6 +261,19 @@
       await chargerDiscussions();
       renderDiscussions(all_discussions);
     }
+
+    function toggleDropdown(event, id) {
+      event.stopPropagation(); // prevent bubbling
+
+      const dropdown = document.getElementById(`showDiscussionOptions_${id}`);
+
+      dropdown.classList.toggle("show");
+    }
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".dropdown-content").forEach(d => {
+        d.classList.remove("show");
+      });
+    });
 
     initialiserDiscussions();
   </script>

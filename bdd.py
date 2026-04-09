@@ -614,3 +614,17 @@ def get_score_proposition(id_commentaire):
             score -= net
         score += get_score_proposition(enfant['id_comment'])
     return score  
+
+
+
+####deletes
+def delete_discussion_from_id(id_discussion):
+    data = get_db()
+    sql=data.cursor()
+    command= """DELETE FROM Discussions WHERE id_discussion=?
+            """
+    sql.execute(command,[id_discussion])
+
+    data.commit()
+
+    return 

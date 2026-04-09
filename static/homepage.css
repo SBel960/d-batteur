@@ -501,41 +501,43 @@
     border-color: rgba(34,211,238,0.35);
   }
 
-.dropdown {
-  position: relative;
-}
 
 /* Style the dropdown button */
 
 
-/* Dropdown content */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Hidden by default */
 .dropdown-content {
   display: none;
-  visibility: hidden;
   position: absolute;
-  background-color: #f9f9f9;
-  min-width: 200px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  top: 0;
+  left: 100%; 
+  margin-left: 5px;
+
+  background: #1e1e1e;
+  padding: 10px;
+  border-radius: 6px;
+  z-index: 1000;
 }
 
-/* Links inside dropdown content */
-.dropdown-content button {
-  padding: 12px 16px;
-}
-
-/* Change color of dropdown links on hover */
-.dropdown-content button:hover {
+/* Hover behavior */
+.dropdown:hover .dropdown-content {
   display: block;
-  visibility: visible;
 }
-
-/* Show the dropdown content on hover */
-.dropbtn:hover .dropdown-content {
+.dropdown:hover .dropdown-options:hover .dropdown-content{
   display: block;
-  visibility: visible;
 }
 
-/* Change background color of dropdown button on hover */
+/* Click (persistent) */
+.dropdown-content.show {
+  display: block;
+}
+
+
 
   
   /* Responsive */
