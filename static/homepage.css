@@ -407,6 +407,7 @@
     margin-top: 8px;
     color: rgba(255,255,255,0.76);
     line-height: 1.5;
+    overflow-wrap: break-word;
   }
   
   .card-bottom{

@@ -160,9 +160,7 @@
 
                   {% else %}
                     <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
-                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' 
-                          style="display: none;">
-                      <input type="hidden" name="type" value="normal">
+                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}'>
                       <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
                       <input class="icon-btn submit-button" type="submit" value="Envoyer">
                     </form>
