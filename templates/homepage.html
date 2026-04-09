@@ -117,7 +117,7 @@
                   <div class="form-choices">
                     <div class="discussionType">
                       <div>
-                        <input type="radio" name="discussionType" id="ouvert" value="ouvert" {% if d[7]=="OUVERT" %} checked {% endif %} required>
+                        <input type="radio" name="discussionType" id="ouvert" value="ouvert" {% if d[7]== "OUVERT" %} checked {% endif %} required>
                         <label for="ouvert"> Question ouvert </label>
                       </div>
                       <div>
@@ -197,7 +197,13 @@
               <a class="vote" href="/like_discussion/${d.id}/like?origin_page=homepage">👍 ${d.likes}</a>
               <a class="vote" href="/like_discussion/${d.id}/unlike?origin_page=homepage">👎 ${d.dislikes}</a>
               {%if role >= 2 %}
-                <button class="btn" commandfor="editDiscussion_${d.id}" command="show-modal">Editer</button>
+              <div class="dropdown-options dropdown">
+                <button class="btn dropbtn">..</button>
+                <div id="showDiscussionOptions_${d.id}" class="dropdown-content">
+                <button class="btn" commandfor="editDiscussion_${d.id}" command="show-modal" href='#'>Editer</button>
+                
+                </div>
+              </div>
               {%endif%}
             </div>
         `;
