@@ -1,6 +1,6 @@
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies,update_discussion,delete_discussiongroups, get_score_proposition, create_groups_table, create_group_members_table, create_discussion_groups_table,get_email, select_comment_by_id
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies,update_discussion,delete_discussiongroups, get_score_proposition, create_groups_table, create_group_members_table, create_discussion_groups_table,get_email, select_comment_by_id, delete_discussion_from_id, update_discussion_state
 
 import time
 app = Flask(__name__)
@@ -43,7 +43,7 @@ def home():
         groupes = []
         for groupe_id in res_groupes:
            groupes.append([groupe_id[0], select_groupe_from_id(groupe_id[0])[0]])
-        discussions.append([row[2],row[3],str(row[0]),likes,dislikes, groupes, auteur, type, row[5], row[6]]) #row = [0:id, 1:id_client, 2:title, 3:content, 4:type, 5:date, 6: time]
+        discussions.append([row[2],row[3],str(row[0]),likes,dislikes, groupes, auteur, type, row[5], row[6], row[7], row[8]]) #row = [0:id, 1:id_client, 2:title, 3:content, 4:type, 5:date, 6: time, 7: state, 8:cloner_par]
 
     result = select_all_groupes()
     for row in result:
@@ -51,14 +51,17 @@ def home():
 
     return render_template("homepage.html", discussions=discussions, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'], groupes=all_groupes)
 
-@app.route("/main/<int:discussion_id>", methods=["GET", "POST"])
+@app.route("/main/<int:discussion_id>", methods=["GET"])
 def main(discussion_id):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    id_poster, title, content, discussion_type = select_discussion_by_id(discussion_id)
+    id_poster, title, content, discussion_type, discussion_state, id_clone = select_discussion_by_id(discussion_id)
+    cloned = id_clone != None
     comments = []
-    res=select_comments(discussion_id)
-    if discussion_type == 'ferme': 
+    cloned_comments = []
+    if discussion_type == 'ouvert': 
+        res= select_comments(discussion_id)
+    else: 
         res = select_comments_ferme(discussion_id)
     for comment in res:
         id_comment=comment[0]
@@ -66,6 +69,7 @@ def main(discussion_id):
         content_comment=comment[3]
         type_comment=comment[4]
         avis_comment=comment[5]
+        etat = comment[7]
         like_c=get_comment_likes(id_comment)[0]
         dislike_c=get_comment_likes(id_comment)[1]
         if type_comment == 'proposition':
@@ -82,13 +86,39 @@ def main(discussion_id):
         else:
             opinion = 'contre'
         reply_count = len(select_comment_replies(id_comment))
-        comments.append(dict(id_c=id_comment, content=content_comment, like=like_c, dislike=dislike_c, username=username, opinion=opinion, type=type_comment, avis=avis_comment, score=score, reply_count=reply_count))
+        comments.append(dict(id_c=id_comment, content=content_comment, like=like_c, dislike=dislike_c, username=username, opinion=opinion, type=type_comment, avis=avis_comment, score=score, reply_count=reply_count, etat=etat))
 
+    if id_clone != None:
+        for comment in select_comments_ferme(id_clone):
+            id_comment=comment[0]
+            id_client=comment[1]
+            content_comment=comment[3]
+            type_comment=comment[4]
+            avis_comment=comment[5]
+            etat = 'closed'
+            like_c=get_comment_likes(id_comment)[0]
+            dislike_c=get_comment_likes(id_comment)[1]
+            if type_comment == 'proposition':
+                score = (like_c - dislike_c) + get_score_proposition(id_comment)
+            else :
+                score = None
+
+            username=get_user_by_id(id_client)[1]+" "+get_user_by_id(id_client)[2]
+            opinion = get_user_opinion(discussion_id, id_client)
+            if opinion == None:
+                opinion = "neutre"
+            elif opinion[0] == 1:
+                opinion = 'pour'
+            else:
+                opinion = 'contre'
+            reply_count = len(select_comment_replies(id_comment))
+            cloned_comments.append(dict(id_c=id_comment, content=content_comment, like=like_c, dislike=dislike_c, username=username, opinion=opinion, type=type_comment, avis=avis_comment, score=score, reply_count=reply_count, etat=etat))
     if discussion_type == 'ouvert':
         comments.sort(key=lambda c: c['score'] if c['score'] is not None else (c['like'] - c['dislike']), reverse=True)
+        cloned_comments.sort(key=lambda c: c['score'] if c['score'] is not None else (c['like'] - c['dislike']), reverse=True)
 
     likes, dislikes = get_discussion_likes(discussion_id)
-    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'], discussion_type=discussion_type)
+    return render_template("main.html", discussion_id=discussion_id, comments=comments, cloned_comments=cloned_comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'], discussion_type=discussion_type, discussion_state=discussion_state, cloned=cloned)
 
 
 
@@ -138,29 +168,50 @@ def modifier_discussion(d_id):
     title = request.form['discussionTitle']
     content = request.form['discussionContent']
     new_groupes = set(request.form.getlist('groupes'))
-    type = request.form.get('discussionType')
-    old_groupes=set()
 
-    update_discussion(title,content,type,d_id)
-    for g in select_discussion_groups(d_id):
-        old_groupes.add(g[0])
-    print("OLD GROUP")
-    print(old_groupes)
-    new_groupes = set((map(int, new_groupes)))
-    print("NEW GROUP")
-    print(new_groupes)
-    del_group=list(old_groupes-new_groupes)
-    add_group=list(new_groupes-old_groupes)
+    update_discussion(title,content,d_id, new_groupes)
+    # for g in select_discussion_groups(d_id):
+    #     old_groupes.add(g[0])
+    # print("OLD GROUP")
+    # print(old_groupes)
+    # new_groupes = set((map(int, new_groupes)))
+    # print("NEW GROUP")
+    # print(new_groupes)
+    # del_group=list(old_groupes-new_groupes)
+    # add_group=list(new_groupes-old_groupes)
 
-    print(del_group)
-    print(add_group)
-    for d in del_group:
-        delete_discussiongroups(d,d_id)
+    # print(del_group)
+    # print(add_group)
+    # for d in del_group:
+    #     delete_discussiongroups(d,d_id)
     
-    for a in add_group:
-        insert_discussion_groups(a,d_id)
+    # for a in add_group:
+    #     insert_discussion_groups(a,d_id)
     
-    return redirect(url_for("home"))
+    return redirect(url_for("main", discussion_id=d_id))
+
+@app.route("/clotre_discussion/<int:d_id>/<action>", methods=["POST"])
+def clotre_discussion(d_id, action):
+    update_discussion_state(d_id, action)
+
+    return redirect(url_for('home'))
+
+@app.route("/cloner_discussion/<int:d_id>", methods=["POST"])
+def cloner_discussion(d_id):
+    groups = request.form.getlist('groupes')
+    id_client, title, content, type_discussion, etat, cloned_id = select_discussion_by_id(d_id)
+
+    insert_disscussions_table(id_c=id_client, title=title, content=content, type=type_discussion, cloned_from=d_id)
+    discussion_id = select_newest_discussion_id(id_client)[0]
+    for g_id in groups:
+        insert_discussion_groups(id_group=g_id, id_discussion=discussion_id)
+    return redirect(url_for('main', discussion_id=discussion_id))
+
+@app.route("/delete_discussion/<int:d_id>", methods=["POST"])
+def delete_discussion(d_id):
+   
+    delete_discussion_from_id(d_id)
+    return redirect(url_for('home'))
 
 
 
@@ -383,7 +434,9 @@ def alldiscussions():
             "groupes": groupes,
             "auteur": auteur_nom,
             "date": row[5],
-            "heure": row[6]
+            "heure": row[6],
+            "etat": row[7],
+            "cloner_par": row[8]
         })
 
     return jsonify(discussions)
@@ -464,6 +517,10 @@ def show_all_replies(discussion_id, comment_id):
     for reply in res:
         opinion = get_user_opinion(discussion_id, reply[1])
         discussion_type= select_discussion_by_id(discussion_id)[3]
+        comment_discussion_id = select_comment_by_id(comment_id)[2]
+        etat = reply[7]
+        if discussion_id != comment_discussion_id: #si comment cloner  
+            etat = 'closed'
         if opinion == None:
             opinion = "neutre"
         elif opinion[0] == 1:
@@ -481,8 +538,10 @@ def show_all_replies(discussion_id, comment_id):
             "username": get_user_by_id(reply[1])[1] + " " + get_user_by_id(reply[1])[2],
             "opinion": opinion,
             "discussion_type": discussion_type,
-            "reply_count": len(select_comment_replies(reply[0]))
+            "reply_count": len(select_comment_replies(reply[0])),
+            "etat":etat
         })
+
 
     return jsonify(result)
 

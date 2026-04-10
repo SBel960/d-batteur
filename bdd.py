@@ -39,6 +39,8 @@ def create_discussions_table():
                 type TEXT NOT NULL,
                 date_creation DATE NOT NULL,
                 time_creation TIME NOT NULL,
+                state TEXT NOT NULL CHECK (state IN ('active', 'closed')) DEFAULT 'active',
+                cloned_from INTEGER DEFAULT NULL,
                 FOREIGN KEY(id_c) REFERENCES Client(id_client)
                 )
                  
@@ -58,6 +60,7 @@ def create_comments_table():
                 type TEXT NOT NULL,
                 avis TEXT,
                 id_reply INTEGER NOT NULL,
+                state TEXT NOT NULL CHECK (state IN ('active', 'closed')) DEFAULT 'active',
                 FOREIGN KEY(id_c) REFERENCES Client(id_client),
                 FOREIGN KEY(id_d) REFERENCES Discussions(id_discussion)
                 )
@@ -146,18 +149,18 @@ def insert_clients_table(email, name, last_name, password, company, role):
     data.commit()
 
 
-def insert_disscussions_table(id_c, title, content, type):
+def insert_disscussions_table(id_c, title, content, type, cloned_from=None):
     data = get_db()
     sql = data.cursor()
     date_creation = date.today()
     named_tuple = time.localtime() # get struct_time
     time_creation = time.strftime("%H:%M", named_tuple)
     print(time_creation)
-    command = """INSERT INTO Discussions(id_c, title, content, type, date_creation,time_creation)
-                VALUES (?,?,?,?,?,?)
+    command = """INSERT INTO Discussions(id_c, title, content, type, date_creation,time_creation, cloned_from)
+                VALUES (?,?,?,?,?,?,?)
 
             """
-    sql.execute(command, [id_c, title, content, type, date_creation, time_creation])
+    sql.execute(command, [id_c, title, content, type, date_creation, time_creation, cloned_from])
     data.commit()
 
 
@@ -305,12 +308,13 @@ def select_newest_discussion_id(id_client):
 def select_discussion_by_id(id_discussion):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT id_c, title, content, type FROM Discussions WHERE id_discussion= ?;
+    command = """SELECT id_c, title, content, type, state, cloned_from FROM Discussions WHERE id_discussion= ?;
             """
     
     sql.execute(command, [id_discussion])
     result = sql.fetchone()
     return result
+
 
 
 def select_comment_by_id(id_comment):
@@ -472,17 +476,44 @@ def update_group(name,id_g):
     data.commit()
     sql.close()
 
-def update_discussion(title,content,type,d_id):
+def update_discussion(title,content, d_id, new_groupes):
     data=get_db()
     sql=data.cursor()
-    command="""UPDATE Discussions SET title=?, content=?, type=? WHERE id_discussion=?
+    #premierement, supprime tout les anciens groupes de la discussion 
+    command = """DELETE FROM DiscussionGroups WHERE id_d=?
+     """
+    sql.execute(command,[d_id])
+    data.commit()
+
+    #deuxiemenent, mis a jour de la discussion avec le nouveau titre, contenu, type
+    command="""UPDATE Discussions SET title=?, content=? WHERE id_discussion=?
         """
     
-    sql.execute(command,[title,content,type,d_id])
+    sql.execute(command,[title,content,d_id])
     data.commit()
+
+    #troisiement, inserer les nouveaux groupes de discussion
+    for g_id in new_groupes:
+        insert_discussion_groups(g_id, d_id)
     sql.close()
 
+
+def update_discussion_state(id_discussion, action):
+    data=get_db()
+    sql=data.cursor()
+    command="""UPDATE Discussions SET state=? WHERE id_discussion=?
+        """
+    sql.execute(command,[action, id_discussion])
+    data.commit()
     
+    command="""UPDATE Comments SET state=? WHERE id_d=?
+        """
+    sql.execute(command,[action, id_discussion])
+    data.commit()
+    sql.close()
+    return
+    
+
 #---------------------- likes
 
 def update_like(id_client, id_cible, cible, value):
@@ -614,3 +645,18 @@ def get_score_proposition(id_commentaire):
             score -= net
         score += get_score_proposition(enfant['id_comment'])
     return score  
+
+
+
+####deletes
+def delete_discussion_from_id(id_discussion):
+    data = get_db()
+    sql=data.cursor()
+    command= """DELETE FROM Discussions WHERE id_discussion=?
+            """
+    sql.execute(command,[id_discussion])
+
+    data.commit()
+    return
+
+    
