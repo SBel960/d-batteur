@@ -114,25 +114,17 @@
                   <textarea type="text" class="contentBlock" name="discussionContent" placeholder=" Ajouter une description" required>{{d[1]}}</textarea>
                   </div>
 
-                  <div class="form-choices">
-                    <div class="discussionType">
-                      <div>
-                        <input type="radio" name="discussionType" id="ouvert" value="ouvert" {% if d[7]== "OUVERT" %} checked {% endif %} required>
-                        <label for="ouvert"> Question ouvert </label>
-                      </div>
-                      <div>
-                        <input type="radio" name="discussionType" id="yesno" value="ferme" {% if d[7]=="FERMÉ"%} checked {%endif%} required>
-                        <label for="ferme"> Question fermé </label>
-                      </div>
-                    </div>
+                  <div class="form-choices" style="justify-content: center; align-items: center;">
 
                     <div class="groupList">
+                      <label style="margin-top: 15px; "> Modifier les groupes </label>
                       <select class="selectGroupList" name="groupes" id="groupes_dropdown" multiple required>
+                        
                         {% for groupe in groupes %}
                           {% if groupe in d[5] %}
                             <option value="{{groupe[0]}}" selected> {{groupe[1]}} </option>
-                          {%else%}
-                            <option value="{{groupe[0]}}" > {{groupe[1]}} </option>
+                          {% else %}
+                            <option value="{{groupe[0]}}"> {{groupe[1]}} </option>
                           {% endif %}
                         {% endfor %}
                       </select>
@@ -145,14 +137,24 @@
             </dialog>
             <dialog id="clotreDiscussion_{{d[2]}}">
               <p>etes vous sur de vouloir clotre la discussion <br> <b>Personne ne pourra agir avec la discussion apres la cloture</b></p>
-              <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2])}}">
-               <input class="postButton" type="submit" name="yes" value="Oui">
-               <button type="button" class="postButton" commandfor="clotreDiscussion_{{d[2]}}" command="request-close">Non</button>
+              <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2], action='closed')}}">
+               <input class="yesnoButton postButton" type="submit" name="yes" value="Oui">
+               <button type="button" class="yesnoButton postButton" commandfor="clotreDiscussion_{{d[2]}}" command="request-close">Non</button>
               </form>
             </dialog>
-            <dialog id="cloneDiscussion_{{d[2]}}">
-              <p>Choisissez vers quel groupe cloner la discussion</p>
-              <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2])}}">
+            <dialog id="ouvrirDiscussion_{{d[2]}}">
+              <p>etes vous sur de vouloir re-ouvrir la discussion </p>
+              <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2], action='active')}}">
+               <input class="yesnoButton postButton" type="submit" name="yes" value="Oui">
+               <button type="button" class="yesnoButton postButton" commandfor="ouvrirDiscussion_{{d[2]}}" command="request-close">Non</button>
+              </form>
+            </dialog>
+
+            <dialog id="cloneDiscussion_{{d[2]}}" style="justify-content: center; align-items: center;">
+              
+
+              <label>Choisissez vers quel groupe cloner la discussion</label>
+              <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2], action='closed')}}">
                <div class="groupList">
                       <select class="selectGroupList" name="groupes" id="groupes_dropdown" multiple required>
                         {% for groupe in groupes %}
@@ -167,6 +169,7 @@
                     <input class="postButton" type="submit" value="Poster">
                     <button type="button" class="postButton" commandfor="cloneDiscussion_{{d[2]}}" command="request-close">Annuler</button>
               </form>
+  
             </dialog>
 
             <dialog id="deleteDiscussion_{{d[2]}}">
@@ -204,7 +207,7 @@
 
       items.forEach(d => {
         const card = document.createElement("div");
-        card.className = "card";
+        card.className = `card card-${d.etat}`;
 
         const badgeClass = d.type === "Question" ? "badge-q" : "badge-prop";
         const groupesHtml = d.groupes.map(g =>
@@ -228,16 +231,23 @@
             </div>
             <div class="card-actions">
               <a class="btn" href="/main/${d.id}">Ouvrir</a>
-              <a class="vote" href="/like_discussion/${d.id}/like?origin_page=homepage">👍 ${d.likes}</a>
-              <a class="vote" href="/like_discussion/${d.id}/unlike?origin_page=homepage">👎 ${d.dislikes}</a>
+              <a class="vote vote-${d.etat}" href="/like_discussion/${d.id}/like?origin_page=homepage">👍 ${d.likes}</a>
+              <a class="vote vote-${d.etat}" href="/like_discussion/${d.id}/unlike?origin_page=homepage">👎 ${d.dislikes}</a>
               {%if role >= 2 %}
               <div class="dropdown-options dropdown">
                 <button class="btn dropbtn" onclick="toggleDropdown(event, ${d.id})">..</button>
                 <div id="showDiscussionOptions_${d.id}" class="dropdown-content">
-                  <button class="btn" commandfor="editDiscussion_${d.id}" command="show-modal" href='#'>Editer</button>
-                  <button class="btn" commandfor="clotreDiscussion_${d.id}" command="show-modal" href='#'>Clôtre</button>
+                  ${d.etat === 'active'
+                  ?`<button class="btn" commandfor="editDiscussion_${d.id}" command="show-modal" href='#'>Editer</button>
                   <button class="btn" commandfor="cloneDiscussion_${d.id}" command="show-modal" href='#'>Cloner </button>
-                  <button class="btn" commandfor="deleteDiscussion_${d.id}" command="show-modal" href='#'>Supprimer</button>
+                  <button class="btn" commandfor="clotreDiscussion_${d.id}" command="show-modal" href='#'>Clôtre</button>
+                  <button class="btn" commandfor="deleteDiscussion_${d.id}" command="show-modal" href='#'>Supprimer</button>`
+                  :`
+                  <button class="btn" commandfor="cloneDiscussion_${d.id}" command="show-modal" href='#'>Cloner </button>
+                  <button class="btn" commandfor="ouvrirDiscussion_${d.id}" command="show-modal" href='#'>Re-Ouvrir</button>
+                  <button class="btn" commandfor="deleteDiscussion_${d.id}" command="show-modal" href='#'>Supprimer</button>`
+                  }
+                  
                 
                 </div>
               </div>

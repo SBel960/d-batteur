@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}"/>
     <title> Discussion </title>
 </head>
-<body>
+<body class="body_{{discussion_state}}">
     
     <!-- HEADER / TOOLBAR -->
   <section class="navbar">
@@ -85,11 +85,19 @@
           <div id="bar-against" class="bar-against"></div>
         </div>
         <div class="btn-area">
+          {% if discussion_state == 'active' %}
           <a  id="likes-count" class="icon-btn" href="#" onclick="likeDiscussion(event, {{discussion_id}}, 'like')">👍 <span id="d-likes-count-{{discussion_id}}"> {{likes}}</span></a>
           <a  id="dislikes-count" class="icon-btn" href="#" onclick="likeDiscussion(event, {{discussion_id}}, 'unlike')">👎 <span id="d-dislikes-count-{{discussion_id}}"> {{dislikes}}</span></a>
+          {% else %}
+          <a  id="likes-count" class="icon-btn closed" href="#">👍 <span id="d-likes-count-{{discussion_id}}"> {{likes}}</span></a>
+          <a  id="dislikes-count" class="icon-btn closed" href="#">👎 <span id="d-dislikes-count-{{discussion_id}}"> {{dislikes}}</span></a>
+          {% endif %}
         </div>
+
       </div>
       <div class="comments">
+        {% if discussion_state == 'active' %}
+
         <div class="commentInput">
           {% if discussion_type == 'ouvert' %}
             <form class="commentForm" method="post" action='{{ url_for("commentaire", discussion_id=discussion_id, reply=0) }}'>
@@ -115,11 +123,12 @@
 
           {% endif %}
         </div>
+        {% endif %}
 
         {% for  comment in comments %}
         
           <div class="commentTextList">
-            <div class="commentBox commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['opinion'] and discussion_type=='ferme' %}{{comment['opinion']}}{% else %}normal{% endif %}">
+            <div class="commentBox commentBox_{{comment['etat']}} commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['opinion'] and discussion_type=='ferme' %}{{comment['opinion']}}{% else %}normal{% endif %} ">
               
               <div class="commentUser">
                 {{comment['username']}} 
@@ -133,6 +142,7 @@
               <div class="commentLike">
                   <div class="btn-area">
                     {% set id=comment['id_c'] %}
+                    {% if comment['etat'] == 'active' %}
                     <a class="likes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'like')">👍 <span id="likes-count-{{id}}"> {{comment['like']}}</span></a>
                     <a class="dislikes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'unlike')">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
                     {% if comment['type'] == 'proposition' %}
@@ -140,7 +150,21 @@
                         Score :&nbsp; <span id="score-count"> {{ comment['score'] }}</span>
                       </span>
                      {% endif %}
-                    <a class="icon-btn" onclick="toggleCommentForm(event, {{id}})"> reply </a>
+                    <a class="icon-btn" onclick="toggleCommentForm(event, {{id}})" href="#"> reply </a>
+
+                      {% else %}
+
+                    <a class="likes-count icon-btn closed" href="#" >👍 <span id="likes-count-{{id}}"> {{comment['like']}}</span></a>
+                    <a class="dislikes-count icon-btn closed" href="#">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
+                    {% if comment['type'] == 'proposition' %}
+                      <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
+                        Score :&nbsp; <span id="score-count"> {{ comment['score'] }}</span>
+                      </span>
+                     {% endif %}
+                    <a class="icon-btn closed" href="#"> reply </a>
+
+
+                    {% endif %}
 
                   </div>  
                    {% if comment['type'] == 'proposition' %}
@@ -160,7 +184,7 @@
 
                   {% else %}
                     <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
-                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}'>
+                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' style="display: none;">
                       <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
                       <input class="icon-btn submit-button" type="submit" value="Envoyer">
                     </form>
@@ -339,15 +363,24 @@
                     <div class="commentText"><p>${comment.content}</p></div>
                     <div class="commentLike">
                         <div class="btn-area">
-                            <a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, ${comment.id_c}, 'like')">👍 <span id="likes-count-${comment.id_c}"> ${comment.like}</span></a>
-                            <a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, ${comment.id_c}, 'unlike')">👎 <span id="dislikes-count-${comment.id_c}">${comment.dislike}</span></a>
-                            <a class="icon-btn" onclick="toggleCommentForm(event, ${comment.id_c})"> reply </a>
+                            ${comment.etat == 'active' ?
+                              `<a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, ${comment.id_c}, 'like')">👍 <span id="likes-count-${comment.id_c}"> ${comment.like}</span></a>
+                              <a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, ${comment.id_c}, 'unlike')">👎 <span id="dislikes-count-${comment.id_c}">${comment.dislike}</span></a>
+                              <a class="icon-btn" onclick="toggleCommentForm(event, ${comment.id_c})"> reply </a>`
+                              : 
+                              `<a class="likes-count closed" href="#">👍 <span id="likes-count-${comment.id_c}"> ${comment.like}</span></a>
+                              <a class="likes-count closed" href="#">👎 <span id="dislikes-count-${comment.id_c}">${comment.dislike}</span></a>
+                              <a class="icon-btn closed"> reply </a>`
+                            }
+                            
                         </div>
-                        <form class="commentForm reply" id="replyForm-${comment.id_c}" method="post"
+                        ${comment.etat == 'active' ?
+                        `<form class="commentForm reply" id="replyForm-${comment.id_c}" method="post"
                               action="/commentaire/{{discussion_id}}/${comment.id_c}" style="display: none;">
                             ${replyForm}
                             <input class="icon-btn submit-button" type="submit" value="Envoyer">
-                        </form>
+                        </form>`:``
+                      }
                         ${repliesBtnHtml}
                     </div>
                     <div class="commentReplies" id="commentReplies-${comment.id_c}"></div>

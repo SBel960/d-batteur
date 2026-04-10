@@ -39,6 +39,8 @@ def create_discussions_table():
                 type TEXT NOT NULL,
                 date_creation DATE NOT NULL,
                 time_creation TIME NOT NULL,
+                state TEXT NOT NULL CHECK (state IN ('active', 'closed')) DEFAULT 'active',
+                cloned_from INTEGER DEFAULT NULL,
                 FOREIGN KEY(id_c) REFERENCES Client(id_client)
                 )
                  
@@ -58,6 +60,7 @@ def create_comments_table():
                 type TEXT NOT NULL,
                 avis TEXT,
                 id_reply INTEGER NOT NULL,
+                state TEXT NOT NULL CHECK (state IN ('active', 'closed')) DEFAULT 'active',
                 FOREIGN KEY(id_c) REFERENCES Client(id_client),
                 FOREIGN KEY(id_d) REFERENCES Discussions(id_discussion)
                 )
@@ -305,7 +308,7 @@ def select_newest_discussion_id(id_client):
 def select_discussion_by_id(id_discussion):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT id_c, title, content, type FROM Discussions WHERE id_discussion= ?;
+    command = """SELECT id_c, title, content, type, state FROM Discussions WHERE id_discussion= ?;
             """
     
     sql.execute(command, [id_discussion])
@@ -472,17 +475,44 @@ def update_group(name,id_g):
     data.commit()
     sql.close()
 
-def update_discussion(title,content,type,d_id):
+def update_discussion(title,content, d_id, new_groupes):
     data=get_db()
     sql=data.cursor()
-    command="""UPDATE Discussions SET title=?, content=?, type=? WHERE id_discussion=?
+    #premierement, supprime tout les anciens groupes de la discussion 
+    command = """DELETE FROM DiscussionGroups WHERE id_d=?
+     """
+    sql.execute(command,[d_id])
+    data.commit()
+
+    #deuxiemenent, mis a jour de la discussion avec le nouveau titre, contenu, type
+    command="""UPDATE Discussions SET title=?, content=? WHERE id_discussion=?
         """
     
-    sql.execute(command,[title,content,type,d_id])
+    sql.execute(command,[title,content,d_id])
     data.commit()
+
+    #troisiement, inserer les nouveaux groupes de discussion
+    for g_id in new_groupes:
+        insert_discussion_groups(g_id, d_id)
     sql.close()
 
+
+def update_discussion_state(id_discussion, action):
+    data=get_db()
+    sql=data.cursor()
+    command="""UPDATE Discussions SET state=? WHERE id_discussion=?
+        """
+    sql.execute(command,[action, id_discussion])
+    data.commit()
     
+    command="""UPDATE Comments SET state=? WHERE id_d=?
+        """
+    sql.execute(command,[action, id_discussion])
+    data.commit()
+    sql.close()
+    return
+    
+
 #---------------------- likes
 
 def update_like(id_client, id_cible, cible, value):
@@ -626,5 +656,6 @@ def delete_discussion_from_id(id_discussion):
     sql.execute(command,[id_discussion])
 
     data.commit()
+    return
 
-    return 
+    
