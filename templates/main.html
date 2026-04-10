@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}"/>
     <title> Discussion </title>
 </head>
-<body class="body_{{discussion_state}}">
+<body class="body_{{discussion_state}}" id="body_{% if cloned == true %}cloned{%endif%}">
     
     <!-- HEADER / TOOLBAR -->
   <section class="navbar">
@@ -126,6 +126,87 @@
         {% endif %}
 
         {% for  comment in comments %}
+        
+          <div class="commentTextList">
+            <div class="commentBox commentBox_{{comment['etat']}} commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['opinion'] and discussion_type=='ferme' %}{{comment['opinion']}}{% else %}normal{% endif %} ">
+              
+              <div class="commentUser">
+                {{comment['username']}} 
+                
+              </div>
+              
+              <div class="commentText">
+               <p> {{ comment["content"] }}</p>
+              </div>
+
+              <div class="commentLike">
+                  <div class="btn-area">
+                    {% set id=comment['id_c'] %}
+                    {% if comment['etat'] == 'active' %}
+                    <a class="likes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'like')">👍 <span id="likes-count-{{id}}"> {{comment['like']}}</span></a>
+                    <a class="dislikes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'unlike')">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
+                    {% if comment['type'] == 'proposition' %}
+                      <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
+                        Score :&nbsp; <span id="score-count"> {{ comment['score'] }}</span>
+                      </span>
+                     {% endif %}
+                    <a class="icon-btn" onclick="toggleCommentForm(event, {{id}})" href="#"> reply </a>
+
+                      {% else %}
+
+                    <a class="likes-count icon-btn closed" href="#" >👍 <span id="likes-count-{{id}}"> {{comment['like']}}</span></a>
+                    <a class="dislikes-count icon-btn closed" href="#">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
+                    {% if comment['type'] == 'proposition' %}
+                      <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
+                        Score :&nbsp; <span id="score-count"> {{ comment['score'] }}</span>
+                      </span>
+                     {% endif %}
+                    <a class="icon-btn closed" href="#"> reply </a>
+
+
+                    {% endif %}
+
+                  </div>  
+                   {% if comment['type'] == 'proposition' %}
+                   
+                    <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
+                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' 
+                          style="display: none;">
+                      <input type="hidden" name="type" value="normal">
+                      <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
+                      <div class="avis-choice">
+                        <label><input type="radio" name="avis" value="pour" required> Pour</label>
+                        <label><input type="radio" name="avis" value="contre"> Contre</label>
+                        <label><input type="radio" name="avis" value="neutre"> Neutre</label>
+                      </div>
+                      <input class="icon-btn submit-button" type="submit" value="Envoyer">
+                    </form>
+
+                  {% else %}
+                    <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
+                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' style="display: none;">
+                      <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
+                      <input class="icon-btn submit-button" type="submit" value="Envoyer">
+                    </form>
+                  {% endif %}
+                    
+                    
+              </div>
+              <div class="commentReplies" id="commentReplies-{{comment['id_c']}}"></div>
+            </div>
+          </div>
+          {% if comment['reply_count'] > 0 %}
+          <a id="repliesBtn-{{comment['id_c']}}" href="" data-count="{{comment['reply_count']}}" onclick="toggleReplies(event, {{discussion_id}}, {{comment['id_c']}})" style="color:white">
+            {{comment['reply_count']}} réponse{% if comment['reply_count'] > 1 %}s{% endif %}
+          </a>
+          {% endif %}
+          
+          {% endfor %}
+
+
+          <!-- SECTION COMMENTAIRE CLONE -->
+          {% if cloned_comments != [] %} <h1 style="margin-top: 40px; font-size: x-large; border-bottom: 2px solid white;"> Commentaires clones</h1> {% endif %}
+          {% for  comment in cloned_comments %}
         
           <div class="commentTextList">
             <div class="commentBox commentBox_{{comment['etat']}} commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['opinion'] and discussion_type=='ferme' %}{{comment['opinion']}}{% else %}normal{% endif %} ">
@@ -358,7 +439,7 @@
 
         return `
             <div class="commentTextList">
-                <div class="commentBox commentBox_${comment.avis || comment.discussion_type == 'ferme' && comment.opinion || 'normal'}">
+                <div class="commentBox commentBox_${comment.etat} commentBox_${comment.avis || comment.discussion_type == 'ferme' && comment.opinion || 'normal'}">
                     <div class="commentUser">${comment.username}</div>
                     <div class="commentText"><p>${comment.content}</p></div>
                     <div class="commentLike">

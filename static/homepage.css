@@ -379,6 +379,12 @@
     backdrop-filter: blur(10px);
   }
   
+  .cloned{
+    background: linear-gradient(to top left, #ffffff15 0%, #72f34b23 100%);
+  }
+  .card-closed{
+  background: linear-gradient(to top right, #ffffff71 0%, #a8a8a825 100%);
+}
   .card-top{
     display: flex;
     justify-content: space-between;
@@ -548,9 +554,7 @@
 .vote-closed{
   pointer-events: none;
 }
-.card-closed{
-  background: rgba(168, 168, 168, 0.37);
-}
+
   
   /* Responsive */
   @media (max-width: 980px){

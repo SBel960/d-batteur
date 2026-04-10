@@ -154,13 +154,11 @@
               
 
               <label>Choisissez vers quel groupe cloner la discussion</label>
-              <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2], action='closed')}}">
+              <form class="newDiscussionForm" method="post" action="{{url_for('cloner_discussion',d_id=d[2])}}">
                <div class="groupList">
                       <select class="selectGroupList" name="groupes" id="groupes_dropdown" multiple required>
                         {% for groupe in groupes %}
-                          {% if groupe in d[5] %}
-                            <option value="{{groupe[0]}}" selected> {{groupe[1]}} </option>
-                          {%else%}
+                          {% if groupe not in d[5] %}
                             <option value="{{groupe[0]}}" > {{groupe[1]}} </option>
                           {% endif %}
                         {% endfor %}
@@ -208,7 +206,9 @@
       items.forEach(d => {
         const card = document.createElement("div");
         card.className = `card card-${d.etat}`;
-
+        if(d.cloner_par != null){
+          card.classList.add("cloned");
+        }
         const badgeClass = d.type === "Question" ? "badge-q" : "badge-prop";
         const groupesHtml = d.groupes.map(g =>
           `<a href="/group_info/${g.id}" style="color: rgba(0,204,255,0.83);">${g.nom}</a>`

@@ -149,18 +149,18 @@ def insert_clients_table(email, name, last_name, password, company, role):
     data.commit()
 
 
-def insert_disscussions_table(id_c, title, content, type):
+def insert_disscussions_table(id_c, title, content, type, cloned_from=None):
     data = get_db()
     sql = data.cursor()
     date_creation = date.today()
     named_tuple = time.localtime() # get struct_time
     time_creation = time.strftime("%H:%M", named_tuple)
     print(time_creation)
-    command = """INSERT INTO Discussions(id_c, title, content, type, date_creation,time_creation)
-                VALUES (?,?,?,?,?,?)
+    command = """INSERT INTO Discussions(id_c, title, content, type, date_creation,time_creation, cloned_from)
+                VALUES (?,?,?,?,?,?,?)
 
             """
-    sql.execute(command, [id_c, title, content, type, date_creation, time_creation])
+    sql.execute(command, [id_c, title, content, type, date_creation, time_creation, cloned_from])
     data.commit()
 
 
@@ -308,12 +308,13 @@ def select_newest_discussion_id(id_client):
 def select_discussion_by_id(id_discussion):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT id_c, title, content, type, state FROM Discussions WHERE id_discussion= ?;
+    command = """SELECT id_c, title, content, type, state, cloned_from FROM Discussions WHERE id_discussion= ?;
             """
     
     sql.execute(command, [id_discussion])
     result = sql.fetchone()
     return result
+
 
 
 def select_comment_by_id(id_comment):

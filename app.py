@@ -55,8 +55,10 @@ def home():
 def main(discussion_id):
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    id_poster, title, content, discussion_type, discussion_state = select_discussion_by_id(discussion_id)
+    id_poster, title, content, discussion_type, discussion_state, id_clone = select_discussion_by_id(discussion_id)
+    cloned = id_clone != None
     comments = []
+    cloned_comments = []
     if discussion_type == 'ouvert': 
         res= select_comments(discussion_id)
     else: 
@@ -86,11 +88,37 @@ def main(discussion_id):
         reply_count = len(select_comment_replies(id_comment))
         comments.append(dict(id_c=id_comment, content=content_comment, like=like_c, dislike=dislike_c, username=username, opinion=opinion, type=type_comment, avis=avis_comment, score=score, reply_count=reply_count, etat=etat))
 
+    if id_clone != None:
+        for comment in select_comments_ferme(id_clone):
+            id_comment=comment[0]
+            id_client=comment[1]
+            content_comment=comment[3]
+            type_comment=comment[4]
+            avis_comment=comment[5]
+            etat = 'closed'
+            like_c=get_comment_likes(id_comment)[0]
+            dislike_c=get_comment_likes(id_comment)[1]
+            if type_comment == 'proposition':
+                score = (like_c - dislike_c) + get_score_proposition(id_comment)
+            else :
+                score = None
+
+            username=get_user_by_id(id_client)[1]+" "+get_user_by_id(id_client)[2]
+            opinion = get_user_opinion(discussion_id, id_client)
+            if opinion == None:
+                opinion = "neutre"
+            elif opinion[0] == 1:
+                opinion = 'pour'
+            else:
+                opinion = 'contre'
+            reply_count = len(select_comment_replies(id_comment))
+            cloned_comments.append(dict(id_c=id_comment, content=content_comment, like=like_c, dislike=dislike_c, username=username, opinion=opinion, type=type_comment, avis=avis_comment, score=score, reply_count=reply_count, etat=etat))
     if discussion_type == 'ouvert':
         comments.sort(key=lambda c: c['score'] if c['score'] is not None else (c['like'] - c['dislike']), reverse=True)
+        cloned_comments.sort(key=lambda c: c['score'] if c['score'] is not None else (c['like'] - c['dislike']), reverse=True)
 
     likes, dislikes = get_discussion_likes(discussion_id)
-    return render_template("main.html", discussion_id=discussion_id, comments=comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'], discussion_type=discussion_type, discussion_state=discussion_state)
+    return render_template("main.html", discussion_id=discussion_id, comments=comments, cloned_comments=cloned_comments, id_client=session["id_client"], title=title, content=content, likes=likes, dislikes=dislikes, first_name=session['first_name'], last_name=session['last_name'], email=session['email'], company=session['company'], role=roles_numeros[session['role']], role_name=session['role'], discussion_type=discussion_type, discussion_state=discussion_state, cloned=cloned)
 
 
 
@@ -167,6 +195,17 @@ def clotre_discussion(d_id, action):
     update_discussion_state(d_id, action)
 
     return redirect(url_for('home'))
+
+@app.route("/cloner_discussion/<int:d_id>", methods=["POST"])
+def cloner_discussion(d_id):
+    groups = request.form.getlist('groupes')
+    id_client, title, content, type_discussion, etat, cloned_id = select_discussion_by_id(d_id)
+
+    insert_disscussions_table(id_c=id_client, title=title, content=content, type=type_discussion, cloned_from=d_id)
+    discussion_id = select_newest_discussion_id(id_client)[0]
+    for g_id in groups:
+        insert_discussion_groups(id_group=g_id, id_discussion=discussion_id)
+    return redirect(url_for('main', discussion_id=discussion_id))
 
 @app.route("/delete_discussion/<int:d_id>", methods=["POST"])
 def delete_discussion(d_id):
@@ -478,6 +517,10 @@ def show_all_replies(discussion_id, comment_id):
     for reply in res:
         opinion = get_user_opinion(discussion_id, reply[1])
         discussion_type= select_discussion_by_id(discussion_id)[3]
+        comment_discussion_id = select_comment_by_id(comment_id)[2]
+        etat = reply[7]
+        if discussion_id != comment_discussion_id: #si comment cloner  
+            etat = 'closed'
         if opinion == None:
             opinion = "neutre"
         elif opinion[0] == 1:
@@ -496,8 +539,9 @@ def show_all_replies(discussion_id, comment_id):
             "opinion": opinion,
             "discussion_type": discussion_type,
             "reply_count": len(select_comment_replies(reply[0])),
-            "etat":reply[7]
+            "etat":etat
         })
+
 
     return jsonify(result)
 
