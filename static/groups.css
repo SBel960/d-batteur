@@ -1,387 +1,126 @@
-:root{
-    --bg: #090d18;
-    --panel: rgba(255,255,255,0.06);
-    --panel2: rgba(255,255,255,0.08);
-    --border: rgba(255,255,255,0.10);
-    --text: rgba(255,255,255,0.92);
-    --muted: rgba(255,255,255,0.62);
-    --shadow: 0 18px 55px rgba(0,0,0,0.35);
-    --radius: 0px;
-  
-    --good: rgba(34,197,94,0.22);
-    --bad: rgba(239,68,68,0.22);
-    --info: rgba(99,102,241,0.22);
-  }
-  
-  *{ box-sizing: border-box; }
-  
-  body{
-    padding-top: 150px;
-    margin: 0;
-    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-    overflow-y: auto;
-    background:
-      radial-gradient(1200px 700px at 10% 5%, rgba(99,102,241,0.22), transparent 60%),
-      radial-gradient(1000px 600px at 90% 15%, rgba(34,211,238,0.18), transparent 55%),
-      radial-gradient(800px 500px at 55% 100%, rgba(16,185,129,0.10), transparent 55%),
-      var(--bg);
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-  }
-  
-  a{ color: inherit; text-decoration: none; }
-  
-  .muted{ color: var(--muted); font-size: 12px; }
+/* =======================================================
+   GROUPS.CSS — Styles spécifiques à la page groupes
+   Les styles communs sont dans base.css
+   ======================================================= */
 
-  .navbar {
-    height: fit-content;
-    width: 100%;
-    position: fixed;
-    top: 0px;
-  }
-  
-  /* Topbar */
-  .topbar{
-    max-width: 1180px;
-    margin: 18px auto 0;
-    padding: 14px 14px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-    /*box-shadow: var(--shadow);*/
-    backdrop-filter: blur(10px);
-  }
-  
-  .topbar-left{
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 280px;
-  }
-  
-  .logo-slot{
-    width: 40px;
-    height: 40px;
-    border: 1px dashed rgba(255,255,255,0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    color: var(--muted);
-  }
-  
-  .company{
-    display: flex;
-    flex-direction: column;
-    line-height: 1.15;
-  }
-  .company-name{
-    font-weight: 760;
-    letter-spacing: 0.2px;
-  }
-  .company-sub{
-    margin-top: 3px;
-    font-size: 12px;
-    color: var(--muted);
-  }
-  
-  .company-mark{
-    width: 30px;
-    height: 30px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--muted);
-    user-select: none;
-  }
-  
-  .topbar-center{
-    flex: 1;
-    display: flex;
-    justify-content: center;
-  }
-  
-  .search{
-    width: min(680px, 100%);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.04);
-  }
-  
-  .search-icon{
-    color: var(--muted);
-    font-size: 14px;
-    user-select: none;
-  }
-  
-  .search input{
-    width: 100%;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: var(--text);
-    font-size: 14px;
-  }
-  .search input::placeholder{ color: rgba(255,255,255,0.45); }
-  
-  .topbar-right{
-    min-width: 320px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 12px;
-  }
+body { padding-top: 148px; }
 
-  .logout {
-    width: 76px;
-    height: 38px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.05);
-    color: var(--text);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    transition: transform .12s ease, background .12s ease;
-    user-select: none;
-  }
-  .logout:hover{
-    transform: translateY(-1px);
-    background: rgb(255, 86, 86);
-  }
-  
-  .user{
-    text-align: right;
-    line-height: 1.15;
-  }
-  .user-name{ font-weight: 650; }
-  .user-group{
-    margin-top: 3px;
-    font-size: 12px;
-    color: var(--muted);
-  }
-  
-  .icon-btn{
-    width: 76px;
-    height: 38px;
-    padding: 10px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.05);
-    color: var(--text);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
+/* Formulaire ajout de groupe */
+.ajouter_group_form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #111422;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+.ajouter_group_form label { font-size: 15px; font-weight: 600; }
+.ajouter_group_form { margin-bottom: 8px; }
+h3.ajouter_group { margin-bottom: 14px; }
 
-    transition: transform .12s ease, background .12s ease, border-color .12s ease;
-    user-select: none;
-  }
-  .icon-btn:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.18);
-  }
-  .icon-btn:active{
-    transform: translateY(0px);
-  }
+.submitError { display: flex; gap: 16px; align-items: center; }
 
-  .topbar-dropdown {
-    max-width: 1180px;
-    height: 60px;
-    margin: auto;
-    background: rgba(255,255,255,0.08);
-    border-bottom: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    border-left: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    backdrop-filter: blur(10px);
-    padding: 14px 14px;
-  }
+.error-msg { color: #f87171; font-size: 13px; }
 
-  .topbar-dropdown-btn {
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.05);
-    color: var(--text);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 7px 10px;
-  }
-  
-  /* Page content */
-  .container{
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 18px 22px 38px;
-  }
-  
-  .ajouter_group_form {
-    height: 175px;
-    display: flex;
-    flex-direction: column;
-    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-    border: 1px solid rgba(255,255,255,0.35);
-    padding: 20px;
-    gap: 10px;
-  }
+/* Titres de section */
+main > h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 40px;
+  margin-bottom: 16px;
+}
 
-  .ajouter_group_form label {
-    font-size: 20px;
-  }
+#countInfo {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: -8px;
+  margin-bottom: 16px;
+}
 
-  .submitError {
-    display: flex;
-    gap: 20px;
-  }
-  
-  .section{
-    margin-top: 16px;
-  }
-  
-  .section-head{
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 6px 2px 12px;
-  }
-  
-  .section-head h2{
-    margin: 0;
-    font-size: 16px;
-    letter-spacing: 0.2px;
-  }
-  
-  /* .list{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  } */
+/* Grille des groupes */
+.groupsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
 
-  .groupList {
-    width: 50%;
-    display: flex;
-    padding-left: 10px;
-  }
+/* Carte groupe avec menu ⋮ */
+.group-card {
+  background: #0d1020;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px 12px 22px;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  position: relative;
+}
+.group-card:hover {
+  transform: translateY(-1px);
+  background: #141729;
+  border-color: rgba(255,255,255,0.20);
+}
+.group-name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--text);
+}
+.group-name:hover { text-decoration: underline; }
 
-  .groupTextInput {
-    padding: 10px;
-  }
+/* Champ texte groupe */
+.groupTextInput { padding: 9px 12px; }
 
-  .addGroup-btn{
-    width: fit-content;
-    padding: 10px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.05);
-    color: var(--text);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
+/* Bouton ajouter groupe */
+.addGroup-btn {
+  width: fit-content;
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-family: inherit;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  user-select: none;
+}
+.addGroup-btn:hover  { transform: translateY(-1px); background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.22); }
+.addGroup-btn:active { transform: translateY(0); }
 
-    transition: transform .12s ease, background .12s ease, border-color .12s ease;
-    user-select: none;
-  }
-  .addGroup-btn:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.18);
-  }
-  .addGroup-btn:active{
-    transform: translateY(0px);
-  }
+/* Formulaire ajout membres */
+.ajouter_membres_groupes_form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.ajouter_membres_groupes_form * {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-family: inherit;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  user-select: none;
+}
+.ajouter_membres_groupes_form *:hover  { transform: translateY(-1px); background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.22); }
+.ajouter_membres_groupes_form *:active { transform: translateY(0); }
 
-  .error-msg {
-    color:red;
-  }
-
-  .groupsContainer {
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .groupsContainer a {
-    width: max-content;
-    height: max-content;
-    white-space: nowrap;
-    margin: 2px;
-    overflow-wrap: break-word;
-  }
-
-  .group {
-    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 15px 25px;
-  }
-
-  .group_name {
-    margin-bottom: 10px;
-  }
-
-  .ajouter_membres_groupes_form *{
-    width: fit-content;
-    padding: 10px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.05);
-    color: var(--text);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-
-    transition: transform .12s ease, background .12s ease, border-color .12s ease;
-    user-select: none;
-  }
-  .ajouter_membres_groupes_form *:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.18);
-  }
-  .ajouter_membres_groupes_form *:active{
-    transform: translateY(0px);
-  }
-
-  /* Responsive */
-  @media (max-width: 980px){
-    body {
-      padding-top: 200px;
-    }
-    .topbar{
-      flex-wrap: wrap;
-      gap: 10px;
-      padding: 12px;
-    }
-    .topbar-left, .topbar-right{
-      min-width: auto;
-      flex: 1 1;
-    }
-    .topbar-center{
-      flex: 1 1 100%;
-      order: 3;
-    }
-  }
-
-  
-  
+@media (max-width: 980px) {
+  body { padding-top: 200px; }
+}

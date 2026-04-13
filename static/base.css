@@ -1,0 +1,473 @@
+/* =======================================================
+   BASE.CSS — Styles partagés entre toutes les pages
+   Les fichiers CSS de chaque page font @import url('base.css')
+   et ne contiennent QUE leurs styles spécifiques.
+   ======================================================= */
+
+/* ─── Variables ─── */
+
+:root {
+  --bg:     #090d18;
+  --border: rgba(255,255,255,0.12);
+  --text:   rgba(255,255,255,0.92);
+  --muted:  rgba(255,255,255,0.55);
+  --shadow: 0 8px 32px rgba(0,0,0,0.30);
+  --radius: 10px;
+
+  --good: rgba(34,197,94,0.22);
+  --bad:  rgba(239,68,68,0.22);
+  --info: rgba(99,102,241,0.22);
+}
+
+/* ─── Reset minimal ─── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Base ─── */
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(1200px 700px at 10% 5%, rgba(99,102,241,0.20), transparent 60%),
+    radial-gradient(1000px 600px at 90% 15%, rgba(34,211,238,0.15), transparent 55%),
+    radial-gradient(800px 500px at 55% 100%, rgba(16,185,129,0.10), transparent 55%),
+    var(--bg);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+a { color: inherit; text-decoration: none; }
+
+.muted { color: var(--muted); font-size: 12px; }
+
+/* ─── Navbar / Topbar ─── */
+
+.navbar {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar {
+  max-width: 1180px;
+  margin: 12px auto 0;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.04));
+  backdrop-filter: blur(12px);
+  position: relative;
+  z-index: 2;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 260px;
+}
+
+.topbar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.topbar-right {
+  min-width: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.logo-slot {
+  width: 40px;
+  height: 40px;
+  border: 1px dashed rgba(255,255,255,0.30);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.company { display: flex; flex-direction: column; line-height: 1.2; }
+.company-name { font-weight: 700; font-size: 14px; letter-spacing: 0.2px; }
+.company-sub  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.company-mark {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* Barre de recherche */
+
+.search {
+  width: min(680px, 100%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  transition: border-color .15s ease;
+}
+.search:focus-within { border-color: rgba(99,102,241,0.45); }
+.search-icon { color: var(--muted); font-size: 14px; user-select: none; }
+.search input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+}
+.search input::placeholder { color: rgba(255,255,255,0.35); }
+
+/* Infos utilisateur */
+
+.user { text-align: right; line-height: 1.2; }
+.user-name  { font-weight: 600; font-size: 14px; }
+.user-group { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ─── Boutons ─── */
+
+/* Bouton standard */
+.btn {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  padding: 7px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  user-select: none;
+}
+.btn:hover  { transform: translateY(-1px); background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.22); }
+.btn:active { transform: translateY(0); }
+
+/* Bouton icône / navigation (même style que btn) */
+.icon-btn {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-family: inherit;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  user-select: none;
+}
+.icon-btn:hover  { transform: translateY(-1px); background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.22); }
+.icon-btn:active { transform: translateY(0); }
+
+/* Bouton déconnexion */
+.logout {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-family: inherit;
+  transition: transform .12s ease, background .12s ease;
+  user-select: none;
+}
+.logout:hover  { transform: translateY(-1px); background: rgba(210,50,50,0.55); }
+.logout:active { transform: translateY(0); }
+
+/* Bouton vote */
+.vote {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  padding: 7px 12px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.vote:hover  { transform: translateY(-1px); background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.22); }
+.vote:active { transform: translateY(0); }
+.vote-closed { pointer-events: none; opacity: 0.40; }
+
+/* ─── Topbar dropdown (sous la topbar) ─── */
+
+.topbar-dropdown {
+  max-width: 1180px;
+  margin: 0 auto;
+  height: 52px;
+  background: rgba(255,255,255,0.06);
+  border-bottom: 1px solid var(--border);
+  border-left:  1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  backdrop-filter: blur(10px);
+  padding: 0 16px;
+}
+
+.topbar-dropdown-btn {
+  height: 32px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-family: inherit;
+  transition: transform .12s ease, background .12s ease;
+}
+.topbar-dropdown-btn:hover  { transform: translateY(-1px); background: rgba(255,255,255,0.10); }
+.topbar-dropdown-btn:active { transform: translateY(0); }
+
+/* ─── Layout principal ─── */
+
+.container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 36px 28px 72px;
+}
+
+.section { margin-top: 36px; }
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.section-head h2 { font-size: 15px; font-weight: 600; letter-spacing: 0.2px; }
+
+.list { display: flex; flex-direction: column; gap: 16px; }
+
+.empty {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #0d1020;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ─── Cards ─── */
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #0d1020;
+  padding: 24px 28px;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  background: #141729;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+  border-color: rgba(255,255,255,0.22);
+}
+
+.cloned     { background: linear-gradient(135deg, #0d1020, rgba(114,243,75,0.12)); }
+.card-closed{ background: linear-gradient(135deg, #0d1020, rgba(180,180,180,0.12)); }
+
+.card-top    { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.card-title  { display: flex; align-items: center; gap: 8px; font-weight: 600; flex-wrap: wrap; }
+.title-text  { letter-spacing: 0.1px; }
+.card-date   { font-size: 12px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+.card-desc   { margin-top: 10px; color: rgba(255,255,255,0.72); line-height: 1.65; overflow-wrap: break-word; }
+.card-bottom { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.card-meta   { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+.dot         { opacity: 0.5; }
+.card-actions{ display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* ─── Badges ─── */
+
+.badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: rgba(255,255,255,0.80);
+  background: rgba(255,255,255,0.05);
+  user-select: none;
+}
+.badge-q    { background: var(--info); border-color: rgba(99,102,241,0.35); }
+.badge-prop { background: rgba(34,211,238,0.15); border-color: rgba(34,211,238,0.35); }
+
+/* ─── Champs de formulaire ─── */
+
+.form-control {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .15s ease;
+  width: 100%;
+}
+.form-control:focus { border-color: rgba(99,102,241,0.55); }
+
+/* ─── Modale native ─── */
+
+/* Centrage forcé — le padding-top du body décale le dialog par défaut */
+dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
+:modal {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  background: rgba(10,12,22,0.96);
+  padding: 24px;
+  box-shadow: 0 0 0 100vmax rgba(0,0,0,0.65);
+  backdrop-filter: blur(40px);
+}
+
+/* ─── Dropdown générique ─── */
+
+.dropdown { position: relative; display: inline-block; }
+
+.dropdown-content {
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: auto;
+  padding: 4px;
+  border-radius: 10px;
+  z-index: 1000;
+  min-width: 150px;
+  border: 1px solid var(--border);
+  background: #13151f;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+}
+.dropdown-content.show { display: flex; }
+
+.dropdown-content a,
+.dropdown-content button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  background: #1e2130;
+  border: none;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .1s ease;
+  white-space: nowrap;
+}
+.dropdown-content a:hover,
+.dropdown-content button:hover { background: #2a2d42; }
+.dropdown-content button.danger { color: #ff7070; background: #2d1a1a; }
+.dropdown-content button.danger:hover { background: #3d1f1f; }
+
+/* Bouton trois points */
+.kebab-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background .12s ease, color .12s ease;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+.kebab-btn span {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  pointer-events: none;
+}
+.kebab-btn:hover { background: rgba(255,255,255,0.10); color: var(--text); }
+
+/* ─── Responsive ─── */
+
+@media (max-width: 980px) {
+  .topbar {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+  }
+  .topbar-left, .topbar-right {
+    min-width: auto;
+    flex: 1 1;
+  }
+  .topbar-center {
+    flex: 1 1 100%;
+    order: 3;
+  }
+}

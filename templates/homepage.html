@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Home | Discussions</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}" />
 </head>
 <body>
@@ -234,8 +235,8 @@
               <a class="vote vote-${d.etat}" href="/like_discussion/${d.id}/like?origin_page=homepage">👍 ${d.likes}</a>
               <a class="vote vote-${d.etat}" href="/like_discussion/${d.id}/unlike?origin_page=homepage">👎 ${d.dislikes}</a>
               {%if role >= 2 %}
-              <div class="dropdown-options dropdown">
-                <button class="btn dropbtn" onclick="toggleDropdown(event, ${d.id})">..</button>
+              <div class="dropdown">
+                <button class="kebab-btn" onclick="toggleDropdown(event, ${d.id})"><span></span><span></span><span></span></button>
                 <div id="showDiscussionOptions_${d.id}" class="dropdown-content">
                   ${d.etat === 'active'
                   ?`<button class="btn" commandfor="editDiscussion_${d.id}" command="show-modal" href='#'>Editer</button>
@@ -273,16 +274,23 @@
     }
 
     function toggleDropdown(event, id) {
-      event.stopPropagation(); // prevent bubbling
-
+      event.stopPropagation();
       const dropdown = document.getElementById(`showDiscussionOptions_${id}`);
+      const wasShown = dropdown.classList.contains("show");
 
-      dropdown.classList.toggle("show");
+      // Ferme tous les menus et remet les z-index
+      document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+      document.querySelectorAll(".card").forEach(c => c.style.zIndex = "");
+
+      if (!wasShown) {
+        dropdown.classList.add("show");
+        // Élève la carte parente pour qu'elle passe au-dessus des cartes suivantes
+        dropdown.closest(".card").style.zIndex = "10";
+      }
     }
     document.addEventListener("click", function () {
-      document.querySelectorAll(".dropdown-content").forEach(d => {
-        d.classList.remove("show");
-      });
+      document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+      document.querySelectorAll(".card").forEach(c => c.style.zIndex = "");
     });
 
     initialiserDiscussions();

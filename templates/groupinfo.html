@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='groupinfo.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='groupinfo.css') }}"/>
     <title> Discussion </title>
 </head>
 <body>
@@ -45,29 +46,16 @@
         <div id="userGroup" class="user-group">Role : {{role_name}}</div>
       </div>
       <a class="logout" href="{{url_for('logout')}}"> Logout </a>
-    {% if role >= 2%}
-    <details>
-      <summary class="icon-btn">Gérer</summary>
-        <div class="gererDropdown">
-
-          <button commandfor='AddMember'command='show-modal' title="Ajouter des membres" class="dropdownChoice">
-            Ajouter
-          </button>
-
-          <button commandfor='DeleteMember'command='show-modal' title="Supprimer des membres" class="dropdownChoice">
-            Supprimer un membre
-          </button>
-
-          <button commandfor='UpdateGroup'command='show-modal' title="Modifier le groupe" class="dropdownChoice">
-            Modifier
-          </button>
-
-
-          <button commandfor='DeleteGroup'command='show-modal' title="Supprimer le groupe" class="dropdownChoice">
-            Supprimer le groupe
-          </button>
-        </div>
-    </details>
+    {% if role >= 2 %}
+    <div class="dropdown" id="groupManagerDropdown">
+      <button class="icon-btn" onclick="toggleGroupMenu(event)">Gerer</button>
+      <div class="dropdown-content" id="groupMenuContent">
+        <button commandfor="AddMember" command="show-modal">Ajouter un membre</button>
+        <button commandfor="DeleteMember" command="show-modal">Retirer un membre</button>
+        <button commandfor="UpdateGroup" command="show-modal">Renommer le groupe</button>
+        <button commandfor="DeleteGroup" command="show-modal" class="danger">Supprimer le groupe</button>
+      </div>
+    </div>
     {% endif %}
     </div>
   </header>
@@ -170,6 +158,15 @@
   </main>
 
   <script>
+    function toggleGroupMenu(event) {
+      event.stopPropagation();
+      document.getElementById("groupMenuContent").classList.toggle("show");
+    }
+    document.addEventListener("click", function() {
+      const m = document.getElementById("groupMenuContent");
+      if (m) m.classList.remove("show");
+    });
+
     const searchInput = document.getElementById("searchInput");
     const countInfo = document.getElementById("countInfo");
     const allMembres = document.querySelectorAll(".membre");

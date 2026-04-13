@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Home | Groupes</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='groups.css') }}" />
 </head>
 <body>
@@ -51,22 +52,67 @@
 
   </section>
 
+  {% if role >= 2 %}
+  <!-- Modal : Ajouter un membre -->
+  <dialog id="modalAddMember">
+    <button class="icon-btn" style="float:right" onclick="document.getElementById('modalAddMember').close()">x</button>
+    <p id="modalAddTitle" style="font-weight:600; margin-bottom:12px;"></p>
+    <form id="formAddMember" method="post">
+      <input type="hidden" name="origin" value="groups">
+      <div id="addMemberList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
+      <input class="btn" type="submit" value="Ajouter">
+    </form>
+  </dialog>
+
+  <!-- Modal : Retirer un membre -->
+  <dialog id="modalRemoveMember">
+    <button class="icon-btn" style="float:right" onclick="document.getElementById('modalRemoveMember').close()">x</button>
+    <p id="modalRemoveTitle" style="font-weight:600; margin-bottom:12px;"></p>
+    <form id="formRemoveMember" method="post">
+      <input type="hidden" name="origin" value="groups">
+      <div id="removeMemberList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:12px;"></div>
+      <input class="btn" type="submit" value="Retirer">
+    </form>
+  </dialog>
+
+  <!-- Modal : Renommer -->
+  <dialog id="modalRename">
+    <button class="icon-btn" style="float:right" onclick="document.getElementById('modalRename').close()">x</button>
+    <p style="font-weight:600; margin-bottom:12px;">Renommer le groupe</p>
+    <form id="formRename" method="post">
+      <input type="hidden" name="origin" value="groups">
+      <input type="text" class="groupTextInput form-control" name="groupName" placeholder="Nouveau nom" required style="margin-bottom:12px;">
+      <input class="btn" type="submit" value="Renommer">
+    </form>
+  </dialog>
+
+  <!-- Modal : Supprimer -->
+  <dialog id="modalDelete">
+    <button class="icon-btn" style="float:right" onclick="document.getElementById('modalDelete').close()">x</button>
+    <p id="modalDeleteTitle" style="margin-bottom:16px;"></p>
+    <div style="display:flex; gap:10px;">
+      <form id="formDelete" method="post">
+        <input type="hidden" name="origin" value="groups">
+        <input class="btn" type="submit" value="Supprimer" style="background:rgba(200,50,50,0.3); border-color:#c83232;">
+      </form>
+      <button class="btn" onclick="document.getElementById('modalDelete').close()">Annuler</button>
+    </div>
+  </dialog>
+  {% endif %}
+
   <main class="container">
     <h1>GROUPES</h1>
 
     {% if role >= 2 %}
     <div>
-      <h3 class="ajouter_group">
-        Ajouter un nouveau groupe :
-        (cette section doit normalement être seulement visible pour les membres de haut rang)
-      </h3>
+      <h3 class="ajouter_group">Ajouter un nouveau groupe :</h3>
 
       <form class="ajouter_group_form" action="{{ url_for('groups_page') }}" method="POST">
         <label for="groupNameInput">Créer un nouveau groupe</label>
         <input
           id="groupNameInput"
           type="text"
-          class="groupTextInput"
+          class="groupTextInput form-control"
           name="groupName"
           placeholder="Nom du groupe"
         >
@@ -81,9 +127,20 @@
     <h2>Vos groupes</h2>
     <div class="groupsContainer">
       {% for group in groups_client %}
-        <a href="{{ url_for('group_info', g_id=group['id']) }}" class="group">
-          {{ group['name'] }}
-        </a>
+        <div class="group-card">
+          <a href="{{ url_for('group_info', g_id=group['id']) }}" class="group-name">{{ group['name'] }}</a>
+          {% if role >= 2 %}
+          <div class="dropdown">
+            <button class="kebab-btn" onclick="toggleMenu(event, 'mymenu-{{ group['id'] }}')"><span></span><span></span><span></span></button>
+            <div class="dropdown-content" id="mymenu-{{ group['id'] }}">
+              <button onclick="openAddMember({{ group['id'] }}, '{{ group['name'] }}')">Ajouter un membre</button>
+              <button onclick="openRemoveMember({{ group['id'] }}, '{{ group['name'] }}')">Retirer un membre</button>
+              <button onclick="openRename({{ group['id'] }}, '{{ group['name'] }}')">Renommer</button>
+              <button class="danger" onclick="openDelete({{ group['id'] }}, '{{ group['name'] }}')">Supprimer</button>
+            </div>
+          </div>
+          {% endif %}
+        </div>
       {% endfor %}
     </div>
 
@@ -96,13 +153,6 @@
     const countInfo = document.getElementById("countInfo");
     const searchInput = document.getElementById("searchInput");
     const list = document.getElementById("groupsList");
-
-    const baseGroups = [
-      { id: 1, name: "Groupe A" },
-      { id: 2, name: "Groupe B" },
-      { id: 3, name: "Groupe C" },
-      { id: 4, name: "Groupe Maintenance" }
-    ];
 
     let all_groups = [];
 
@@ -125,14 +175,23 @@
       }
 
       items.forEach(g => {
-        const card = document.createElement("a");
-          card.href=`/group_info/${g.id}`;
-          card.className="group";
-
-          card.innerHTML = `
-            ${ g.name }
+        const card = document.createElement("div");
+        card.className = "group-card";
+        const isManager = {{role}} >= 2;
+        card.innerHTML = `
+          <a href="/group_info/${g.id}" class="group-name">${escapeHtml(g.name)}</a>
+          ${isManager ? `
+          <div class="dropdown">
+            <button class="kebab-btn" onclick="toggleMenu(event, 'menu-${g.id}')"><span></span><span></span><span></span></button>
+            <div class="dropdown-content" id="menu-${g.id}">
+              <button onclick="openAddMember(${g.id}, '${escapeHtml(g.name)}')">Ajouter un membre</button>
+              <button onclick="openRemoveMember(${g.id}, '${escapeHtml(g.name)}')">Retirer un membre</button>
+              <button onclick="openRename(${g.id}, '${escapeHtml(g.name)}')">Renommer</button>
+              <button class="danger" onclick="openDelete(${g.id}, '${escapeHtml(g.name)}')">Supprimer</button>
+            </div>
+          </div>
+          ` : ''}
         `;
-      
         list.appendChild(card);
       });
     }
@@ -147,26 +206,8 @@
       }));
     }
 
-    async function remplirBDDSiVide() {
-      await chargerGroupesBDD();
-
-      if (all_groups.length === 0) {
-        for (const group of baseGroups) {
-          const formData = new FormData();
-          formData.append("groupName", group.name);
-
-          await fetch(`/addgroupe/${group.id}`, {
-            method: "POST",
-            body: formData
-          });
-        }
-
-        await chargerGroupesBDD();
-      }
-    }
-
     async function initialiserGroupes() {
-      await remplirBDDSiVide();
+      await chargerGroupesBDD();
       renderGroups(all_groups);
     }
 
@@ -181,6 +222,63 @@
     }
 
     searchInput.addEventListener("input", appliquerRecherche);
+
+    function toggleMenu(event, id) {
+      event.stopPropagation();
+      event.preventDefault();
+      const dropdown = document.getElementById(id);
+      const wasShown = dropdown.classList.contains("show");
+      document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+      document.querySelectorAll(".group-card").forEach(c => c.style.zIndex = "");
+      if (!wasShown) {
+        dropdown.classList.add("show");
+        dropdown.closest(".group-card").style.zIndex = "10";
+      }
+    }
+    document.addEventListener("click", function() {
+      document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+      document.querySelectorAll(".group-card").forEach(c => c.style.zIndex = "");
+    });
+
+    async function openAddMember(groupId, groupName) {
+      document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+      const res = await fetch(`/api/group_non_members/${groupId}`);
+      const members = await res.json();
+      document.getElementById("modalAddTitle").textContent = `Ajouter un membre — ${groupName}`;
+      document.getElementById("formAddMember").action = `/addgroupe/${groupId}`;
+      const list = document.getElementById("addMemberList");
+      list.innerHTML = members.length
+        ? members.map(m => `<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="memberList" value="${m.id}"> ${m.name}</label>`).join("")
+        : "<em style='color:var(--muted)'>Aucun membre disponible</em>";
+      document.getElementById("modalAddMember").showModal();
+    }
+
+    async function openRemoveMember(groupId, groupName) {
+      document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+      const res = await fetch(`/api/group_members/${groupId}`);
+      const members = await res.json();
+      document.getElementById("modalRemoveTitle").textContent = `Retirer un membre — ${groupName}`;
+      document.getElementById("formRemoveMember").action = `/deletemember/${groupId}`;
+      const list = document.getElementById("removeMemberList");
+      list.innerHTML = members.length
+        ? members.map(m => `<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="memberList" value="${m.id}"> ${m.name}</label>`).join("")
+        : "<em style='color:var(--muted)'>Aucun membre à retirer</em>";
+      document.getElementById("modalRemoveMember").showModal();
+    }
+
+    function openRename(groupId, groupName) {
+      document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+      document.getElementById("formRename").action = `/updategroup/${groupId}`;
+      document.getElementById("formRename").querySelector("[name=groupName]").value = groupName;
+      document.getElementById("modalRename").showModal();
+    }
+
+    function openDelete(groupId, groupName) {
+      document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
+      document.getElementById("modalDeleteTitle").innerHTML = `Supprimer <b>${groupName}</b> ? Cette action est irréversible.`;
+      document.getElementById("formDelete").action = `/deletegroup/${groupId}`;
+      document.getElementById("modalDelete").showModal();
+    }
 
     initialiserGroupes();
     

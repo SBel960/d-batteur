@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}"/>
     <title> Discussion </title>
 </head>
 <body class="body_{{discussion_state}}" id="body_{% if cloned == true %}cloned{%endif%}">
@@ -75,14 +76,15 @@
       </div>
     </section>
     
-    <!-- Essayer de trouver un moyen de transférer les pouces bleus et rouges dans la section vote -->
-    <!-- Forme de la représentation des résultats du vote encore à décider -->
-
     <section class="interactive-section">
       <div class="voting-results">
-        <div class="voting-bar-results">
-          <div id="bar-for" class="bar-for"></div>
-          <div id="bar-against" class="bar-against"></div>
+        <div class="voting-bar-wrapper">
+          <span class="bar-label bar-label-for">👍 Pour</span>
+          <div class="voting-bar-results">
+            <div id="bar-for" class="bar-for"><span class="bar-pct" id="bar-pct-for"></span></div>
+            <div id="bar-against" class="bar-against"><span class="bar-pct" id="bar-pct-against"></span></div>
+          </div>
+          <span class="bar-label bar-label-against">Contre 👎</span>
         </div>
         <div class="btn-area">
           {% if discussion_state == 'active' %}
@@ -147,7 +149,7 @@
                     <a class="dislikes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'unlike')">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
                     {% if comment['type'] == 'proposition' %}
                       <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
-                        Score :&nbsp; <span id="score-count"> {{ comment['score'] }}</span>
+                        Score :&nbsp; <span id="score-count-{{id}}"> {{ comment['score'] }}</span>
                       </span>
                      {% endif %}
                     <a class="icon-btn" onclick="toggleCommentForm(event, {{id}})" href="#"> reply </a>
@@ -158,7 +160,7 @@
                     <a class="dislikes-count icon-btn closed" href="#">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
                     {% if comment['type'] == 'proposition' %}
                       <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
-                        Score :&nbsp; <span id="score-count"> {{ comment['score'] }}</span>
+                        Score :&nbsp; <span id="score-count-{{id}}"> {{ comment['score'] }}</span>
                       </span>
                      {% endif %}
                     <a class="icon-btn closed" href="#"> reply </a>
@@ -228,7 +230,7 @@
                     <a class="dislikes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'unlike')">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
                     {% if comment['type'] == 'proposition' %}
                       <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
-                        Score :&nbsp; <span id="score-count"> {{ comment['score'] }}</span>
+                        Score :&nbsp; <span id="score-count-{{id}}"> {{ comment['score'] }}</span>
                       </span>
                      {% endif %}
                     <a class="icon-btn" onclick="toggleCommentForm(event, {{id}})" href="#"> reply </a>
@@ -239,7 +241,7 @@
                     <a class="dislikes-count icon-btn closed" href="#">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
                     {% if comment['type'] == 'proposition' %}
                       <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
-                        Score :&nbsp; <span id="score-count"> {{ comment['score'] }}</span>
+                        Score :&nbsp; <span id="score-count-{{id}}"> {{ comment['score'] }}</span>
                       </span>
                      {% endif %}
                     <a class="icon-btn closed" href="#"> reply </a>
@@ -303,45 +305,30 @@
     /*Script JS à remplir*/
 
     const barFor = document.getElementById("bar-for");
-    const barAgainst = document.getElementById("bar-against"); 
-    
-    let likesText = document.getElementById('likes-count').textContent; 
-    let dislikesText = document.getElementById('dislikes-count').textContent; 
-    let likesCount = Number(likesText.slice(2)); 
-    let dislikesCount = Number(dislikesText.slice(2)); 
-    
-    let total = likesCount + dislikesCount; 
+    const barAgainst = document.getElementById("bar-against");
+    const pctFor = document.getElementById("bar-pct-for");
+    const pctAgainst = document.getElementById("bar-pct-against");
 
-    if (total > 0) {
-      barFor.style.width = (likesCount * 100 / total) + "%";
-      barFor.style.setProperty("--likesCount", `"${likesCount * 100 / total}%"`);
-      barAgainst.style.width = (dislikesCount * 100 / total) + "%";
-      barAgainst.style.setProperty("--dislikesCount", `"${dislikesCount * 100 / total}%"`);
-    } else {
-      barFor.style.width = "50%"; 
-      barFor.style.setProperty("--likesCount", `"50%"`);
-      barAgainst.style.width = "50%"; 
-      barAgainst.style.setProperty("--dislikesCount", `"50%"`);
+    function applyBar(likesCount, dislikesCount) {
+      const total = likesCount + dislikesCount;
+      const forPct  = total > 0 ? Math.round(likesCount    * 100 / total) : 50;
+      const agPct   = total > 0 ? Math.round(dislikesCount * 100 / total) : 50;
+      barFor.style.width     = forPct + "%";
+      barAgainst.style.width = agPct  + "%";
+      pctFor.textContent     = forPct  > 8 ? forPct  + "%" : "";
+      pctAgainst.textContent = agPct   > 8 ? agPct   + "%" : "";
     }
-    async function updateBar(){
-      likesText = document.getElementById('likes-count').textContent; 
-      dislikesText = document.getElementById('dislikes-count').textContent; 
-      likesCount = Number(likesText.slice(2)); 
-      dislikesCount = Number(dislikesText.slice(2)); 
-      
-      total = likesCount + dislikesCount; 
 
-      if (total > 0) {
-        barFor.style.width = (likesCount * 100 / total) + "%";
-        barFor.style.setProperty("--likesCount", `"${likesCount * 100 / total}%"`);
-        barAgainst.style.width = (dislikesCount * 100 / total) + "%";
-        barAgainst.style.setProperty("--dislikesCount", `"${dislikesCount * 100 / total}%"`);
-      } else {
-        barFor.style.width = "50%"; 
-        barFor.style.setProperty("--likesCount", `"50%"`);
-        barAgainst.style.width = "50%"; 
-        barAgainst.style.setProperty("--dislikesCount", `"50%"`);
-      }
+    {
+      const likesCount    = Number(document.getElementById('likes-count').textContent.slice(2));
+      const dislikesCount = Number(document.getElementById('dislikes-count').textContent.slice(2));
+      applyBar(likesCount, dislikesCount);
+    }
+
+    async function updateBar(){
+      const likesCount    = Number(document.getElementById('likes-count').textContent.slice(2));
+      const dislikesCount = Number(document.getElementById('dislikes-count').textContent.slice(2));
+      applyBar(likesCount, dislikesCount);
     }
 
     async function likeDiscussion(event, discussion_id, action){
@@ -362,9 +349,16 @@
       const data = await response.json()
       document.getElementById(`likes-count-${comment_id}`).innerText = data.likes;
       document.getElementById(`dislikes-count-${comment_id}`).innerText = data.dislikes;
-      score = document.getElementById(`score-count`)
+      const score = document.getElementById(`score-count-${comment_id}`)
       if(score != null){
         score.innerText = data.score;
+      }
+      // Mettre à jour le score de la proposition parente si c'est une réponse
+      if(data.proposition_id != null){
+        const propScore = document.getElementById(`score-count-${data.proposition_id}`);
+        if(propScore != null){
+          propScore.innerText = data.proposition_score;
+        }
       }
       event.target.disabled = false;
     }
