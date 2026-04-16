@@ -337,6 +337,27 @@ def take_all_groupes():
         all_groups.append([row[0], row[1]])
     return all_groups
 
+@app.route('/api/group_members/<int:group_id>')
+def api_group_members(group_id):
+    if not session.get('logged_in'):
+        return jsonify([])
+    members = []
+    for member in select_member_by_id(group_id):
+        user = get_user_by_id(member[0])
+        if user[0] != session['id_client']:
+            members.append({"id": user[0], "name": user[1] + " " + user[2]})
+    return jsonify(members)
+
+
+@app.route('/api/group_non_members/<int:group_id>')
+def api_group_non_members(group_id):
+    if not session.get('logged_in'):
+        return jsonify([])
+    return jsonify([
+        {"id": m[0], "name": m[1] + " " + m[2]}
+        for m in select_clients_not_in_group(group_id)
+    ])
+
 
 @app.route('/changemember/<int:group_id>', methods=['POST'])
 def change_member_group(group_id):
