@@ -70,3 +70,57 @@ body { padding-top: 148px; }
   body { padding-top: 200px; }
   .members-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
 }
+
+  .Options{
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }  
+
+  .deleteBtn{
+  }
+
+  .notification{
+    position: fixed;
+    top: 15%;
+    right:13%;
+    background-color: darkblue;
+    font-size: 20px;
+  }
+
+    .option-btn{
+    width: 38px;
+    height: 38px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    user-select: none;
+  }
+  .option-btn:hover{
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.18);
+  }
+  .option-btn:active{
+    transform: translateY(0px);
+  }
+
+  #delBtn:hover{
+    background: rgba(228, 8, 8, 0.627);
+  }
+  
+  #promoteBtn:hover{
+    background: rgba(63, 228, 8, 0.627);
+  }
+  
+  #demoteBtn:hover{
+    background: rgba(228, 8, 8, 0.627);
+  }
