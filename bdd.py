@@ -541,7 +541,15 @@ def update_discussion_state(id_discussion, action):
     data.commit()
     sql.close()
     return
-    
+
+def update_role(role,id_c):
+    data=get_db()
+    sql=data.cursor()
+    command="""UPDATE Client SET role=? WHERE id_client=?
+        """
+    sql.execute(command,[role, id_c])
+    data.commit()
+    sql.close()
 
 #---------------------- likes
 
