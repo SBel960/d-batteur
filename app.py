@@ -449,6 +449,52 @@ def get_all_members():
         })
     return jsonify(members)
 
+@app.route('/deleteclient/<int:id_c>', methods=['POST'])
+def delete_client_from_db(id_c):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    
+    delete_client(id_c)
+    
+    return redirect(url_for('membres'))
+
+    
+
+@app.route('/promoteclient/<int:id_c>')
+
+def promote_client(id_c):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    
+    role=select_role_client(id_c)[0]
+    username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
+    if(role == "Manager"):
+        update_role("CEO",id_c)
+        flash(username+" a été promu en tant que CEO")
+    if(role == "Employe"):
+        update_role("Manager",id_c)
+        flash(username+" a été promu en tant que Manager")
+        
+    return redirect(url_for('membres'))
+
+@app.route('/demoteclient/<int:id_c>')
+
+def demote_client(id_c):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    
+    role=select_role_client(id_c)[0]
+    username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
+    if(role == "CEO"):
+        update_role("Manager",id_c)
+        flash(username+" a été rétrogradé en tant que Manager")
+    if(role == "Manager"):
+        update_role("Employe",id_c)
+        flash(username+" a été rétrogradé en tant que Employe")
+    
+    return redirect(url_for('membres'))
+
+
 @app.route('/profile/<int:id_c>')
 def profile(id_c):
     if not session.get('logged_in'):
