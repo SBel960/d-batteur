@@ -54,8 +54,12 @@ def home():
 
     for row in select_all_group_discussions(session["id_client"]):
         likes, dislikes = get_discussion_likes(row[0])
-        auteur = get_user_by_id(row[1])
-        auteur_nom = auteur[1] + " " + auteur[2]
+        if(get_user_by_id(row[1])==None):
+        
+            auteur_nom ="Utilisateur supprimé"
+        else:
+            auteur = get_user_by_id(row[1])
+            auteur_nom = auteur[1] + " " + auteur[2]
         type_disc  = "OUVERT" if row[4] == "ouvert" else "FERMÉ"
 
         groupes = []
@@ -102,7 +106,10 @@ def main(discussion_id):
         type_comment = comment[4]
         like_c, dislike_c = get_comment_likes(id_comment)
         score    = (like_c - dislike_c) + get_score_proposition(id_comment) if type_comment == 'proposition' else None
-        username = get_user_by_id(id_client)[1] + " " + get_user_by_id(id_client)[2]
+        if(get_user_by_id(id_client) == None):
+            username="Utilisateur supprimé"
+        else:
+            username = get_user_by_id(id_client)[1] + " " + get_user_by_id(id_client)[2]
         opinion  = get_user_opinion(discussion_id, id_client)
         if opinion is None:    opinion = "neutre"
         elif opinion[0] == 1: opinion = "pour"
@@ -120,7 +127,10 @@ def main(discussion_id):
             type_comment = comment[4]
             like_c, dislike_c = get_comment_likes(id_comment)
             score    = (like_c - dislike_c) + get_score_proposition(id_comment) if type_comment == 'proposition' else None
-            username = get_user_by_id(id_client)[1] + " " + get_user_by_id(id_client)[2]
+            if(get_user_by_id(id_client) == None):
+                username="Utilisateur supprimé"
+            else:
+                username = get_user_by_id(id_client)[1] + " " + get_user_by_id(id_client)[2]
             opinion  = get_user_opinion(discussion_id, id_client)
             if opinion is None:    opinion = "neutre"
             elif opinion[0] == 1: opinion = "pour"
@@ -280,15 +290,19 @@ def show_all_replies(discussion_id, comment_id):
         else:                  opinion = "contre"
 
         etat = 'closed' if discussion_id != comment_discussion_id else reply[7]
+        if(get_user_by_id(reply[1])==None):
+            username="Utilisateur supprimé"
+        else:
+            username=get_user_by_id(reply[1])[1] + " " + get_user_by_id(reply[1])[2]
         result.append({
             "id_c":            reply[0],
             "id_client":       reply[1],
             "content":         reply[3],
             "type":            reply[4],
             "avis":            reply[5],
+            "username":        username,
             "like":            get_comment_likes(reply[0])[0],
             "dislike":         get_comment_likes(reply[0])[1],
-            "username":        get_user_by_id(reply[1])[1] + " " + get_user_by_id(reply[1])[2],
             "opinion":         opinion,
             "discussion_type": discussion_type,
             "reply_count":     len(select_comment_replies(reply[0])),
@@ -380,6 +394,32 @@ def change_member_group(group_id):
         insert_group_members(group_id,a)
    
     return redirect(url_for("group_info",g_id=group_id))
+
+@app.route('/addgroupe/<int:group_id>', methods=['POST'])
+def add_member_to_group(group_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    origin = request.form.get('origin', 'groupinfo')
+    for membre in request.form.getlist('memberList'):
+        if len(select_client_groupes_by_id(group_id, membre)) == 0:
+            insert_group_members(group_id, membre)
+    if origin == 'groups':
+        return redirect(url_for("groups_page"))
+    return redirect(url_for("group_info", g_id=group_id))
+
+
+@app.route('/deletemember/<int:group_id>', methods=['POST'])
+def delete_member_from_group(group_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    origin = request.form.get('origin', 'groupinfo')
+    for membre in request.form.getlist("memberList"):
+        if len(select_client_groupes_by_id(group_id, membre)) == 1:
+            delete_member(group_id, membre)
+    if origin == 'groups':
+        return redirect(url_for("groups_page"))
+    return redirect(url_for("group_info", g_id=group_id))
+
 
 @app.route('/group_info/<int:g_id>', methods=['POST', 'GET'])
 def group_info(g_id):
@@ -474,9 +514,11 @@ def get_all_members():
 def delete_client_from_db(id_c):
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
+
+    for id_g in select_client_groupes(id_c):
+        delete_member(id_g[0],id_c)
     
     delete_client(id_c)
-    
     return redirect(url_for('membres'))
 
     
@@ -540,18 +582,24 @@ def alldiscussions():
     discussions = []
     for row in select_all_group_discussions(session["id_client"]):
         likes, dislikes = get_discussion_likes(row[0])
-        auteur  = get_user_by_id(row[1])
         groupes = [
             {"id": g[0], "nom": select_groupe_from_id(g[0])[0]}
             for g in select_discussion_groups(row[0])
         ]
+        if(get_user_by_id(row[1])==None):
+            auteur="Utilisateur supprimé"
+        else:
+            auteur=get_user_by_id(row[1])[1]+" "+get_user_by_id(row[1])[2]
         discussions.append({
             "id": row[0], "titre": row[2], "contenu": row[3],
             "type": "Question" if row[4] == "ouvert" else "Proposition",
             "likes": likes, "dislikes": dislikes,
-            "groupes": groupes, "auteur": auteur[1] + " " + auteur[2],
+            "groupes": groupes,"auteur":auteur,
             "date": row[5], "heure": row[6], "etat": row[7], "cloner_par": row[8],
         })
+
+        
+
     return jsonify(discussions)
 
 
@@ -597,7 +645,10 @@ def registry():
     if check_if_exists_client(email, company) is not None:
         return render_template('registry.html', message='Ce compte existe deja')
     insert_clients_table(email, first_name, last_name, password, company, role)
-    return redirect(url_for('login_page'))
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    
+    return redirect(url_for('membres'))
 
 
 @app.route('/logout', methods=['GET', 'POST'])

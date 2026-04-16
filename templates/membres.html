@@ -41,14 +41,16 @@
         <div id="userFullName" class="user-name">{{ first_name }} {{ last_name }}</div>
         <div id="userGroup" class="user-group">Role : {{ role_name }}</div>
       </div>
-            {% if role >= 3 %}
-      <a class="icon-btn" href="{{url_for('registry_page')}}" title="Ajouter un employé" style="font-size: 13px; width: auto; padding: 0 14px;">
-        + Employé
-      </a>
-      {% endif %}
-
       <a class="logout" href="{{ url_for('logout') }}">Logout</a>
-
+    {% if role >= 3 %}
+    <div class="dropdown" id="groupManagerDropdown">
+      <button class="icon-btn" onclick="toggleGroupMenu(event)">Gerer</button>
+      <div class="dropdown-content" id="groupMenuContent">
+        <a class="icon-btn" href="{{url_for('registry_page')}}" title="Ajouter un employé"> Ajouter un employé</a>
+        <button onclick="showOption()" class="icon-btn" id="gererBtn">Gerer les employes</button>
+      </div>
+    </div>
+    {% endif %}
     </div>
     
   </header>
@@ -69,7 +71,6 @@
     {%endwith%}
 
     </div>
-    <button onclick="showOption()" class="icon-btn" id="gererBtn">Gerer</button>
     <div class="companyNameBox">
       <div class="companyName">{{session['company']}}</div>
     </div>
@@ -97,6 +98,15 @@
   <script>
     let all_members = [];
 
+        function toggleGroupMenu(event) {
+      event.stopPropagation();
+      document.getElementById("groupMenuContent").classList.toggle("show");
+    }
+    document.addEventListener("click", function() {
+      const m = document.getElementById("groupMenuContent");
+      if (m) m.classList.remove("show");
+    });
+
     async function chargerMembres() {
       const reponse = await fetch("/allmembers");
       const data = await reponse.json();
@@ -110,6 +120,8 @@
 
       const countInfo = document.getElementById("countInfo");
       ceolist.innerHTML = "";
+      managerlist.innerHTML = "";
+      memberlist.innerHTML = "";
       countInfo.textContent = items.length + " membre(s)";
 
       if (!items.length) {
@@ -246,5 +258,15 @@
       },3000);
     }
     Notification();
+
+    function toggleGroupMenu(event) {
+      event.stopPropagation();
+      document.getElementById("groupMenuContent").classList.toggle("show");
+    }
+    document.addEventListener("click", function() {
+      const m = document.getElementById("groupMenuContent");
+      if (m) m.classList.remove("show");
+    });
+
   </script>
 </body>

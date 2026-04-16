@@ -131,7 +131,7 @@
           <a href="{{ url_for('group_info', g_id=group['id']) }}" class="group-name">{{ group['name'] }}</a>
           {% if role >= 2 %}
           <div class="dropdown">
-            <button class="kebab-btn" onclick="toggleMenu(event, 'mymenu-{{ group['id'] }}')"><span></span><span></span><span></span></button>
+            <button class="kebab-btn" onclick="toggleMenu(event, 'mymenu-{{group['id']}}')"><span></span><span></span><span></span></button>
             <div class="dropdown-content" id="mymenu-{{ group['id'] }}">
               <button onclick="openAddMember({{ group['id'] }}, '{{ group['name'] }}')">Ajouter un membre</button>
               <button onclick="openRemoveMember({{ group['id'] }}, '{{ group['name'] }}')">Retirer un membre</button>
