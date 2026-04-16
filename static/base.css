@@ -66,7 +66,8 @@ a { color: inherit; text-decoration: none; }
   align-items: center;
   gap: 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-top-left-radius: var(--radius);
+  border-top-right-radius: var(--radius);
   background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.04));
   backdrop-filter: blur(12px);
   position: relative;
@@ -287,6 +288,7 @@ a { color: inherit; text-decoration: none; }
   justify-content: space-between;
   gap: 12px;
   padding-bottom: 14px;
+  margin-top: 20px;
   margin-bottom: 20px;
   border-bottom: 1px solid var(--border);
 }
@@ -311,6 +313,7 @@ a { color: inherit; text-decoration: none; }
   background: #0d1020;
   padding: 24px 28px;
   transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+  animation: loadIn 1s ease-in-out;
 }
 .card:hover {
   transform: translateY(-2px);
@@ -469,5 +472,19 @@ dialog {
   .topbar-center {
     flex: 1 1 100%;
     order: 3;
+  }
+}
+
+/* ─── Animations ─── */
+
+@keyframes loadIn {
+  0% {
+    transform: translateX(-100px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0px);
+    opacity: 1;
+    transition: opacity 1s linear;
   }
 }
