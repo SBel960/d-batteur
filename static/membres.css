@@ -81,11 +81,10 @@ body { padding-top: 148px; }
   }
 
   .notification{
-    position: fixed;
-    top: 15%;
-    right:13%;
+    position: relative;
     background-color: darkblue;
     font-size: 20px;
+    z-index: 50;
   }
 
     .option-btn{
