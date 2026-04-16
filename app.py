@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect, request, session, jsonify
+from flask import Flask, render_template, url_for, redirect, request, session, jsonify,flash
 
 from bdd import (
     create_client_table, insert_clients_table,
@@ -17,7 +17,8 @@ from bdd import (
     select_comment_replies, update_discussion, delete_discussiongroups,
     get_score_proposition, create_groups_table, create_group_members_table,
     create_discussion_groups_table, get_email, select_comment_by_id,
-    delete_discussion_from_id, update_discussion_state,
+    delete_discussion_from_id, update_discussion_state,delete_client,select_role_client,
+    update_role
 )
 
 import time
@@ -330,56 +331,34 @@ def groups_page():
 
 @app.route('/allgroups', methods=['POST', 'GET'])
 def take_all_groupes():
-    return [[row[0], row[1]] for row in select_all_groupes()]
+    all_groups = []
+    res=select_all_groupes()
+    for row in res :
+        all_groups.append([row[0], row[1]])
+    return all_groups
 
 
-@app.route('/api/group_members/<int:group_id>')
-def api_group_members(group_id):
-    if not session.get('logged_in'):
-        return jsonify([])
-    members = []
-    for member in select_member_by_id(group_id):
-        user = get_user_by_id(member[0])
-        if user[0] != session['id_client']:
-            members.append({"id": user[0], "name": user[1] + " " + user[2]})
-    return jsonify(members)
-
-
-@app.route('/api/group_non_members/<int:group_id>')
-def api_group_non_members(group_id):
-    if not session.get('logged_in'):
-        return jsonify([])
-    return jsonify([
-        {"id": m[0], "name": m[1] + " " + m[2]}
-        for m in select_clients_not_in_group(group_id)
-    ])
-
-
-@app.route('/addgroupe/<int:group_id>', methods=['POST'])
-def add_member_to_group(group_id):
-    if not session.get('logged_in'):
+@app.route('/changemember/<int:group_id>', methods=['POST'])
+def change_member_group(group_id):
+    if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
-    origin = request.form.get('origin', 'groupinfo')
-    for membre in request.form.getlist('memberList'):
-        if len(select_client_groupes_by_id(group_id, membre)) == 0:
-            insert_group_members(group_id, membre)
-    if origin == 'groups':
-        return redirect(url_for("groups_page"))
-    return redirect(url_for("group_info", g_id=group_id))
+    new_members= set(request.form.getlist('memberList'))
 
+    old_members=set()
+    print(select_member_by_id(group_id)[0])
+    for m in select_member_by_id(group_id):
+        old_members.add(m[0])
 
-@app.route('/deletemember/<int:group_id>', methods=['POST'])
-def delete_member_from_group(group_id):
-    if not session.get('logged_in'):
-        return redirect(url_for('login_page'))
-    origin = request.form.get('origin', 'groupinfo')
-    for membre in request.form.getlist("memberList"):
-        if len(select_client_groupes_by_id(group_id, membre)) == 1:
-            delete_member(group_id, membre)
-    if origin == 'groups':
-        return redirect(url_for("groups_page"))
-    return redirect(url_for("group_info", g_id=group_id))
+    del_members=list(old_members-new_members)
+    add_members=list(new_members-old_members)
 
+    for d in del_members:
+        delete_member(group_id,d)
+    
+    for a in add_members:
+        insert_group_members(group_id,a)
+   
+    return redirect(url_for("group_info",g_id=group_id))
 
 @app.route('/group_info/<int:g_id>', methods=['POST', 'GET'])
 def group_info(g_id):
@@ -424,8 +403,24 @@ def delete_group_from_db(group_id):
     delete_group(group_id)
     return redirect(url_for("groups_page"))
 
+@app.route('/allgroupmembers/<int:group_id>', methods=['GET'])
+def get_all_members_groups(group_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    result = select_member_by_id(group_id)
+    members = []
+    for row in result:
+        id_c, name, last_name, role = get_user_by_id(row[0])
+        members.append({
+            "id": id_c,
+            "name": name,
+            "last_name": last_name,
+            "role": role
+        })
+    return jsonify(members)
 
 # ─── Membres & Profil ─────────────────────────────────────────────────────────
+
 
 @app.route('/membres', methods=["GET"])
 def membres():
@@ -443,10 +438,61 @@ def membres():
 def get_all_members():
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
-    return jsonify([
-        {"id": row[0], "name": row[1], "last_name": row[2], "role": row[3]}
-        for row in select_all_clients()
-    ])
+    result = select_all_clients()
+    members = []
+    for row in result:
+        members.append({
+            "id": row[0],
+            "name": row[1],
+            "last_name": row[2],
+            "role": row[3]
+        })
+    return jsonify(members)
+
+@app.route('/deleteclient/<int:id_c>', methods=['POST'])
+def delete_client_from_db(id_c):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    
+    delete_client(id_c)
+    
+    return redirect(url_for('membres'))
+
+    
+
+@app.route('/promoteclient/<int:id_c>')
+
+def promote_client(id_c):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    
+    role=select_role_client(id_c)[0]
+    username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
+    if(role == "Manager"):
+        update_role("CEO",id_c)
+        flash(username+" a été promu en tant que CEO")
+    if(role == "Employe"):
+        update_role("Manager",id_c)
+        flash(username+" a été promu en tant que Manager")
+        
+    return redirect(url_for('membres'))
+
+@app.route('/demoteclient/<int:id_c>')
+
+def demote_client(id_c):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    
+    role=select_role_client(id_c)[0]
+    username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
+    if(role == "CEO"):
+        update_role("Manager",id_c)
+        flash(username+" a été rétrogradé en tant que Manager")
+    if(role == "Manager"):
+        update_role("Employe",id_c)
+        flash(username+" a été rétrogradé en tant que Employe")
+    
+    return redirect(url_for('membres'))
 
 
 @app.route('/profile/<int:id_c>')

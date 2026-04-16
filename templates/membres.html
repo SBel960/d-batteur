@@ -61,6 +61,15 @@
   </section>
 
   <main class="container">
+    <div class="notification" id="notif">
+    {% with message = get_flashed_messages(with_categories=true) %}
+      {% if message %}
+        {{message[0][1]}}
+      {%endif%}
+    {%endwith%}
+
+    </div>
+    <button onclick="showOption()" class="icon-btn" id="gererBtn">Gerer</button>
     <div class="companyNameBox">
       <div class="companyName">{{session['company']}}</div>
     </div>
@@ -80,6 +89,8 @@
         <div id="countInfo" class="muted"></div>
       </div>
       <div id="membersList" class="members-grid"></div>
+
+      <div id="popupSetting"></div>
     </section>
   </main>
 
@@ -95,7 +106,7 @@
     function renderMembres(items) {
       const ceolist = document.getElementById("ceoList");
       const managerlist=document.getElementById("managerList")
-      const memberlist=document.getElementById("memberList")
+      const memberlist=document.getElementById("membersList")
 
       const countInfo = document.getElementById("countInfo");
       ceolist.innerHTML = "";
@@ -107,17 +118,28 @@
       }
 
       items.forEach(m => {
+        const box=document.createElement("div");
+        box.classList="Box";
         const card = document.createElement("a");
         card.className = "member-card";
         card.href = `/profile/${m.id}`;
         const initiales = m.name[0].toUpperCase() + m.last_name[0].toUpperCase();
         card.innerHTML = `
+
           <div class="member-avatar">${initiales}</div>
           <div class="member-name">${m.name} ${m.last_name}</div>
+          
         `;
-        if(m.role=="CEO") ceolist.appendChild(card);
-        if(m.role=="Manager") managerlist.appendChild(card);
-        if(m.role=="Employe") memberlist.append(card);
+        
+        const option= document.createElement("div");
+        option.className="Options";
+        option.id="option"+m.id;
+        box.appendChild(card);
+        box.appendChild(option);
+
+        if(m.role=="CEO") ceolist.appendChild(box);
+        if(m.role=="Manager") managerlist.appendChild(box);
+        if(m.role=="Employe") memberlist.append(box);
         
       });
     }
@@ -137,5 +159,92 @@
       renderMembres(all_members);
     }
     initialiserMembres();
+
+    function showOption(){
+      chargerMembres();
+      all_members.forEach(m =>{
+        const popupSetting=document.getElementById("popupSetting");
+        
+        const deleteDialog=document.createElement("div");
+        deleteDialog.innerHTML=`
+                  <dialog id="deleteClient_${m.id}">
+
+          <button type="button" id="closePage" commandfor='deleteClient_${m.id}' command="request-close"> 
+            x
+          </button>
+
+          <form action='/deleteclient/${m.id}' method="POST">
+            <p> Voulez-vous supprimer ${m.name} ${m.last_name}</p>
+              <input type="submit" value="Supprimer">
+          </form>
+          </dialog>
+        `
+        popupSetting.appendChild(deleteDialog);
+
+        const options=document.getElementById("option"+m.id);
+        options.innerHTML=``
+
+        const delBtn = document.createElement("button");
+        delBtn.className="option-btn";
+        delBtn.setAttribute("commandfor", "deleteClient_"+m.id);
+        delBtn.command="show-modal";
+        delBtn.id="delBtn";
+        delBtn.innerHTML=`
+          X
+        `
+        options.appendChild(delBtn);
+        
+        if(m.role=="Manager" || m.role=="Employe"){
+          const promoteBtn=document.createElement("a");
+          promoteBtn.className="option-btn";
+          promoteBtn.id="promoteBtn";
+          promoteBtn.href=`/promoteclient/`+m.id;
+          promoteBtn.innerHTML="+";
+          options.appendChild(promoteBtn);
+        }
+
+        if(m.role=="Manager" || m.role=="CEO"){
+          const demoteBtn=document.createElement("a");
+          demoteBtn.className="option-btn";
+          demoteBtn.id="demoteBtn";
+          demoteBtn.href=`/demoteclient/`+m.id;
+          demoteBtn.innerHTML="-";
+          options.appendChild(demoteBtn);
+        }
+      })
+
+      const button=document.getElementById("gererBtn");
+      button.setAttribute("onclick", "hideOption()");
+    }
+
+    function hideOption(){
+
+        const options=document.querySelectorAll(".Options")
+        options.forEach(op => {
+            op.innerHTML=``;
+        });
+
+        console.log(options);
+        options.innerHTML=``; 
+
+        const popupSetting=document.getElementById("popupSetting");
+        options.innerHTML=``;
+
+        const button=document.getElementById("gererBtn");
+        button.setAttribute("onclick", "showOption()");
+
+    }
+
+    function Notification(){
+      const notif=document.getElementById("notif");
+
+      setTimeout(() =>{
+        notif.style.opacity="0";
+      },2000);
+      setTimeout(() =>{
+        notif.style.display="none";
+      },3000);
+    }
+    Notification();
   </script>
 </body>

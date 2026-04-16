@@ -425,6 +425,15 @@ def select_member_by_id(id_g):
     sql.execute(command,[id_g])
     res=sql.fetchall()
     return res
+
+def select_role_client(id_c):
+    data = get_db()
+    sql=data.cursor()
+    command = """SELECT role from Client WHERE id_client=?
+            """
+    sql.execute(command,[id_c])
+    res=sql.fetchone()
+    return res
 # DELETE FUNCTION
 
 def delete_member(id_g,id_c):
@@ -450,7 +459,7 @@ def delete_discussiongroups(id_g):
     sql=data.cursor()
     command ="""DELETE FROM DiscussionGroups WHERE id_g=? AND id_d=?
         """
-    sql.execute(command,[id_g,id_d])
+    sql.execute(command,[id_g])
     data.commit()
     sql.close()
 
@@ -462,6 +471,26 @@ def delete_discussiongroups(id_g):
     sql.execute(command,[id_g])
     data.commit()
     sql.close()
+
+def delete_client(id_c):
+    data =get_db()
+    sql=data.cursor()
+    command ="""DELETE FROM Client WHERE id_client=?
+        """
+    sql.execute(command,[id_c])
+    data.commit()
+    sql.close()
+
+def select_comments_from_clientid(id_c):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT id_comment FROM Comments WHERE id_c=?;
+            """
+    
+    sql.execute(command, [id_c])
+    result = sql.fetchall()
+    return result
+
 
 # UPDATE FUNCTION
 
@@ -512,7 +541,15 @@ def update_discussion_state(id_discussion, action):
     data.commit()
     sql.close()
     return
-    
+
+def update_role(role,id_c):
+    data=get_db()
+    sql=data.cursor()
+    command="""UPDATE Client SET role=? WHERE id_client=?
+        """
+    sql.execute(command,[role, id_c])
+    data.commit()
+    sql.close()
 
 #---------------------- likes
 
