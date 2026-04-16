@@ -42,9 +42,7 @@ form h1 {
 
 .input-box {
   display: flex;
-  flex-direction: column;
   gap: 5px;
-  width: 100%;
 }
 
 form button { margin-top: 6px; width: 100%; }
