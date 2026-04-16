@@ -1,6 +1,6 @@
-from flask import Flask, render_template, url_for, redirect, request, session, jsonify
+from flask import Flask, render_template, url_for, redirect, request, session, jsonify,flash
 
-from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies,update_discussion,delete_discussiongroups, get_score_proposition, create_groups_table, create_group_members_table, create_discussion_groups_table,get_email
+from bdd import create_client_table, insert_clients_table, create_discussions_table,  insert_disscussions_table, create_comments_table, insert_comments_table, create_likes_table, reset_all_db, insert_likes_table, select_all_discussions, select_comments, select_newest_discussion_id, select_discussion_by_id, update_like, get_discussion_likes,get_comment_likes, select_client_infos_from_email, check_if_exists_client, select_client_groupes, select_all_groupes, insert_groups_table, select_all_clients,  select_groupe_from_name, insert_group_members, select_client_groupes_by_id,get_user_by_id, insert_discussion_groups, select_discussion_groups, select_groupe_from_id, select_all_group_discussions,select_member_by_id,select_clients_not_in_group,delete_member,update_group,delete_group, get_user_opinion, select_comments_ferme, select_comment_replies,update_discussion,delete_discussiongroups, get_score_proposition, create_groups_table, create_group_members_table, create_discussion_groups_table,get_email,delete_client,select_role_client,update_role
 
 import time
 app = Flask(__name__)
@@ -341,6 +341,53 @@ def get_all_members():
             "role": row[3]
         })
     return jsonify(members)
+
+@app.route('/deleteclient/<int:id_c>', methods=['POST'])
+def delete_client_from_db(id_c):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    
+    delete_client(id_c)
+    
+    return redirect(url_for('membres'))
+
+    
+
+@app.route('/promoteclient/<int:id_c>')
+
+def promote_client(id_c):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    
+    role=select_role_client(id_c)[0]
+    username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
+    if(role == "Manager"):
+        update_role("CEO",id_c)
+        flash(username+" a été promu en tant que CEO")
+    if(role == "Employe"):
+        update_role("Manager",id_c)
+        flash(username+" a été promu en tant que Manager")
+        
+    return redirect(url_for('membres'))
+
+@app.route('/demoteclient/<int:id_c>')
+
+def demote_client(id_c):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+    
+    role=select_role_client(id_c)[0]
+    username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
+    if(role == "CEO"):
+        update_role("Manager",id_c)
+        flash(username+" a été rétrogradé en tant que Manager")
+    if(role == "Manager"):
+        update_role("Employe",id_c)
+        flash(username+" a été rétrogradé en tant que Employe")
+    
+    return redirect(url_for('membres'))
+
+
 
 @app.route('/profile/<int:id_c>')
 def profile(id_c):

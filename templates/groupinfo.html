@@ -102,7 +102,7 @@
            
             {% for membre in members %}
                 <input type=checkbox name="memberList" id="memberList_{{membre['id']}}" value="{{membre['id']}} " checked>
-                <label for="memberList_{{membre['id']}}" class="nameSelect"> {{membre['name']}} {{membre['last_name']}} </label>
+                <label for="memberList_{{membre['id']}}" class="nameSelect" id="inGroup"> {{membre['name']}} {{membre['last_name']}} </label>
             {%endfor%}
           </div>
           <div class="DialogHead"> Autres membres </div>
@@ -110,11 +110,11 @@
             
             {% for membre in other %}
                 <input type=checkbox name="memberList" id="memberList_{{membre['id']}}" value="{{membre['id']}}">
-                <label for="memberList_{{membre['id']}}" class="nameSelect"> {{membre['name']}} {{membre['last_name']}} </label>
+                <label for="memberList_{{membre['id']}}" class="nameSelect" id="Others"> {{membre['name']}} {{membre['last_name']}} </label>
             {%endfor%}
             
           </div>
-          <input class="postButton" type="submit" value="Ajouter">
+          <input class="postButton" type="submit" value="Sauvegarder">
 
         </form>
 
@@ -186,6 +186,7 @@
     
  function renderMembres(items) {
       const memberlist=document.getElementById("memberGroupList");
+      memberlist.innerHTML = "";
 
       const countInfo = document.getElementById("countInfo");
       countInfo.textContent = items.length + " membre(s)";
@@ -210,17 +211,15 @@
       });
     }
 
-    searchInput.addEventListener("input", function() {
-      const q = this.value.trim().toLowerCase();
-      let visibles = 0;
-      allMembres.forEach(function(el) {
-        console.log(el);
-        const match = el.firstElementChild.trim().toLowerCase().includes(q);
-        el.style.display = match ? "" : "none";
-        if (match) visibles++;
-      });
-      countInfo.textContent = visibles + " membre(s)";
-    });
+    function appliquerRecherche() {
+      const q = document.getElementById("searchInput").value.trim().toLowerCase();
+      const filtres = groupmember.filter(m =>
+        (m.name + " " + m.last_name).toLowerCase().includes(q)
+      );
+      renderMembres(filtres);
+    }
+
+    document.getElementById("searchInput").addEventListener("input", appliquerRecherche);
 
     searchInputAddMember.addEventListener("input", function() {
       const q = this.value.trim().toLowerCase();

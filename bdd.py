@@ -411,6 +411,15 @@ def select_member_by_id(id_g):
     sql.execute(command,[id_g])
     res=sql.fetchall()
     return res
+
+def select_role_client(id_c):
+    data = get_db()
+    sql=data.cursor()
+    command = """SELECT role from Client WHERE id_client=?
+            """
+    sql.execute(command,[id_c])
+    res=sql.fetchone()
+    return res
 # DELETE FUNCTION
 
 def delete_member(id_g,id_c):
@@ -449,6 +458,26 @@ def delete_discussiongroups(id_g):
     data.commit()
     sql.close()
 
+def delete_client(id_c):
+    data =get_db()
+    sql=data.cursor()
+    command ="""DELETE FROM Client WHERE id_client=?
+        """
+    sql.execute(command,[id_c])
+    data.commit()
+    sql.close()
+
+def select_comments_from_clientid(id_c):
+    data = get_db()
+    sql = data.cursor()
+    command = """SELECT id_comment FROM Comments WHERE id_c=?;
+            """
+    
+    sql.execute(command, [id_c])
+    result = sql.fetchall()
+    return result
+
+
 # UPDATE FUNCTION
 
 
@@ -472,7 +501,25 @@ def update_discussion(title,content,type,d_id):
     data.commit()
     sql.close()
 
+def update_idc_comment(id_comment,id_c):
+    data=get_db()
+    sql=data.cursor()
+    command="""UPDATE Comments SET id_c=? WHERE id_comment=?
+        """
     
+    sql.execute(command,[id_c,id_comment])
+    data.commit()
+    sql.close()
+    
+def update_role(role,id_c):
+    data=get_db()
+    sql=data.cursor()
+    command="""UPDATE Client SET role=? WHERE id_client=?
+        """
+    
+    sql.execute(command,[role,id_c])
+    data.commit()
+    sql.close()
 #---------------------- likes
 
 def update_like(id_client, id_cible, cible, value):
