@@ -167,6 +167,9 @@ def commentaire(discussion_id, reply):
     type_c  = request.form.get('type', 'normal')
     avis    = request.form.get('avis')
     insert_comments_table(session['id_client'], discussion_id, content, type_c, avis, reply)
+    if reply != 0:
+        return jsonify({'content': content, "type_c":type_c, "avis":avis})
+
     return redirect(url_for("main", discussion_id=discussion_id))
 
 
