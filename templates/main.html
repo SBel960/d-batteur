@@ -173,6 +173,7 @@
                    
                     <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
                           action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' 
+                          onsubmit="sendReply(event, {{discussion_id}}, {{id}})"
                           style="display: none;">
                       <input type="hidden" name="type" value="normal">
                       <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
@@ -186,7 +187,9 @@
 
                   {% else %}
                     <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
-                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' style="display: none;">
+                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}'
+                          onsubmit="sendReply(event, {{discussion_id}}, {{id}})"
+                          style="display: none;">
                       <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
                       <input class="icon-btn submit-button" type="submit" value="Envoyer">
                     </form>
@@ -197,11 +200,15 @@
               <div class="commentReplies" id="commentReplies-{{comment['id_c']}}"></div>
             </div>
           </div>
-          {% if comment['reply_count'] > 0 %}
-          <a id="repliesBtn-{{comment['id_c']}}" href="" data-count="{{comment['reply_count']}}" onclick="toggleReplies(event, {{discussion_id}}, {{comment['id_c']}})" style="color:white">
+         <a id="repliesBtn-{{comment['id_c']}}"
+            href="#"
+            data-count="{{comment['reply_count']}}"
+            onclick="toggleReplies(event, {{discussion_id}}, {{comment['id_c']}})"
+            style="color:white; {% if comment['reply_count'] == 0 %}display:none;{% endif %}">
+            
             {{comment['reply_count']}} réponse{% if comment['reply_count'] > 1 %}s{% endif %}
           </a>
-          {% endif %}
+  
           
           {% endfor %}
 
@@ -254,6 +261,7 @@
                    
                     <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
                           action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' 
+                          onsubmit="sendReply(event, {{discussion_id}}, {{id}})"
                           style="display: none;">
                       <input type="hidden" name="type" value="normal">
                       <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
@@ -267,7 +275,9 @@
 
                   {% else %}
                     <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
-                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' style="display: none;">
+                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' 
+                          onsubmit="sendReply(event, {{discussion_id}}, {{id}})"
+                          style="display: none;">
                       <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
                       <input class="icon-btn submit-button" type="submit" value="Envoyer">
                     </form>
@@ -278,11 +288,16 @@
               <div class="commentReplies" id="commentReplies-{{comment['id_c']}}"></div>
             </div>
           </div>
-          {% if comment['reply_count'] > 0 %}
-          <a id="repliesBtn-{{comment['id_c']}}" href="" data-count="{{comment['reply_count']}}" onclick="toggleReplies(event, {{discussion_id}}, {{comment['id_c']}})" style="color:white">
+          
+          <a id="repliesBtn-{{comment['id_c']}}"
+            href="#"
+            data-count="{{comment['reply_count']}}"
+            onclick="toggleReplies(event, {{discussion_id}}, {{comment['id_c']}})"
+            style="color:white; {% if comment['reply_count'] == 0 %}display:none;{% endif %}">
+            
             {{comment['reply_count']}} réponse{% if comment['reply_count'] > 1 %}s{% endif %}
           </a>
-          {% endif %}
+  
           
           {% endfor %}
         </div>
@@ -363,6 +378,35 @@
       event.target.disabled = false;
     }
 
+
+    async function sendReply(event, discussion_id, comment_id){
+      event.preventDefault();
+      var form = event.target;
+      const response = await fetch(`/commentaire/${discussion_id}/${comment_id}`, 
+        {
+            method: "POST",
+            body: new FormData(form)
+        }
+      );
+      const data = await response.json();
+      form.reset();
+      toggleCommentForm(event, comment_id);
+      
+      const btn = document.getElementById(`repliesBtn-${comment_id}`);
+      if(btn){
+        let count = parseInt(btn.dataset.count) || 0;
+        count += 1;
+        btn.dataset.count = count;
+        btn.textContent = count + (count > 1 ? " réponses" : " réponse");
+        btn.style.display = "inline";
+      }
+  
+
+      const container = document.getElementById(`commentReplies-${comment_id}`);
+      container.dataset.loaded = "false";
+      toggleReplies(event, discussion_id, comment_id);
+    }
+
     function toggleCommentForm(event, id) {
       event.preventDefault(); 
 
@@ -380,7 +424,7 @@
       event.preventDefault();
       const container = document.getElementById(`commentReplies-${comment_id}`);
       const btn = document.getElementById(`repliesBtn-${comment_id}`);
-      const count = btn ? parseInt(btn.dataset.count) : 0;
+      var count = btn ? parseInt(btn.dataset.count) : 0;
 
       if (container.dataset.loaded === "true") {
         container.innerHTML = "";
@@ -424,13 +468,17 @@
             `;
         }
 
-        const repliesBtnHtml = comment.reply_count > 0
-            ? `<a id="repliesBtn-${comment.id_c}" href="#" data-count="${comment.reply_count}"
-                  onclick="toggleReplies(event, {{discussion_id}}, ${comment.id_c})" style="color:white">
-                  ${comment.reply_count} réponse${comment.reply_count > 1 ? 's' : ''}
-               </a>`
-            : '';
-
+        const repliesBtnHtml = 
+        `
+          <a id="repliesBtn-${comment.id_c}"
+            href="#"
+            data-count="${comment.reply_count}"
+            onclick="toggleReplies(event, {{discussion_id}}, ${comment.id_c})"
+            style="color:white; ${comment.reply_count === 0 ? 'display:none;' : ''}">
+            
+            ${comment.reply_count} réponse${comment.reply_count > 1 ? 's' : ''}
+          </a>`;
+                
         return `
             <div class="commentTextList">
                 <div class="commentBox commentBox_${comment.etat} commentBox_${comment.avis || comment.discussion_type == 'ferme' && comment.opinion || 'normal'}">
@@ -451,16 +499,20 @@
                         </div>
                         ${comment.etat == 'active' ?
                         `<form class="commentForm reply" id="replyForm-${comment.id_c}" method="post"
-                              action="/commentaire/{{discussion_id}}/${comment.id_c}" style="display: none;">
+                              action="/commentaire/{{discussion_id}}/${comment.id_c}" 
+                              onsubmit="sendReply(event, {{discussion_id}}, ${comment.id_c})"
+                              style="display: none;">
                             ${replyForm}
                             <input class="icon-btn submit-button" type="submit" value="Envoyer">
                         </form>`:``
                       }
-                        ${repliesBtnHtml}
+                        
                     </div>
                     <div class="commentReplies" id="commentReplies-${comment.id_c}"></div>
                 </div>
+                ${repliesBtnHtml}
             </div>
+            
         `;
       }
 
