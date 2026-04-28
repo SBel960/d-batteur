@@ -322,8 +322,8 @@ a { color: inherit; text-decoration: none; }
   border-color: rgba(255,255,255,0.22);
 }
 
-.cloned     { background: linear-gradient(135deg, #0d1020, rgba(114,243,75,0.12)); }
-.card-closed{ background: linear-gradient(135deg, #0d1020, rgba(180,180,180,0.12)); }
+.cloned     { background: linear-gradient(to left top, rgba(255, 255, 255, 0.082) 0%, rgba(114, 243, 75, 0.137) 100%) !important; }
+.card-closed{ background: linear-gradient(to right top, rgba(170, 170, 170, 0.443) 0%, rgba(121, 121, 121, 0.145) 100%) !important; }
 
 .card-top    { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 .card-title  { display: flex; align-items: center; gap: 8px; font-weight: 600; flex-wrap: wrap; }
