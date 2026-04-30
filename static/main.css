@@ -68,7 +68,7 @@ main {
 }
 
 /* Lien "X réponses" */
-a[id^="repliesBtn-"] {
+.repliesBtn {
   display: inline-block;
   margin-top: 2px;
   margin-left: 4px;
@@ -77,9 +77,9 @@ a[id^="repliesBtn-"] {
   border-bottom: 1px solid transparent;
   transition: color .12s ease, border-color .12s ease;
 }
-a[id^="repliesBtn-"]:hover {
+.repliesBtn:hover {
   color: var(--text);
-  border-bottom-color: rgba(255,255,255,0.30);
+  border-bottom-color: rgba(255,255,255,0.30)!important; 
 }
 
 /* ─── En-tête discussion ─── */

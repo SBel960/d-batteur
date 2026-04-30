@@ -1,0 +1,454 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}"/>
+    <title> Discussion </title>
+</head>
+<body class="body_{{discussion_state}}" id="body_{% if cloned == true %}cloned{%endif%}">
+    
+    <!-- HEADER / TOOLBAR -->
+  <section class="navbar">
+  <header class="topbar">
+    <!-- Gauche : Entreprise + emplacement logo + logo -->
+
+    <div class="topbar-left">
+      <a  class="icon-btn" href="{{url_for('home')}}">Home</a>
+      <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
+
+      <div class="company">
+        <div id="companyName" class="company-name">{{company}}</div>
+        <div class="company-sub">Topics</div>
+      </div>
+
+      <div class="company-mark" aria-hidden="true">🏢</div>
+    </div>
+
+    <!-- Centre : recherche (titre uniquement) -->
+    <div class="topbar-center">
+      <div class="search">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Rechercher dans les commentaires..."
+          aria-label="Rechercher"
+        />
+      </div>
+    </div>
+
+    <!-- Droite : user + groupe + bouton + -->
+    <div class="topbar-right">
+      <div class="user">
+        <div id="userFullName" class="user-name">{{first_name}} {{last_name}}</div>
+        <div id="userGroup" class="user-group">Role : {{role_name}}</div>
+      </div>
+      <a class="logout" href="{{url_for('logout')}}"> Logout </a>
+    </div>
+  </header>
+  <div class="topbar-dropdown">
+    <a class="topbar-dropdown-btn" href="{{ url_for('groups_page') }}">Groupes</a>
+    <a class="topbar-dropdown-btn" href="{{ url_for('membres') }}">Membres</a>
+  </div>
+  </section>
+
+
+  <main>
+    <section class="information-section">
+      <div class="topic-title-container">
+        <span class="type {{discussion_type}}">
+          {% if discussion_type == 'ouvert' %}
+           <p>Question ouverte</p>
+           {% else %}
+           <p>Question fermée</p> 
+           {% endif %}
+        </span>
+        <span class="topic-title">
+         {{title}}
+        </span>
+      </div>
+      <div class="description-container">
+        <div class="description">
+            {{content}}
+        </div>
+      </div>
+    </section>
+    
+    <section class="interactive-section">
+      <div class="voting-results">
+        <div class="voting-bar-wrapper">
+          <span class="bar-label bar-label-for">👍 Pour</span>
+          <div class="voting-bar-results">
+            <div id="bar-for" class="bar-for"><span class="bar-pct" id="bar-pct-for"></span></div>
+            <div id="bar-against" class="bar-against"><span class="bar-pct" id="bar-pct-against"></span></div>
+          </div>
+          <span class="bar-label bar-label-against">Contre 👎</span>
+        </div>
+        <div class="btn-area">
+          {% if discussion_state == 'active' %}
+          <a  id="likes-count" class="icon-btn" href="#" onclick="likeDiscussion(event, {{discussion_id}}, 'like')">👍 <span id="d-likes-count-{{discussion_id}}"> {{likes}}</span></a>
+          <a  id="dislikes-count" class="icon-btn" href="#" onclick="likeDiscussion(event, {{discussion_id}}, 'unlike')">👎 <span id="d-dislikes-count-{{discussion_id}}"> {{dislikes}}</span></a>
+          {% else %}
+          <a  id="likes-count" class="icon-btn closed" href="#">👍 <span id="d-likes-count-{{discussion_id}}"> {{likes}}</span></a>
+          <a  id="dislikes-count" class="icon-btn closed" href="#">👎 <span id="d-dislikes-count-{{discussion_id}}"> {{dislikes}}</span></a>
+          {% endif %}
+        </div>
+
+      </div>
+      <div class="comments">
+        <div class="commentTextList" data-depth="0">
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between;">
+            {% if back_url %}
+                <a href="{{back_url}}" class="repliesBtn" 
+                  style="font-size: small; color:white; border-bottom-color: rgba(255,255,255,0.2);"> ← Retour à l'avant</a>
+            {%else%}
+            <div></div> {# pour cree de lespace meme si il nya pas de back_url #}
+            {%endif%}
+            <a href="{{url_for('main', discussion_id=discussion_id)}}" class="repliesBtn" style="font-size: small; color:white; border-bottom-color: rgba(255,255,255,0.2);">Retour à la discussion →</a>
+            </div>
+            <div class="commentBox commentBox_{{comment_parent['etat']}} commentBox_{% if comment_parent['type'] == 'proposition' %}proposition{% elif comment_parent['opinion'] and discussion_type=='ferme' %}{{comment_parent['opinion']}}{% else %}normal{% endif %} ">
+              
+              <div class="commentUser">
+                {{comment_parent['username']}} 
+                
+              </div>
+              
+              <div class="commentText">
+               <p> {{ comment_parent["content"] }}</p>
+              </div>
+
+              <div class="commentLike">
+                  <div class="btn-area">
+                    {% set id=comment_parent['id_c'] %}
+                    {% if comment_parent['etat'] == 'active' %}
+                    <a class="likes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'like')">👍 <span id="likes-count-{{id}}"> {{comment_parent['like']}}</span></a>
+                    <a class="dislikes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'unlike')">👎 <span id="dislikes-count-{{id}}"> {{comment_parent['dislike']}}</span></a>
+                    {% if comment_parent['type'] == 'proposition' %}
+                      <span class="score-proposition {% if comment_parent['score'] > 0 %}score-pos{% elif comment_parent['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
+                        Score :&nbsp; <span id="score-count-{{id}}"> {{ comment_parent['score'] }}</span>
+                      </span>
+                     {% endif %}
+                    <a class="icon-btn" onclick="toggleCommentForm(event, {{id}})" href="#"> reply </a>
+
+                      {% else %}
+
+                    <a class="likes-count icon-btn closed" href="#" >👍 <span id="likes-count-{{id}}"> {{comment_parent['like']}}</span></a>
+                    <a class="dislikes-count icon-btn closed" href="#">👎 <span id="dislikes-count-{{id}}"> {{comment_parent['dislike']}}</span></a>
+                    {% if comment_parent['type'] == 'proposition' %}
+                      <span class="score-proposition {% if comment_parent['score'] > 0 %}score-pos{% elif comment_parent['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
+                        Score :&nbsp; <span id="score-count-{{id}}"> {{ comment_parent['score'] }}</span>
+                      </span>
+                     {% endif %}
+                    <a class="icon-btn closed" href="#"> reply </a>
+
+
+                    {% endif %}
+
+                  </div>  
+                   {% if comment_parent['type'] == 'proposition' %}
+                   
+                    <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
+                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}' 
+                          onsubmit="sendReply(event, {{discussion_id}}, {{id}})"
+                          style="display: none;">
+                      <input type="hidden" name="type" value="normal">
+                      <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
+                      <div class="avis-choice">
+                        <label><input type="radio" name="avis" value="pour" required> Pour</label>
+                        <label><input type="radio" name="avis" value="contre"> Contre</label>
+                        <label><input type="radio" name="avis" value="neutre"> Neutre</label>
+                      </div>
+                      <input class="icon-btn submit-button" type="submit" value="Envoyer">
+                    </form>
+
+                  {% else %}
+                    <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
+                          action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}'
+                          onsubmit="sendReply(event, {{discussion_id}}, {{id}})"
+                          style="display: none;">
+                      <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
+                      <input class="icon-btn submit-button" type="submit" value="Envoyer">
+                    </form>
+                  {% endif %}
+                    
+                    
+              </div>
+              <div class="commentReplies" id="commentReplies-{{comment_parent['id_c']}}"></div>
+            </div>
+          </div>
+         <a id="repliesBtn-{{comment_parent['id_c']}}" class="repliesBtn-main repliesBtn"
+            href="#"
+            data-count="{{comment_parent['reply_count']}}"
+            onclick="toggleReplies(event, {{discussion_id}}, {{comment_parent['id_c']}})"
+            style="color:white; {% if comment_parent['reply_count'] == 0 %}display:none;{% endif %}">
+            
+            {{comment_parent['reply_count']}} réponse{% if comment_parent['reply_count'] > 1 %}s{% endif %}
+          </a>
+
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.getElementsByClassName("repliesBtn-main")[0].click();
+
+    
+    // Search bar : filtre les commentaires par auteur ou contenu
+    document.getElementById("searchInput").addEventListener("input", function() {
+      const q = this.value.trim().toLowerCase();
+      document.querySelectorAll(".commentTextList").forEach(function(el) {
+        const auteur = el.querySelector(".commentUser")?.textContent.toLowerCase() || "";
+        const texte  = el.querySelector(".commentText")?.textContent.toLowerCase() || "";
+        el.style.display = (auteur.includes(q) || texte.includes(q)) ? "" : "none";
+      });
+    });
+
+    /*Script JS à remplir*/
+
+    const barFor = document.getElementById("bar-for");
+    const barAgainst = document.getElementById("bar-against");
+    const pctFor = document.getElementById("bar-pct-for");
+    const pctAgainst = document.getElementById("bar-pct-against");
+
+    function applyBar(likesCount, dislikesCount) {
+      const total = likesCount + dislikesCount;
+      const forPct  = total > 0 ? Math.round(likesCount    * 100 / total) : 50;
+      const agPct   = total > 0 ? Math.round(dislikesCount * 100 / total) : 50;
+      barFor.style.width     = forPct + "%";
+      barAgainst.style.width = agPct  + "%";
+      pctFor.textContent     = forPct  > 8 ? forPct  + "%" : "";
+      pctAgainst.textContent = agPct   > 8 ? agPct   + "%" : "";
+    }
+
+    {
+      const likesCount    = Number(document.getElementById('likes-count').textContent.slice(2));
+      const dislikesCount = Number(document.getElementById('dislikes-count').textContent.slice(2));
+      applyBar(likesCount, dislikesCount);
+    }
+
+    async function updateBar(){
+      const likesCount    = Number(document.getElementById('likes-count').textContent.slice(2));
+      const dislikesCount = Number(document.getElementById('dislikes-count').textContent.slice(2));
+      applyBar(likesCount, dislikesCount);
+    }
+
+
+    async function likeDiscussion(event, discussion_id, action){
+      event.preventDefault();
+      event.target.disabled = true;
+      const response = await fetch(`/like_discussion/${discussion_id}/${action}`);
+      const data = await response.json()
+      document.getElementById(`d-likes-count-${discussion_id}`).innerText = data.likes;
+      document.getElementById(`d-dislikes-count-${discussion_id}`).innerText = data.dislikes;
+      event.target.disabled = false;
+      updateBar();
+    }
+
+    async function likeComment(event, discussion_id,comment_id, action){
+      event.preventDefault();
+      event.target.disabled = true;
+      const response = await fetch(`/like_comment/${discussion_id}/${comment_id}/${action}`);
+      const data = await response.json()
+      document.getElementById(`likes-count-${comment_id}`).innerText = data.likes;
+      document.getElementById(`dislikes-count-${comment_id}`).innerText = data.dislikes;
+      const score = document.getElementById(`score-count-${comment_id}`)
+      if(score != null){
+        score.innerText = data.score;
+      }
+      // Mettre à jour le score de la proposition parente si c'est une réponse
+      if(data.proposition_id != null){
+        const propScore = document.getElementById(`score-count-${data.proposition_id}`);
+        if(propScore != null){
+          propScore.innerText = data.proposition_score;
+        }
+      }
+      event.target.disabled = false;
+    }
+
+
+    async function sendReply(event, discussion_id, comment_id){
+      event.preventDefault();
+      var form = event.target;
+      const response = await fetch(`/commentaire/${discussion_id}/${comment_id}`, 
+        {
+            method: "POST",
+            body: new FormData(form)
+        }
+      );
+      const data = await response.json();
+      form.reset();
+      toggleCommentForm(event, comment_id);
+      
+      const btn = document.getElementById(`repliesBtn-${comment_id}`);
+      if(btn){
+        let count = parseInt(btn.dataset.count) || 0;
+        count += 1;
+        btn.dataset.count = count;
+        btn.textContent = count + (count > 1 ? " réponses" : " réponse");
+        btn.style.display = "inline";
+      }
+  
+
+      const container = document.getElementById(`commentReplies-${comment_id}`);
+      container.dataset.loaded = "false";
+      toggleReplies(event, discussion_id, comment_id);
+    }
+
+    function toggleCommentForm(event, id) {
+      event.preventDefault(); 
+
+      const form = document.getElementById(`replyForm-${id}`);
+
+      if (form.style.display === "none") {
+          form.style.display = "block";
+      } else {
+          form.style.display = "none";
+      }
+    }
+
+    function getMaxDepth() {
+        if (window.innerWidth < 768) return 2;
+        if (window.innerWidth < 1200) return 4;
+        return 5;
+    }
+
+    window.addEventListener("resize", function() {
+      const maxDepth = getMaxDepth();
+      document.querySelectorAll('.commentTextList[data-depth]').forEach(el => {
+        const depth = parseInt(el.dataset.depth);
+
+        if (depth >= maxDepth) {
+          const container = el.querySelector('.commentReplies');
+          if (container && container.dataset.loaded === 'true') {
+            container.innerHTML = '';
+            container.dataset.loaded = 'false';
+
+            // reset the replies button text
+            const btn = el.querySelector('a[id^="repliesBtn-"]');
+            if (btn) {
+                const count = parseInt(btn.dataset.count) || 0;
+                btn.textContent = count + (count > 1 ? ' réponses' : ' réponse');
+            }
+          }
+        }
+    })
+
+  })
+
+
+    async function toggleReplies(event, discussion_id, comment_id){
+      event.preventDefault();
+      const container = document.getElementById(`commentReplies-${comment_id}`);
+      const btn = document.getElementById(`repliesBtn-${comment_id}`);
+      var count = btn ? parseInt(btn.dataset.count) : 0;
+
+      if (container.dataset.loaded === "true") {
+        container.innerHTML = "";
+        container.dataset.loaded = "false";
+        if (btn) btn.textContent = count + (count > 1 ? " réponses" : " réponse");
+        return;
+      }
+
+      const currentDepth = parseInt(btn.closest('[data-depth]')?.dataset.depth ?? 0);
+      const nextDepth = currentDepth + 1;
+
+       // redirect if max depth reached
+      if (currentDepth >= getMaxDepth()) {
+        const currentPath = window.location.pathname; 
+        window.location.href = `${currentPath}/${comment_id}`;
+        return;
+      }
+
+      const response = await fetch(`/show_all_replies/${discussion_id}/${comment_id}`);
+      const replies = await response.json();
+      let html = "";
+      replies.forEach(reply => { html += renderComment(reply, nextDepth); });
+      container.innerHTML = html;
+      container.dataset.loaded = "true";
+      if (btn) btn.textContent = "Masquer les réponses";
+    }
+
+    function renderComment(comment, depth = 0) {
+        let replyForm = '';
+
+        if (comment.avis === 'pour' || comment.avis === 'contre') {
+            replyForm = `
+                <input type="hidden" name="type" value="normal">
+                <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
+                <div class="avis-choice">
+                    <label><input type="radio" name="avis" value="pour" required> Pour</label>
+                    <label><input type="radio" name="avis" value="contre"> Contre</label>
+                    <label><input type="radio" name="avis" value="neutre"> Neutre</label>
+                </div>
+            `;
+        } else if (comment.avis === 'neutre') {
+            replyForm = `
+                <input type="hidden" name="type" value="normal">
+                <input type="hidden" name="avis" value="neutre">
+                <textarea class="form-control" name="commentaire" placeholder="Votre réponse neutre..." required></textarea>
+            `;
+        } else {
+            replyForm = `
+                <input type="hidden" name="type" value="normal">
+                <textarea class="form-control" name="commentaire" placeholder="Votre réponse..." required></textarea>
+            `;
+        }
+
+        const repliesBtnHtml = 
+        `
+          <a id="repliesBtn-${comment.id_c}" class="repliesBtn"
+            href="#"
+            data-count="${comment.reply_count}"
+            onclick="toggleReplies(event, {{discussion_id}}, ${comment.id_c})"
+            style="color:white; ${comment.reply_count === 0 ? 'display:none;' : ''}">
+            
+            ${comment.reply_count} réponse${comment.reply_count > 1 ? 's' : ''}
+          </a>`;
+                
+        return `
+            <div class="commentTextList" data-depth="${depth}">
+                <div class="commentBox commentBox_${comment.etat} commentBox_${comment.avis || comment.discussion_type == 'ferme' && comment.opinion || 'normal'}">
+                    <div class="commentUser">${comment.username}</div>
+                    <div class="commentText"><p>${comment.content}</p></div>
+                    <div class="commentLike">
+                        <div class="btn-area">
+                            ${comment.etat == 'active' ?
+                              `<a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, ${comment.id_c}, 'like')">👍 <span id="likes-count-${comment.id_c}"> ${comment.like}</span></a>
+                              <a class="likes-count" href="#" onclick="likeComment(event, {{discussion_id}}, ${comment.id_c}, 'unlike')">👎 <span id="dislikes-count-${comment.id_c}">${comment.dislike}</span></a>
+                              <a class="icon-btn" onclick="toggleCommentForm(event, ${comment.id_c})"> reply </a>`
+                              : 
+                              `<a class="likes-count closed" href="#">👍 <span id="likes-count-${comment.id_c}"> ${comment.like}</span></a>
+                              <a class="likes-count closed" href="#">👎 <span id="dislikes-count-${comment.id_c}">${comment.dislike}</span></a>
+                              <a class="icon-btn closed"> reply </a>`
+                            }
+                            
+                        </div>
+                        ${comment.etat == 'active' ?
+                        `<form class="commentForm reply" id="replyForm-${comment.id_c}" method="post"
+                              action="/commentaire/{{discussion_id}}/${comment.id_c}" 
+                              onsubmit="sendReply(event, {{discussion_id}}, ${comment.id_c})"
+                              style="display: none;">
+                            ${replyForm}
+                            <input class="icon-btn submit-button" type="submit" value="Envoyer">
+                        </form>`:``
+                      }
+                        
+                    </div>
+                    <div class="commentReplies" id="commentReplies-${comment.id_c}"></div>
+                </div>
+                ${repliesBtnHtml}
+            </div>
+            
+        `;
+      }
+
+
+
+  </script>
+</body>
+</html>

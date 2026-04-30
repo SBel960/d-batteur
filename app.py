@@ -158,6 +158,57 @@ def main(discussion_id):
         role=roles_numeros[session['role']], role_name=session['role'],
     )
 
+@app.route("/main_comment/<int:discussion_id>/<path:comment_ids>", methods=["GET"])
+def main_comment(discussion_id, comment_ids):
+    if not session.get('logged_in'):
+        return redirect(url_for('login_page'))
+
+    id_poster, title, content, discussion_type, discussion_state, id_clone = select_discussion_by_id(discussion_id)
+    
+    #####section comment parent
+    path = [int(x) for x in comment_ids.strip('/').split('/')]
+    back_url=None
+    if len(path) > 1:
+        back_url = url_for('main_comment', discussion_id=discussion_id, comment_ids='/'.join(str(x) for x in path[:-1]))
+                           
+    comment_id = path[-1]
+    comment_parent       = select_comment_by_id(comment_id)
+    
+    id_comment   = comment_parent[0]
+    id_client    = comment_parent[1]
+    type_comment = comment_parent[4]
+    like_c, dislike_c = get_comment_likes(id_comment)
+    score    = (like_c - dislike_c) + get_score_proposition(id_comment) if type_comment == 'proposition' else None
+    if(get_user_by_id(id_client) == None):
+        username="Utilisateur supprimé"
+    else:
+        username = get_user_by_id(id_client)[1] + " " + get_user_by_id(id_client)[2]
+    opinion  = get_user_opinion(discussion_id, id_client)
+    if opinion is None:    opinion = "neutre"
+    elif opinion[0] == 1: opinion = "pour"
+    else:                  opinion = "contre"
+    comment_parent = dict(
+        id_c=id_comment, content=comment_parent[3], like=like_c, dislike=dislike_c,
+        username=username, opinion=opinion, type=type_comment, avis=comment_parent[5],
+        score=score, reply_count=len(select_comment_replies(id_comment)), etat=comment_parent[7],
+    )
+
+
+
+    likes, dislikes = get_discussion_likes(discussion_id)
+    return render_template(
+        "partials/main_comment.html",
+        discussion_id=discussion_id, comment_parent=comment_parent,
+        id_client=session["id_client"], title=title, content=content,
+        likes=likes, dislikes=dislikes,
+        discussion_type=discussion_type, discussion_state=discussion_state, 
+        first_name=session['first_name'], last_name=session['last_name'],
+        email=session['email'], company=session['company'],
+        role=roles_numeros[session['role']], role_name=session['role'],
+        back_url=back_url
+    )
+
+
 
 @app.route("/commentaire/<int:discussion_id>/<int:reply>", methods=["POST"])
 def commentaire(discussion_id, reply):
