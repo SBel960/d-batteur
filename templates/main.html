@@ -129,7 +129,7 @@
 
         {% for  comment in comments %}
         
-          <div class="commentTextList">
+          <div class="commentTextList" data-depth="0">
             <div class="commentBox commentBox_{{comment['etat']}} commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['opinion'] and discussion_type=='ferme' %}{{comment['opinion']}}{% else %}normal{% endif %} ">
               
               <div class="commentUser">
@@ -346,6 +346,7 @@
       applyBar(likesCount, dislikesCount);
     }
 
+
     async function likeDiscussion(event, discussion_id, action){
       event.preventDefault();
       event.target.disabled = true;
@@ -419,6 +420,35 @@
       }
     }
 
+    function getMaxDepth() {
+        if (window.innerWidth < 768) return 2;
+        if (window.innerWidth < 1200) return 4;
+        return 5;
+    }
+
+    window.addEventListener("resize", function() {
+      const maxDepth = getMaxDepth();
+      document.querySelectorAll('.commentTextList[data-depth]').forEach(el => {
+        const depth = parseInt(el.dataset.depth);
+
+        if (depth >= maxDepth) {
+          const container = el.querySelector('.commentReplies');
+          if (container && container.dataset.loaded === 'true') {
+            container.innerHTML = '';
+            container.dataset.loaded = 'false';
+
+            // reset the replies button text
+            const btn = el.querySelector('a[id^="repliesBtn-"]');
+            if (btn) {
+                const count = parseInt(btn.dataset.count) || 0;
+                btn.textContent = count + (count > 1 ? ' réponses' : ' réponse');
+            }
+          }
+        }
+    })
+
+  })
+
 
     async function toggleReplies(event, discussion_id, comment_id){
       event.preventDefault();
@@ -433,16 +463,25 @@
         return;
       }
 
+      const currentDepth = parseInt(btn.closest('[data-depth]')?.dataset.depth ?? 0);
+      const nextDepth = currentDepth + 1;
+
+       // redirect if max depth reached
+      if (currentDepth >= getMaxDepth()) {
+          window.location.href = `/main_comment/${discussion_id}/${comment_id}`;
+          return;
+      }
+
       const response = await fetch(`/show_all_replies/${discussion_id}/${comment_id}`);
       const replies = await response.json();
       let html = "";
-      replies.forEach(reply => { html += renderComment(reply); });
+      replies.forEach(reply => { html += renderComment(reply, nextDepth); });
       container.innerHTML = html;
       container.dataset.loaded = "true";
       if (btn) btn.textContent = "Masquer les réponses";
     }
 
-    function renderComment(comment) {
+    function renderComment(comment, depth = 0) {
         let replyForm = '';
 
         if (comment.avis === 'pour' || comment.avis === 'contre') {
@@ -480,7 +519,7 @@
           </a>`;
                 
         return `
-            <div class="commentTextList">
+            <div class="commentTextList" data-depth="${depth}">
                 <div class="commentBox commentBox_${comment.etat} commentBox_${comment.avis || comment.discussion_type == 'ferme' && comment.opinion || 'normal'}">
                     <div class="commentUser">${comment.username}</div>
                     <div class="commentText"><p>${comment.content}</p></div>
