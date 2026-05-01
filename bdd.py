@@ -310,7 +310,7 @@ def select_newest_discussion_id(id_client):
 def select_discussion_by_id(id_discussion):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT id_c, title, content, type, state, priority, cloned_from FROM Discussions WHERE id_discussion= ?;
+    command = """SELECT id_c, title, content, type, state, cloned_from, priority FROM Discussions WHERE id_discussion= ?;
             """
     
     sql.execute(command, [id_discussion])
