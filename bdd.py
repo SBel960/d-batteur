@@ -41,6 +41,7 @@ def create_discussions_table():
                 time_creation TIME NOT NULL,
                 state TEXT NOT NULL CHECK (state IN ('active', 'closed')) DEFAULT 'active',
                 cloned_from INTEGER DEFAULT NULL,
+                priority INTEGER NOT NULL DEFAULT 1,
                 FOREIGN KEY(id_c) REFERENCES Client(id_client)
                 )
                  
@@ -149,18 +150,18 @@ def insert_clients_table(email, name, last_name, password, company, role):
     data.commit()
 
 
-def insert_disscussions_table(id_c, title, content, type, cloned_from=None):
+def insert_disscussions_table(id_c, title, content, type, priority, cloned_from=None):
     data = get_db()
     sql = data.cursor()
     date_creation = date.today()
     named_tuple = time.localtime() # get struct_time
     time_creation = time.strftime("%H:%M", named_tuple)
     print(time_creation)
-    command = """INSERT INTO Discussions(id_c, title, content, type, date_creation,time_creation, cloned_from)
-                VALUES (?,?,?,?,?,?,?)
+    command = """INSERT INTO Discussions(id_c, title, content, type, date_creation,time_creation, cloned_from, priority)
+                VALUES (?,?,?,?,?,?,?,?)
 
             """
-    sql.execute(command, [id_c, title, content, type, date_creation, time_creation, cloned_from])
+    sql.execute(command, [id_c, title, content, type, date_creation, time_creation, cloned_from, priority])
     data.commit()
 
 
@@ -239,7 +240,7 @@ def reset_all_db():
 def select_all_discussions():
     data = get_db()
     sql = data.cursor()
-    command = """SELECT * FROM Discussions ORDER BY date_creation DESC;
+    command = """SELECT * FROM Discussions ORDER BY priority DESC, date_creation DESC;
             """
     sql.execute(command)
     result = sql.fetchall()
@@ -252,10 +253,11 @@ def select_all_group_discussions(id_client):
             JOIN DiscussionGroups ON Discussions.id_discussion = DiscussionGroups.id_d 
             JOIN GroupMembers ON DiscussionGroups.id_g = GroupMembers.id_g
             WHERE GroupMembers.id_c = ? 
-            ORDER BY date_creation DESC;
+            ORDER BY  priority DESC, date_creation ASC, time_creation DESC;
             """
     sql.execute(command, [id_client])
     result = sql.fetchall()
+    print(result[1][9])
     return result
 
 
@@ -308,7 +310,7 @@ def select_newest_discussion_id(id_client):
 def select_discussion_by_id(id_discussion):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT id_c, title, content, type, state, cloned_from FROM Discussions WHERE id_discussion= ?;
+    command = """SELECT id_c, title, content, type, state, priority, cloned_from FROM Discussions WHERE id_discussion= ?;
             """
     
     sql.execute(command, [id_discussion])
@@ -505,7 +507,7 @@ def update_group(name,id_g):
     data.commit()
     sql.close()
 
-def update_discussion(title,content, d_id, new_groupes):
+def update_discussion(title,content, d_id, new_groupes, priority):
     data=get_db()
     sql=data.cursor()
     #premierement, supprime tout les anciens groupes de la discussion 
@@ -515,10 +517,10 @@ def update_discussion(title,content, d_id, new_groupes):
     data.commit()
 
     #deuxiemenent, mis a jour de la discussion avec le nouveau titre, contenu, type
-    command="""UPDATE Discussions SET title=?, content=? WHERE id_discussion=?
+    command="""UPDATE Discussions SET title=?, content=?, priority=? WHERE id_discussion=?
         """
     
-    sql.execute(command,[title,content,d_id])
+    sql.execute(command,[title,content,priority, d_id])
     data.commit()
 
     #troisiement, inserer les nouveaux groupes de discussion
@@ -530,7 +532,7 @@ def update_discussion(title,content, d_id, new_groupes):
 def update_discussion_state(id_discussion, action):
     data=get_db()
     sql=data.cursor()
-    command="""UPDATE Discussions SET state=? WHERE id_discussion=?
+    command="""UPDATE Discussions SET state=?, priority=0 WHERE id_discussion=?
         """
     sql.execute(command,[action, id_discussion])
     data.commit()

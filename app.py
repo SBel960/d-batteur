@@ -66,10 +66,10 @@ def home():
         for groupe_id in select_discussion_groups(row[0]):
             groupes.append([groupe_id[0], select_groupe_from_id(groupe_id[0])[0]])
 
-        # row : [0:id, 1:id_client, 2:title, 3:content, 4:type, 5:date, 6:time, 7:state, 8:cloner_par]
+        # row : [0:id, 1:id_client, 2:title, 3:content, 4:type, 5:date, 6:time, 7:state, 8:cloner_par 9: priority]
         discussions.append([
             row[2], row[3], str(row[0]), likes, dislikes,
-            groupes, auteur_nom, type_disc, row[5], row[6], row[7], row[8],
+            groupes, auteur_nom, type_disc, row[5], row[6], row[7], row[8], row[9]
         ])
 
     for row in select_all_groupes():
@@ -92,7 +92,7 @@ def main(discussion_id):
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
 
-    id_poster, title, content, discussion_type, discussion_state, id_clone = select_discussion_by_id(discussion_id)
+    id_poster, title, content, discussion_type, discussion_state, id_clone, priority = select_discussion_by_id(discussion_id)
     cloned = id_clone is not None
 
     comments        = []
@@ -232,11 +232,17 @@ def ajouter_discussion():
     content = request.form['discussionContent']
     groupes = request.form.getlist('groupes')
     type_d  = request.form.get('discussionType')
+    priorite = request.form.get('discussionPriority')
 
     if not title or not content or not groupes or not type_d:
         return 'tout les champs sont requises'
+    if(priorite):
+        priorite=2
+    else:
+        priorite=1
+    
 
-    insert_disscussions_table(session['id_client'], title, content, type_d)
+    insert_disscussions_table(session['id_client'], title, content, type_d, priorite)
     time.sleep(0.01)
     discussion_id = select_newest_discussion_id(session['id_client'])[0]
     for groupe_id in groupes:
@@ -251,7 +257,12 @@ def modifier_discussion(d_id):
     title       = request.form['discussionTitle']
     content     = request.form['discussionContent']
     new_groupes = set(request.form.getlist('groupes'))
-    update_discussion(title, content, d_id, new_groupes)
+    priorite = request.form.get('discussionPriority')
+    if(priorite):
+        priorite=2
+    else:
+        priorite=1
+    update_discussion(title, content, d_id, new_groupes, priorite)
     return redirect(url_for("main", discussion_id=d_id))
 
 
@@ -264,9 +275,9 @@ def clotre_discussion(d_id, action):
 @app.route("/cloner_discussion/<int:d_id>", methods=["POST"])
 def cloner_discussion(d_id):
     groups = request.form.getlist('groupes')
-    id_client, title, content, type_discussion, etat, cloned_id = select_discussion_by_id(d_id)
+    id_client, title, content, type_discussion, etat, priorite, cloned_id = select_discussion_by_id(d_id)
     insert_disscussions_table(id_c=id_client, title=title, content=content,
-                               type=type_discussion, cloned_from=d_id)
+                               type=type_discussion, priority=priorite, cloned_from=d_id)
     discussion_id = select_newest_discussion_id(id_client)[0]
     for g_id in groups:
         insert_discussion_groups(id_group=g_id, id_discussion=discussion_id)
@@ -649,7 +660,7 @@ def alldiscussions():
             "type": "Question" if row[4] == "ouvert" else "Proposition",
             "likes": likes, "dislikes": dislikes,
             "groupes": groupes,"auteur":auteur,
-            "date": row[5], "heure": row[6], "etat": row[7], "cloner_par": row[8],
+            "date": row[5], "heure": row[6], "etat": row[7], "cloner_par": row[8], "priorite":row[9]
         })
 
         
