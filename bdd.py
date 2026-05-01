@@ -257,7 +257,6 @@ def select_all_group_discussions(id_client):
             """
     sql.execute(command, [id_client])
     result = sql.fetchall()
-    print(result[1][9])
     return result
 
 

@@ -225,24 +225,18 @@ body { padding-top: 148px; }
   }
 
   .nameSelect{
-    width: 100px;
+    width: 90px;
     padding: 10px;
-    border:1px solid var(--border);
-    border-color: rgba(255,255,255,0.18);
-    background-color: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
     cursor: pointer;
     text-align: center;
     margin-right: 5px;
+    margin-bottom: 5px;
   }
   #inGroup{
-    width: 100px;
-    padding: 10px;
-    border:1px solid var(--border);
-    border-color: rgba(255,255,255,0.18);
-    background-color: rgb(250, 5, 5);
-    cursor: pointer;
-    text-align: center;
-    margin-right: 5px;
+    background-color: rgb(175, 38, 38);
   }
 
   .nameSelect:hover{
@@ -264,26 +258,7 @@ body { padding-top: 148px; }
   }
 
 
-  .postButton {
-    height: 30px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.05);
-    color: var(--text);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform .12s ease, background .12s ease, border-color .12s ease;
-    user-select: none;
-  }
-  .postButton:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.18);
-  }
-  .postButton:active{
-    transform: translateY(0px);
-  }
+
 
   :modal {
     border: 1px solid var(--border);
@@ -292,6 +267,7 @@ body { padding-top: 148px; }
     padding: 14px 14px;
     box-shadow: 0 0 0 1600px rgba(0,0,0,0.65);
     backdrop-filter: blur(40px);
+    gap:10px;
   }
 
 /* Grille des membres */
@@ -349,7 +325,8 @@ body { padding-top: 148px; }
   
   .memberRole{
     border: 1px solid var(--border);
-    border-color: rgba(255,255,255,0.20);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
     padding: 5px 10px;
   }
 

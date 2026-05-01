@@ -449,7 +449,6 @@ def change_member_group(group_id):
     new_members= set(request.form.getlist('memberList'))
 
     old_members=set()
-    print(select_member_by_id(group_id)[0])
     for m in select_member_by_id(group_id):
         old_members.add(m[0])
 
@@ -556,11 +555,14 @@ def get_all_members_groups(group_id):
 def membres():
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
+    print(session['id_client'])
+    print(select_all_clients()[0]['id_client'])
     return render_template(
         "membres.html",
         first_name=session['first_name'], last_name=session['last_name'],
         email=session['email'], company=session['company'],
         role=roles_numeros[session['role']], role_name=session['role'],
+        id=session['id_client'],all_member=select_all_clients()
     )
 
 
@@ -601,11 +603,16 @@ def promote_client(id_c):
     role=select_role_client(id_c)[0]
     username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
     if(role == "Manager"):
+        newrole="CEO"
         update_role("CEO",id_c)
         flash(username+" a été promu en tant que CEO")
     if(role == "Employe"):
+        newrole="Manager"
         update_role("Manager",id_c)
         flash(username+" a été promu en tant que Manager")
+    
+    if(session['id_client']==id_c):
+        session['role']=newrole
         
     return redirect(url_for('membres'))
 
@@ -618,11 +625,16 @@ def demote_client(id_c):
     role=select_role_client(id_c)[0]
     username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
     if(role == "CEO"):
-        update_role("Manager",id_c)
+        newrole="Manager"
+        update_role(newrole,id_c)
         flash(username+" a été rétrogradé en tant que Manager")
     if(role == "Manager"):
-        update_role("Employe",id_c)
+        newrole="Employe"
+        update_role(newrole,id_c)
         flash(username+" a été rétrogradé en tant que Employe")
+
+    if(session['id_client']==id_c):
+        session['role']=newrole
     
     return redirect(url_for('membres'))
 
