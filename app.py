@@ -121,7 +121,8 @@ def main(discussion_id):
         ))
 
     if id_clone is not None:
-        for comment in select_comments_ferme(id_clone):
+        print("bonjour je suis clone", id_clone, select_comments(id_clone))
+        for comment in select_comments(id_clone):
             id_comment   = comment[0]
             id_client    = comment[1]
             type_comment = comment[4]
@@ -132,9 +133,12 @@ def main(discussion_id):
             else:
                 username = get_user_by_id(id_client)[1] + " " + get_user_by_id(id_client)[2]
             opinion  = get_user_opinion(discussion_id, id_client)
-            if opinion is None:    opinion = "neutre"
-            elif opinion[0] == 1: opinion = "pour"
-            else:                  opinion = "contre"
+            if opinion is None:    
+                opinion = "neutre"
+            elif opinion[0] == 1: 
+                opinion = "pour"
+            else:   
+                opinion = "contre"
             cloned_comments.append(dict(
                 id_c=id_comment, content=comment[3], like=like_c, dislike=dislike_c,
                 username=username, opinion=opinion, type=type_comment, avis=comment[5],
