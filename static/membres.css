@@ -29,22 +29,11 @@ body { padding-top: 148px; }
 .member-card {
   display: flex;
   flex-direction: column;
+  width: 100%;
   align-items: center;
-  gap: 10px;
-  padding: 24px 16px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  text-align: center;
-  text-decoration: none;
-  color: var(--text);
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  justify-content:center ;
 }
-.member-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.22);
-  border-color: rgba(255,255,255,0.22);
-}
+
 
 /* Avatar avec initiales */
 .member-avatar {
@@ -70,56 +59,101 @@ body { padding-top: 148px; }
   body { padding-top: 200px; }
   .members-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
 }
+.Box{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text);
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
 
-  .Options{
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-  }  
+.Box:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+  border-color: rgba(255,255,255,0.22);
+}
+.Options{
+  display: none;
+  flex-direction: row;
+  width: fit-content;
+  justify-content: center;
+  gap:10px;
+}  
 
-  .deleteBtn{
-  }
+.notification:not(:empty) {
+  position: absolute;
+  width: fit-content;
+  padding: 20px 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 20px;
+}
 
-  .notification{
-    position: relative;
-    background-color: darkblue;
-    font-size: 20px;
-    z-index: 50;
-  }
+#delBtn:hover{
+  background: rgba(228, 8, 8s, 0.627);
+}
 
-    .option-btn{
-    width: 38px;
-    height: 38px;
-    padding: 10px;
-    border: 1px solid var(--border);
-    background: rgba(255,255,255,0.05);
-    color: var(--text);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
+#promoteBtn:hover{
+  background: rgba(63, 228, 8, 0.627);
+}
 
-    transition: transform .12s ease, background .12s ease, border-color .12s ease;
-    user-select: none;
-  }
-  .option-btn:hover{
-    transform: translateY(-1px);
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.18);
-  }
-  .option-btn:active{
-    transform: translateY(0px);
-  }
+#demoteBtn:hover{
+  background: rgba(228, 8, 8, 0.627);
+}
 
-  #delBtn:hover{
-    background: rgba(228, 8, 8, 0.627);
-  }
-  
-  #promoteBtn:hover{
-    background: rgba(63, 228, 8, 0.627);
-  }
-  
-  #demoteBtn:hover{
-    background: rgba(228, 8, 8, 0.627);
-  }
+  #closePage {
+  height: 30px;
+  width: 30px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  user-select: none;
+}
+#closePage:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.18);
+}
+#closePage:active{
+  transform: translateY(0px);
+}
+
+.postButton {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-family: inherit;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  user-select: none;
+  width: 100%;
+}
+.postButton:hover { background: rgba(210,50,50,0.55) !important; }
+
+:modal {
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: rgba(255,255,255,0.045);
+  padding: 14px 14px;
+  box-shadow: 0 0 0 1600px rgba(0,0,0,0.65);
+  backdrop-filter: blur(40px);
+}

@@ -47,7 +47,7 @@
       <button class="icon-btn" onclick="toggleGroupMenu(event)">Gerer</button>
       <div class="dropdown-content" id="groupMenuContent">
         <a class="icon-btn" href="{{url_for('registry_page')}}" title="Ajouter un employé"> Ajouter un employé</a>
-        <button onclick="showOption()" class="icon-btn" id="gererBtn">Gerer les employes</button>
+        <button onclick="Button(event);showOption();" class="icon-btn" id="gererBtn">Gerer les employes</button>
       </div>
     </div>
     {% endif %}
@@ -63,35 +63,55 @@
   </section>
 
   <main class="container">
-    <div class="notification" id="notif">
-    {% with message = get_flashed_messages(with_categories=true) %}
-      {% if message %}
-        {{message[0][1]}}
-      {%endif%}
-    {%endwith%}
+    <div class="notification" id="notif">{% with message = get_flashed_messages(with_categories=true) %}{% if message %}{{message[0][1]}}{% endif %}{% endwith %}</div>
 
-    </div>
     <div class="companyNameBox">
       <div class="companyName">{{session['company']}}</div>
     </div>
     <section class="section">
       <div class="section-head">
         <h2>Ceo</h2>
-        <div id="countInfo" class="muted"></div>
+        <div id="CEOcountInfo" class="muted"></div>
       </div>
       <div id="ceoList" class="members-grid"></div>
       <div class="section-head">
         <h2>Manager</h2>
-        <div id="countInfo" class="muted"></div>
+        <div id="ManagercountInfo" class="muted"></div>
       </div>
       <div id="managerList" class="members-grid"></div>
       <div class="section-head">
         <h2>Employé</h2>
-        <div id="countInfo" class="muted"></div>
+        <div id="MembercountInfo" class="muted"></div>
       </div>
       <div id="membersList" class="members-grid"></div>
 
-      <div id="popupSetting"></div>
+      <div id="popupSetting">
+        
+        {%for member in all_member%}
+          {%if member['id_client']==id %}
+            <dialog id="deleteClient_{{member['id_client']}}">
+
+            <button type="button" id="closePage" commandfor="deleteClient_{{member['id_client']}}" command="request-close"> 
+              x
+            </button>
+              <p>Vous ne pouvez pas vous supprimer</p>
+            </dialog>
+          
+          {%else%}
+
+            <dialog id="deleteClient_{{member['id_client']}}">
+              <button type="button" id="closePage" commandfor="deleteClient_{{member['id_client']}}" command="request-close"> 
+                x
+              </button>
+
+              <form action="/deleteclient/{{member['id_client']}}" method="POST">
+                <p> Voulez-vous supprimer <span style="font-weight: bold">{{member['name']}} {{member['last_name']}}</span></p>
+                  <input type="submit" class='postButton'value="Supprimer">
+              </form>
+            </dialog>
+          {%endif%}
+        {%endfor%}
+      </div>
     </section>
   </main>
 
@@ -118,20 +138,31 @@
       const managerlist=document.getElementById("managerList")
       const memberlist=document.getElementById("membersList")
 
-      const countInfo = document.getElementById("countInfo");
+      let CeoCount=0;
+      let ManagerCount=0;
+      let MemberCount=0;
+
+      const CEOcountInfo = document.getElementById("CEOcountInfo");
+      const managercountInfo = document.getElementById("ManagercountInfo");
+      const membercountInfo = document.getElementById("MembercountInfo");
+
+
       ceolist.innerHTML = "";
       managerlist.innerHTML = "";
       memberlist.innerHTML = "";
-      countInfo.textContent = items.length + " membre(s)";
+
 
       if (!items.length) {
         ceolist.innerHTML = `<div class="empty">Aucun membre trouvé.</div>`;
+        managerlist.innerHTML = `<div class="empty">Aucun membre trouvé.</div>`;
+        memberlist.innerHTML = `<div class="empty">Aucun membre trouvé.</div>`;
         return;
       }
 
       items.forEach(m => {
         const box=document.createElement("div");
-        box.classList="Box";
+        box.className="Box";
+
         const card = document.createElement("a");
         card.className = "member-card";
         card.href = `/profile/${m.id}`;
@@ -142,18 +173,60 @@
           <div class="member-name">${m.name} ${m.last_name}</div>
           
         `;
-        
+
         const option= document.createElement("div");
         option.className="Options";
         option.id="option"+m.id;
         box.appendChild(card);
         box.appendChild(option);
 
-        if(m.role=="CEO") ceolist.appendChild(box);
-        if(m.role=="Manager") managerlist.appendChild(box);
-        if(m.role=="Employe") memberlist.append(box);
-        
+        const delBtn = document.createElement("button");
+        delBtn.className="icon-btn";
+        delBtn.setAttribute("commandfor", "deleteClient_"+m.id);
+        delBtn.command="show-modal";
+        delBtn.id="delBtn";
+        delBtn.innerHTML="X";
+
+        const demoteBtn=document.createElement("a");
+        demoteBtn.className="icon-btn";
+        demoteBtn.id="demoteBtn";
+        demoteBtn.href=`/demoteclient/`+m.id;
+        demoteBtn.innerHTML="↓";
+
+        const promoteBtn=document.createElement("a");
+        promoteBtn.className="icon-btn";
+        promoteBtn.id="promoteBtn";
+        promoteBtn.href=`/promoteclient/`+m.id;
+        promoteBtn.innerHTML="↑";
+
+        if(m.role=="CEO") {
+          ceolist.appendChild(box);
+          CeoCount++;
+
+          option.appendChild(delBtn);
+          option.appendChild(demoteBtn);
+        }
+        if(m.role=="Manager"){
+          managerlist.appendChild(box);
+          ManagerCount++;
+
+          option.appendChild(delBtn);
+          option.appendChild(promoteBtn);
+          option.appendChild(demoteBtn);
+        }
+        if(m.role=="Employe"){ 
+          memberlist.appendChild(box);
+          MemberCount++;
+
+          option.appendChild(delBtn);
+          option.appendChild(promoteBtn);
+        }
       });
+
+      CEOcountInfo.textContent=CeoCount + " CEO";
+      managercountInfo.textContent=ManagerCount + " Managers";
+      membercountInfo.textContent=MemberCount + " Employés";
+      
     }
 
     function appliquerRecherche() {
@@ -162,6 +235,11 @@
         (m.name + " " + m.last_name).toLowerCase().includes(q)
       );
       renderMembres(filtres);
+
+      if(isOpen==true){
+        isOpen=!isOpen;
+        showOption();
+      }
     }
 
     document.getElementById("searchInput").addEventListener("input", appliquerRecherche);
@@ -172,96 +250,49 @@
     }
     initialiserMembres();
 
+    let isOpen=false;
+    
     function showOption(){
-      chargerMembres();
-      all_members.forEach(m =>{
-        const popupSetting=document.getElementById("popupSetting");
-        
-        const deleteDialog=document.createElement("div");
-        deleteDialog.innerHTML=`
-                  <dialog id="deleteClient_${m.id}">
-
-          <button type="button" id="closePage" commandfor='deleteClient_${m.id}' command="request-close"> 
-            x
-          </button>
-
-          <form action='/deleteclient/${m.id}' method="POST">
-            <p> Voulez-vous supprimer ${m.name} ${m.last_name}</p>
-              <input type="submit" value="Supprimer">
-          </form>
-          </dialog>
-        `
-        popupSetting.appendChild(deleteDialog);
-
-        const options=document.getElementById("option"+m.id);
-        options.innerHTML=``
-
-        const delBtn = document.createElement("button");
-        delBtn.className="option-btn";
-        delBtn.setAttribute("commandfor", "deleteClient_"+m.id);
-        delBtn.command="show-modal";
-        delBtn.id="delBtn";
-        delBtn.innerHTML=`
-          X
-        `
-        options.appendChild(delBtn);
-        
-        if(m.role=="Manager" || m.role=="Employe"){
-          const promoteBtn=document.createElement("a");
-          promoteBtn.className="option-btn";
-          promoteBtn.id="promoteBtn";
-          promoteBtn.href=`/promoteclient/`+m.id;
-          promoteBtn.innerHTML="+";
-          options.appendChild(promoteBtn);
-        }
-
-        if(m.role=="Manager" || m.role=="CEO"){
-          const demoteBtn=document.createElement("a");
-          demoteBtn.className="option-btn";
-          demoteBtn.id="demoteBtn";
-          demoteBtn.href=`/demoteclient/`+m.id;
-          demoteBtn.innerHTML="-";
-          options.appendChild(demoteBtn);
-        }
-      })
-
-      const button=document.getElementById("gererBtn");
-      button.setAttribute("onclick", "hideOption()");
+      options=document.querySelectorAll(".Options");
+      if(isOpen==false){
+          options.forEach(op =>{
+          op.style.display="flex";
+        })
+        isOpen=!isOpen;
+      }else{
+          options.forEach(op =>{
+          op.style.display="none";
+        })
+        isOpen=!isOpen;
+      }
     }
 
-    function hideOption(){
-
-        const options=document.querySelectorAll(".Options")
-        options.forEach(op => {
-            op.innerHTML=``;
-        });
-
-        console.log(options);
-        options.innerHTML=``; 
-
-        const popupSetting=document.getElementById("popupSetting");
-        options.innerHTML=``;
-
-        const button=document.getElementById("gererBtn");
-        button.setAttribute("onclick", "showOption()");
-
-    }
-
+    
     function Notification(){
-      const notif=document.getElementById("notif");
+      setTimeout(() => {
+     
+        const notif=document.getElementById("notif");
+        opacity=1;
+        const timer = setInterval(() => {
+          opacity -= 0.02;
+          notif.style.opacity = opacity;
 
-      setTimeout(() =>{
-        notif.style.opacity="0";
-      },2000);
-      setTimeout(() =>{
-        notif.style.display="none";
-      },3000);
+          if (opacity <= 0) {
+              clearInterval(timer);
+              notif.style.display = "none";
+          }
+        }, 20);
+      }, 2000); 
     }
     Notification();
 
     function toggleGroupMenu(event) {
       event.stopPropagation();
       document.getElementById("groupMenuContent").classList.toggle("show");
+    }
+
+    function Button(event) {
+      event.stopPropagation();
     }
     document.addEventListener("click", function() {
       const m = document.getElementById("groupMenuContent");
