@@ -69,6 +69,11 @@
                 <input type="radio" name="discussionType" id="yesno" value="ferme" required>
                 <label for="ferme"> Question fermé </label>
               </div>
+
+              <div style="border-top: dashed 1px rgba(245, 245, 245, 0.514); margin-top: 10px;">
+                <input type="checkbox" name="discussionPriority" id="priority" value="priority">
+                <label for="priority"> Prioritaire </label>
+              </div>
             </div>
 
             <div class="groupList">
@@ -115,8 +120,16 @@
                   <textarea type="text" class="contentBlock" name="discussionContent" placeholder=" Ajouter une description" required>{{d[1]}}</textarea>
                   </div>
 
-                  <div class="form-choices" style="justify-content: center; align-items: center;">
-
+                  <div class="form-choices">
+                    <div class="discussionType">
+                      <label style="margin-top: 15px;"> Modifier la priorite </label>
+                      <div style="margin-top: 10px;;">
+                        
+                        <input type="checkbox" name="discussionPriority" id="priority" value="priority">
+                        <label for="priority">Prioritaire </label>
+                      </div>
+                    </div>
+                    
                     <div class="groupList">
                       <label style="margin-top: 15px; "> Modifier les groupes </label>
                       <select class="selectGroupList" name="groupes" id="groupes_dropdown" multiple required>
@@ -206,7 +219,7 @@
 
       items.forEach(d => {
         const card = document.createElement("div");
-        card.className = `card card-${d.etat}`;
+        card.className = `card card-${d.etat} card-${d.priorite}`;
         if(d.cloner_par != null){
           card.classList.add("cloned");
         }

@@ -133,6 +133,10 @@ body { padding-top: 148px; }
 #closePage:hover  { transform: translateY(-1px); background: rgba(255,255,255,0.10); }
 #closePage:active { transform: translateY(0); }
 
+.card-2{
+  border: 1px solid rgba(218, 165, 32, 0.349);
+}
+
 @media (max-width: 980px) {
   body { padding-top: 200px; }
   .newDiscussionForm { width: 90vw; }
