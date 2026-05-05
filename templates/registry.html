@@ -1,39 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8">
-    <title>Registration Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription — Les Débatteurs</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='registry.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='registry.css') }}" />
   </head>
   <body>
-    <main>
-      <h1>Registration Form</h1>
-      <p class="error-msg" style="color:red;"><b> {{message}} </b></p>
-      <p>Please fill out this form with the required information</p>
-      <form method="post" action='{{url_for("registry")}}'>
-        <fieldset>
-          <label for="first-name">Enter the First Name: <input id="first-name" name="first-name" type="text" required /></label>
-          <label for="last-name">Enter the Last Name: <input id="last-name" name="last-name" type="text" required /></label>
-          <label for="email">Enter the Email: <input id="email" name="email" type="email" required /></label>
-          <label for="new-password">Create a New Password: <input id="new-password" name="new-password" type="password" pattern="[a-z0-5]{8,}" required /></label>
-          <label for="new-password">Enter Company name: <input id="company-name" name="company-name" type="text" required /></label>
-        </fieldset>
-        <fieldset>
-          <legend>Account type (required)</legend>
-          <label for="personal-account"><input id="personal-account" type="radio" name="role" class="inline" value="CEO" checked /> CEO</label>
-          <label for="business-account"><input id="business-account" type="radio" name="role" class="inline" value="Manager"/> Manager</label>
-          <label for="business-account"><input id="business-account" type="radio" name="role" class="inline"value="Employe" /> Employe</label>
-        </fieldset>
-        <fieldset>
-          <label for="age">Input age (years): <input id="age" type="number" name="age" min="13" max="120" /></label>
+    <main class="registry-main">
+      <div class="registry-card">
+        <div class="registry-logo">
+          <img src="{{ url_for('static', filename='logo.svg') }}" alt="Les Débatteurs" width="48" height="48">
+        </div>
+        <h1 class="registry-title">Créer un compte</h1>
+        {% if message %}
+          <p class="registry-error">{{ message }}</p>
+        {% endif %}
+
+        <form method="post" action='{{ url_for("registry") }}'>
+
+          <div class="field-group">
+            <div class="field">
+              <label for="first-name">Prénom</label>
+              <input class="form-control" id="first-name" name="first-name" type="text" placeholder="Votre prénom" required />
+            </div>
+            <div class="field">
+              <label for="last-name">Nom</label>
+              <input class="form-control" id="last-name" name="last-name" type="text" placeholder="Votre nom" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="email">Adresse e-mail</label>
+            <input class="form-control" id="email" name="email" type="email" placeholder="exemple@email.com" required />
+          </div>
+
+          <div class="field">
+            <label for="new-password">Mot de passe</label>
+            <input class="form-control" id="new-password" name="new-password" type="password" placeholder="8 caractères minimum" required />
+          </div>
+
+          <div class="field">
+            <label for="company-name">Nom de l'entreprise</label>
+            <input class="form-control" id="company-name" name="company-name" type="text" placeholder="Votre entreprise" required />
+          </div>
+
+          <div class="field">
+            <label>Rôle</label>
+            <div class="role-choice">
+              <label class="role-option">
+                <input type="radio" name="role" value="CEO" checked />
+                <span>CEO</span>
+              </label>
+              <label class="role-option">
+                <input type="radio" name="role" value="Manager" />
+                <span>Manager</span>
+              </label>
+              <label class="role-option">
+                <input type="radio" name="role" value="Employe" />
+                <span>Employé</span>
+              </label>
+            </div>
+          </div>
+
+          {% if all_groups %}
+          <div class="field">
+            <label>Rejoindre des groupes <span class="optional">(optionnel)</span></label>
+            <div class="groups-choice">
+              {% for groupe in all_groups %}
+              <label class="group-option">
+                <input type="checkbox" name="groupes" value="{{ groupe[0] }}" />
+                <span>{{ groupe[1] }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          <label class="terms-label">
+            <input type="checkbox" required name="terms-and-conditions" />
+            J'accepte les <a href="#">conditions d'utilisation</a>
           </label>
-        </fieldset>
-        <label for="terms-and-conditions">
-          <input class="inline" id="terms-and-conditions" type="checkbox" required name="terms-and-conditions" /> I accept the <a href="">terms and conditions</a>
-        </label>
-        <input type="submit" value="Submit" />
-      </form>
+
+          <input class="icon-btn submit-btn" type="submit" value="Créer mon compte" />
+        </form>
+
+        <p class="login-link">Déjà un compte ? <a href="{{ url_for('login_page') }}">Se connecter</a></p>
+      </div>
     </main>
   </body>
 </html>

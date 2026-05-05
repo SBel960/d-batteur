@@ -17,8 +17,8 @@ from bdd import (
     select_comment_replies, update_discussion, delete_discussiongroups,
     get_score_proposition, create_groups_table, create_group_members_table,
     create_discussion_groups_table, get_email, select_comment_by_id,
-    delete_discussion_from_id, update_discussion_state,delete_client,select_role_client,
-    update_role
+    delete_discussion_from_id, update_discussion_state, delete_client, select_role_client,
+    update_role, migrate_db
 )
 
 import time
@@ -40,6 +40,7 @@ with app.app_context():
     create_groups_table()
     create_group_members_table()
     create_discussion_groups_table()
+    migrate_db()  # Ajoute les colonnes manquantes sur les DB existantes
 
 
 # ─── Accueil ──────────────────────────────────────────────────────────────────
@@ -703,7 +704,8 @@ def login_page():
 
 @app.route('/registry_page', methods=['GET'])
 def registry_page():
-    return render_template("registry.html")
+    all_groups = [[row[0], row[1]] for row in select_all_groupes()]
+    return render_template("registry.html", all_groups=all_groups)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -734,11 +736,21 @@ def registry():
     company    = request.form["company-name"]
     role       = request.form["role"]
     if check_if_exists_client(email, company) is not None:
-        return render_template('registry.html', message='Ce compte existe deja')
+        all_groups = [[row[0], row[1]] for row in select_all_groupes()]
+        return render_template('registry.html', message='Ce compte existe deja', all_groups=all_groups)
     insert_clients_table(email, first_name, last_name, password, company, role)
+    # Ajouter l'utilisateur aux groupes sélectionnés
+    groupes = request.form.getlist('groupes')
+    if groupes:
+        new_user = select_client_infos_from_email(email)
+        if new_user:
+            new_user_id = new_user[1]  # index 1 = id_client
+            for groupe_id in groupes:
+                if len(select_client_groupes_by_id(groupe_id, new_user_id)) == 0:
+                    insert_group_members(groupe_id, new_user_id)
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
-    
+
     return redirect(url_for('membres'))
 
 
