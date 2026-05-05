@@ -167,7 +167,7 @@ def main_comment(discussion_id, comment_ids):
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
 
-    id_poster, title, content, discussion_type, discussion_state, id_clone = select_discussion_by_id(discussion_id)
+    id_poster, title, content, discussion_type, discussion_state, id_clone, priority = select_discussion_by_id(discussion_id)
     
     #####section comment parent
     path = [int(x) for x in comment_ids.strip('/').split('/')]
