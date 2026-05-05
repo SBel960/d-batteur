@@ -279,7 +279,7 @@ def clotre_discussion(d_id, action):
 @app.route("/cloner_discussion/<int:d_id>", methods=["POST"])
 def cloner_discussion(d_id):
     groups = request.form.getlist('groupes')
-    id_client, title, content, type_discussion, etat, priorite, cloned_id = select_discussion_by_id(d_id)
+    id_client, title, content, type_discussion, etat, cloned_id, priorite = select_discussion_by_id(d_id)
     insert_disscussions_table(id_c=id_client, title=title, content=content,
                                type=type_discussion, priority=priorite, cloned_from=d_id)
     discussion_id = select_newest_discussion_id(id_client)[0]
@@ -585,6 +585,12 @@ def get_all_members():
 def delete_client_from_db(id_c):
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
+    if session["role"] != "CEO":
+        flash("Tu n'es pas un CEO! petit malin")  
+        return redirect(url_for('membres'))
+    if id_c == session["id_client"]:
+        flash("tu ne peux pas te virer! tu ne veux plus etre le ceo??")  
+        return redirect(url_for('membres'))
 
     for id_g in select_client_groupes(id_c):
         delete_member(id_g[0],id_c)
@@ -594,33 +600,37 @@ def delete_client_from_db(id_c):
 
     
 
-@app.route('/promoteclient/<int:id_c>')
-
+@app.route('/promoteclient/<int:id_c>', methods=['POST'])
 def promote_client(id_c):
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
-    
+    if session["role"] != "CEO":
+        flash("Tu n'es pas un CEO! petit malin")  
+        return redirect(url_for('membres'))
+    if id_c == session["id_client"]:
+        flash("tu ne peux pas te retrograder! tu ne veux plus etre le ceo??")  
+        return redirect(url_for('membres'))
     role=select_role_client(id_c)[0]
     username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
     if(role == "Manager"):
-        newrole="CEO"
         update_role("CEO",id_c)
         flash(username+" a été promu en tant que CEO")
     if(role == "Employe"):
-        newrole="Manager"
         update_role("Manager",id_c)
-        flash(username+" a été promu en tant que Manager")
-    
-    if(session['id_client']==id_c):
-        session['role']=newrole
-        
+        flash(username+" a été promu en tant que Manager")     
     return redirect(url_for('membres'))
 
-@app.route('/demoteclient/<int:id_c>')
+@app.route('/demoteclient/<int:id_c>', methods=['POST'])
 
 def demote_client(id_c):
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
+    if session["role"] != "CEO":
+        flash("Tu n'es pas un CEO! petit malin")  
+        return redirect(url_for('membres'))
+    if id_c == session["id_client"]:
+        flash("tu ne peux pas te retrograder! tu ne veux plus etre le ceo??")  
+        return redirect(url_for('membres'))
     
     role=select_role_client(id_c)[0]
     username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
