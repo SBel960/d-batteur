@@ -13,7 +13,9 @@
   <section class="navbar">
   <header class="topbar">
     <div class="topbar-left">
-      <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
+      <div id="logo-slot" class="logo-slot" aria-label="Logo Les Débatteurs">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Les Débatteurs" width="32" height="32">
+      </div>
 
       <div class="company">
         <div id="companyName" class="company-name">{{company}}</div>
@@ -116,7 +118,7 @@
               <form class="newDiscussionForm" method="post" action="{{url_for('modifier_discussion',d_id=d[2])}}">
                 <label> Modifier la discussion</label>
                 <div class="discussionInformation">
-                  <input type="text" class="questionBlock" name='discussionTitle' placeholder=" Ajouter un titre" value={{d[0]}} required>
+                  <input type="text" class="questionBlock" name='discussionTitle' placeholder=" Ajouter un titre" value='{{d[0]}}' required>
                   <textarea type="text" class="contentBlock" name="discussionContent" placeholder=" Ajouter une description" required>{{d[1]}}</textarea>
                   </div>
 
@@ -150,14 +152,14 @@
               </form>
             </dialog>
             <dialog id="clotreDiscussion_{{d[2]}}">
-              <p>etes vous sur de vouloir clotre la discussion <br> <b>Personne ne pourra agir avec la discussion apres la cloture</b></p>
+              <p>Etes vous sur de vouloir cloturer la discussion <br> <b>Personne ne pourra agir avec la discussion apres la cloture</b></p>
               <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2], action='closed')}}">
                <input class="yesnoButton postButton" type="submit" name="yes" value="Oui">
                <button type="button" class="yesnoButton postButton" commandfor="clotreDiscussion_{{d[2]}}" command="request-close">Non</button>
               </form>
             </dialog>
             <dialog id="ouvrirDiscussion_{{d[2]}}">
-              <p>etes vous sur de vouloir re-ouvrir la discussion </p>
+              <p>Etes vous sur de vouloir re-ouvrir la discussion </p>
               <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2], action='active')}}">
                <input class="yesnoButton postButton" type="submit" name="yes" value="Oui">
                <button type="button" class="yesnoButton postButton" commandfor="ouvrirDiscussion_{{d[2]}}" command="request-close">Non</button>
@@ -253,8 +255,8 @@
                 <div id="showDiscussionOptions_${d.id}" class="dropdown-content">
                   ${d.etat === 'active'
                   ?`<button class="btn" commandfor="editDiscussion_${d.id}" command="show-modal" href='#'>Editer</button>
-                  <button class="btn" commandfor="cloneDiscussion_${d.id}" command="show-modal" href='#'>Cloner </button>
-                  <button class="btn" commandfor="clotreDiscussion_${d.id}" command="show-modal" href='#'>Clôtre</button>
+                  <button class="btn" commandfor="cloneDiscussion_${d.id}" command="show-modal" href='#'>Cloner</button>
+                  <button class="btn" commandfor="clotreDiscussion_${d.id}" command="show-modal" href='#'>Clôturer</button>
                   <button class="btn" commandfor="deleteDiscussion_${d.id}" command="show-modal" href='#'>Supprimer</button>`
                   :`
                   <button class="btn" commandfor="cloneDiscussion_${d.id}" command="show-modal" href='#'>Cloner </button>

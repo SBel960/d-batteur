@@ -16,7 +16,9 @@
 
     <div class="topbar-left">
       <a  class="icon-btn" href="{{url_for('home')}}">Home</a>
-      <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
+      <div id="logo-slot" class="logo-slot" aria-label="Logo Les Débatteurs">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Les Débatteurs" width="32" height="32">
+      </div>
 
       <div class="company">
         <div id="companyName" class="company-name">{{company}}</div>
@@ -186,8 +188,14 @@
     }
 
     
- function renderMembres(items) {
-      const memberlist=document.getElementById("memberGroupList");
+    const roleColors = {
+      "CEO":     { bg: "rgba(234,179,8,0.22)",  border: "rgba(234,179,8,0.50)",  text: "#fbbf24" },
+      "Manager": { bg: "rgba(34,211,238,0.18)",  border: "rgba(34,211,238,0.45)", text: "#22d3ee" },
+      "Employe": { bg: "rgba(99,102,241,0.22)",  border: "rgba(99,102,241,0.50)", text: "#818cf8" },
+    };
+
+    function renderMembres(items) {
+      const memberlist = document.getElementById("memberGroupList");
       memberlist.innerHTML = "";
 
       const countInfo = document.getElementById("countInfo");
@@ -203,13 +211,13 @@
         card.className = "member-card";
         card.href = `/profile/${m.id}`;
         const initiales = m.name[0].toUpperCase() + m.last_name[0].toUpperCase();
+        const colors = roleColors[m.role] || roleColors["Employe"];
         card.innerHTML = `
-          <div class="member-avatar">${initiales}</div>
+          <div class="member-avatar" style="background:${colors.bg}; border-color:${colors.border}; color:${colors.text};">${initiales}</div>
           <div class="member-name">${m.name} ${m.last_name}</div>
-          <div class="memberRole">${m.role}</div>
+          <div class="memberRole" style="border-color:${colors.border}; color:${colors.text};">${m.role}</div>
         `;
         memberlist.append(card);
-        
       });
     }
 

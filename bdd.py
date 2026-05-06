@@ -1,4 +1,5 @@
 import sqlite3
+import math
 from flask import g
 from datetime import date
 import time
@@ -253,7 +254,7 @@ def select_all_group_discussions(id_client):
             JOIN DiscussionGroups ON Discussions.id_discussion = DiscussionGroups.id_d 
             JOIN GroupMembers ON DiscussionGroups.id_g = GroupMembers.id_g
             WHERE GroupMembers.id_c = ? 
-            ORDER BY  priority DESC, date_creation ASC, time_creation DESC;
+            ORDER BY  priority DESC, date_creation DESC, time_creation DESC;
             """
     sql.execute(command, [id_client])
     result = sql.fetchall()
@@ -671,19 +672,71 @@ def get_email(id_c):
 
     return res
 
-def get_score_proposition(id_commentaire):
-    score = 0
-    enfants =select_comment_replies(id_commentaire)
-    for enfant in enfants:
-        likes, dislikes = get_comment_likes(enfant['id_comment'])
-        net = likes - dislikes
-        if enfant['avis'] == 'pour':
-            score += net
-        elif enfant['avis'] == 'contre':
-            score -= net
-        score += get_score_proposition(enfant['id_comment'])
-    return score  
+def get_score_proposition(id_commentaire, _depth=0):
+    """
+    Score composite mesurant l'intérêt réel des utilisateurs pour une proposition.
+    (Ne compte PAS les votes directs sur la proposition — déjà gérés dans app.py)
 
+    Composantes :
+    ┌─ Sentiment      : Σ(crédibilité_réponse × direction)
+    │    Chaque réponse "pour"/"contre" compte selon ses propres likes (qualité > quantité)
+    ├─ Engagement     : log(1 + votes_réponses + nb_réponses) × 2
+    │    Croissance logarithmique — 100 réponses ne vaut pas 100× 1 réponse
+    ├─ Controverse    : √(min(poids_pour, poids_contre)) × 1.5
+    │    Bonus si les deux camps sont représentés — le débat = intérêt
+    └─ Profondeur     : contributions imbriquées atténuées par 0.6^profondeur
+         Les échanges profonds comptent, mais avec moins de poids
+    """
+    enfants = select_comment_replies(id_commentaire)
+    if not enfants:
+        return 0
+
+    pour_weight = 0
+    contre_weight = 0
+    total_reply_votes = 0
+
+    for enfant in enfants:
+        r_likes, r_dislikes = get_comment_likes(enfant['id_comment'])
+        r_net = r_likes - r_dislikes
+        total_reply_votes += r_likes + r_dislikes
+        # Crédibilité = popularité nette + 1 (chaque réponse compte au moins 1)
+        r_credibility = max(0, r_net) + 1
+
+        if enfant['avis'] == 'pour':
+            pour_weight += r_credibility
+        elif enfant['avis'] == 'contre':
+            contre_weight += r_credibility
+
+    # 1. Sentiment net pondéré par la crédibilité des réponses
+    sentiment = pour_weight - contre_weight
+
+    # 2. Engagement logarithmique (volume d'activité sans effet viral linéaire)
+    engagement = math.log1p(total_reply_votes + len(enfants)) * 2
+
+    # 3. Bonus de controverse : intérêt si les deux camps s'expriment
+    controversy = math.sqrt(min(pour_weight, contre_weight)) * 1.5
+
+    # 4. Contribution des sous-réponses, atténuée selon la profondeur
+    depth_factor = 0.6 ** (_depth + 1)
+    child_contribution = sum(
+        get_score_proposition(e['id_comment'], _depth + 1)
+        for e in enfants
+    ) * depth_factor
+
+    return round(sentiment + engagement + controversy + child_contribution)
+
+
+
+def migrate_db():
+    """Ajoute les colonnes manquantes si la DB existe déjà sans elles."""
+    data = get_db()
+    sql = data.cursor()
+    # Vérifier si la colonne 'priority' existe dans Discussions
+    sql.execute("PRAGMA table_info(Discussions)")
+    cols = [row[1] for row in sql.fetchall()]
+    if 'priority' not in cols:
+        sql.execute("ALTER TABLE Discussions ADD COLUMN priority INTEGER NOT NULL DEFAULT 1")
+        data.commit()
 
 
 ####deletes
