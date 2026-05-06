@@ -110,7 +110,8 @@ def create_group_members_table():
                 id_c INTEGER NOT NULL,
 
                 FOREIGN KEY(id_c) REFERENCES Client(id_client),
-                FOREIGN KEY(id_g) REFERENCES Groups(id_groupe)
+                FOREIGN KEY(id_g) REFERENCES Groups(id_groupe),
+                UNIQUE (id_g,id_c)
                 )  
             """
     sql.execute(command)
@@ -149,11 +150,10 @@ def insert_clients_table(email, name, last_name, password, company, role):
     sql.execute(command, [email, name, last_name, password, company, role])
     data.commit()
 
-
 def insert_disscussions_table(id_c, title, content, type, priority, cloned_from=None):
     data = get_db()
     sql = data.cursor()
-    date_creation = date.today()
+    date_creation = date.today().isoformat()
     named_tuple = time.localtime() # get struct_time
     time_creation = time.strftime("%H:%M", named_tuple)
     print(time_creation)
@@ -367,7 +367,7 @@ def select_all_groupes():
 def select_client_groupes(id_c):
     data = get_db()
     sql = data.cursor()
-    command = """SELECT * FROM Groups 
+    command = """SELECT Groups.id_group, Groups.name FROM Groups 
         JOIN GroupMembers ON Groups.id_group = GroupMembers.id_g 
         WHERE GroupMembers.id_c=?;
             """
@@ -544,13 +544,14 @@ def update_discussion_state(id_discussion, action):
     return
 
 def update_role(role,id_c):
-    data=get_db()
-    sql=data.cursor()
-    command="""UPDATE Client SET role=? WHERE id_client=?
-        """
-    sql.execute(command,[role, id_c])
-    data.commit()
-    sql.close()
+    if role=="CEO" or role=="Manager" or role=="Employe":
+        data=get_db()
+        sql=data.cursor()
+        command="""UPDATE Client SET role=? WHERE id_client=?
+            """
+        sql.execute(command,[role, id_c])
+        data.commit()
+        sql.close()
 
 #---------------------- likes
 
