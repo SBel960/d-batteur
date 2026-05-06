@@ -14,7 +14,9 @@
   <header class="topbar">
     <div class="topbar-left">
       <a class="icon-btn" href="{{ url_for('home') }}">Home</a>
-      <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
+      <div id="logo-slot" class="logo-slot" aria-label="Logo Les Débatteurs">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Les Débatteurs" width="32" height="32">
+      </div>
 
       <div class="company">
         <div id="companyName" class="company-name">{{ company }}</div>
@@ -103,7 +105,7 @@
   <main class="container">
     <h1>GROUPES</h1>
 
-    {% if role >= 2 %}
+    {% if role >= 3 %}
     <div>
       <h3 class="ajouter_group">Ajouter un nouveau groupe :</h3>
 
@@ -177,7 +179,7 @@
       items.forEach(g => {
         const card = document.createElement("div");
         card.className = "group-card";
-        const isManager = {{role}} >= 2;
+        const isManager = {{role}} >= 3;
         card.innerHTML = `
           <a href="/group_info/${g.id}" class="group-name">${escapeHtml(g.name)}</a>
           ${isManager ? `

@@ -14,7 +14,9 @@
   <header class="topbar">
     <div class="topbar-left">
       <a class="icon-btn" href="{{ url_for('home') }}">Home</a>
-      <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
+      <div id="logo-slot" class="logo-slot" aria-label="Logo Les Débatteurs">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Les Débatteurs" width="32" height="32">
+      </div>
 
       <div class="company">
         <div id="companyName" class="company-name">{{ company }}</div>
@@ -47,7 +49,7 @@
       <button class="icon-btn" onclick="toggleGroupMenu(event)">Gerer</button>
       <div class="dropdown-content" id="groupMenuContent">
         <a class="icon-btn" href="{{url_for('registry_page')}}" title="Ajouter un employé"> Ajouter un employé</a>
-        <button onclick="Button(event);showOption();" class="icon-btn" id="gererBtn">Gerer les employes</button>
+        <button onclick="Button(event);showOption(event, {{session['id_client']}});getId({{session['id_client']}})" class="icon-btn" id="gererBtn">Gerer les employes</button>
       </div>
     </div>
     {% endif %}
@@ -117,8 +119,12 @@
 
   <script>
     let all_members = [];
+    let myid;
+    async function getId(id) {
+        myid=id;
+    }
 
-        function toggleGroupMenu(event) {
+    function toggleGroupMenu(event) {
       event.stopPropagation();
       document.getElementById("groupMenuContent").classList.toggle("show");
     }
@@ -126,6 +132,12 @@
       const m = document.getElementById("groupMenuContent");
       if (m) m.classList.remove("show");
     });
+
+    const roleColors = {
+      "CEO":     { bg: "rgba(234,179,8,0.22)",  border: "rgba(234,179,8,0.50)",  text: "#fbbf24" },
+      "Manager": { bg: "rgba(34,211,238,0.18)",  border: "rgba(34,211,238,0.45)", text: "#22d3ee" },
+      "Employe": { bg: "rgba(99,102,241,0.22)",  border: "rgba(99,102,241,0.50)", text: "#818cf8" },
+    };
 
     async function chargerMembres() {
       const reponse = await fetch("/allmembers");
@@ -167,11 +179,10 @@
         card.className = "member-card";
         card.href = `/profile/${m.id}`;
         const initiales = m.name[0].toUpperCase() + m.last_name[0].toUpperCase();
+        const colors = roleColors[m.role] || roleColors["Employe"];
         card.innerHTML = `
-
-          <div class="member-avatar">${initiales}</div>
+          <div class="member-avatar" style="background:${colors.bg}; border-color:${colors.border}; color:${colors.text};">${initiales}</div>
           <div class="member-name">${m.name} ${m.last_name}</div>
-          
         `;
 
         const option= document.createElement("div");
@@ -187,17 +198,15 @@
         delBtn.id="delBtn";
         delBtn.innerHTML="X";
 
-        const demoteBtn=document.createElement("a");
-        demoteBtn.className="icon-btn";
-        demoteBtn.id="demoteBtn";
-        demoteBtn.href=`/demoteclient/`+m.id;
-        demoteBtn.innerHTML="↓";
+        const demoteBtn=document.createElement("form");
+        demoteBtn.method="post";
+        demoteBtn.action=`/demoteclient/${m.id}`;
+        demoteBtn.innerHTML="<input type='submit' name='upvote' value='↓' class='icon-btn' id='demoteBtn' />";
 
-        const promoteBtn=document.createElement("a");
-        promoteBtn.className="icon-btn";
-        promoteBtn.id="promoteBtn";
-        promoteBtn.href=`/promoteclient/`+m.id;
-        promoteBtn.innerHTML="↑";
+        const promoteBtn=document.createElement("form");
+        promoteBtn.method="post";
+        promoteBtn.action=`/promoteclient/${m.id}`;
+        promoteBtn.innerHTML="<input type='submit' name='upvote' value='↑' class='icon-btn' id='promoteBtn' />";
 
         if(m.role=="CEO") {
           ceolist.appendChild(box);
@@ -238,7 +247,7 @@
 
       if(isOpen==true){
         isOpen=!isOpen;
-        showOption();
+        showOption(event,myid);
       }
     }
 
@@ -252,19 +261,22 @@
 
     let isOpen=false;
     
-    function showOption(){
+    function showOption(event, id){
       options=document.querySelectorAll(".Options");
-      if(isOpen==false){
-          options.forEach(op =>{
-          op.style.display="flex";
-        })
-        isOpen=!isOpen;
-      }else{
-          options.forEach(op =>{
-          op.style.display="none";
-        })
-        isOpen=!isOpen;
-      }
+        if(isOpen==false){
+            options.forEach(op =>{
+              if(op.id!='option'+id){
+                op.style.display="flex";
+              }
+            
+          })
+          isOpen=!isOpen;
+        }else{
+            options.forEach(op =>{
+            op.style.display="none";
+          })
+          isOpen=!isOpen;
+        }
     }
 
     

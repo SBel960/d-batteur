@@ -17,8 +17,8 @@ from bdd import (
     select_comment_replies, update_discussion, delete_discussiongroups,
     get_score_proposition, create_groups_table, create_group_members_table,
     create_discussion_groups_table, get_email, select_comment_by_id,
-    delete_discussion_from_id, update_discussion_state,delete_client,select_role_client,
-    update_role
+    delete_discussion_from_id, update_discussion_state, delete_client, select_role_client,
+    update_role, migrate_db
 )
 
 import time
@@ -40,12 +40,34 @@ with app.app_context():
     create_groups_table()
     create_group_members_table()
     create_discussion_groups_table()
+    migrate_db()  # Ajoute les colonnes manquantes sur les DB existantes
 
 
 # ─── Accueil ──────────────────────────────────────────────────────────────────
 
 @app.route("/")
 def home():
+    """
+    Point d’entrée principal de l’application.
+
+    Construit dynamiquement la page d’accueil pour l’utilisateur authentifié en agrégeant
+    l’ensemble des discussions accessibles via ses appartenances aux groupes.
+
+    La fonction :
+    - filtre implicitement les discussions selon les groupes du client courant,
+    - enrichit chaque discussion avec :
+        * le score social (likes / dislikes),
+        * les métadonnées temporelles et d’état,
+        * les groupes associés,
+        * le nom de l’auteur (ou fallback si supprimé),
+    - normalise le type de discussion (OUVERT / FERMÉ) pour l’affichage.
+
+    Retour :
+        Template HTML rendu (`homepage.html`) avec toutes les données prêtes à être consommées côté frontend.
+
+    Redirection :
+        - vers la page de login si l’utilisateur n’est pas authentifié.
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
 
@@ -89,11 +111,55 @@ def home():
 
 @app.route("/main/<int:discussion_id>", methods=["GET"])
 def main(discussion_id):
+    """
+    Vue détaillée d’une discussion.
+
+    Charge et structure l’intégralité du contenu d’une discussion :
+    commentaires racines + éventuels commentaires issus d’un clonage.
+
+    La fonction applique une logique métier non triviale :
+    - sélection conditionnelle des commentaires selon le type (ouvert / fermé),
+    - calcul de score pour les propositions (likes/dislikes + score métier),
+    - récupération et normalisation des opinions utilisateurs (pour / contre / neutre),
+    - gestion des auteurs supprimés,
+    - calcul du nombre de réponses (thread depth),
+    - fusion logique avec les commentaires d’une discussion clonée (lecture seule),
+    - tri intelligent :
+        * score si disponible,
+        * sinon fallback sur (likes - dislikes).
+
+    Paramètres :
+        discussion_id (int) : identifiant unique de la discussion.
+
+    Retour :
+        Template `main.html` avec :
+            - commentaires principaux,
+            - commentaires clonés,
+            - métadonnées complètes de la discussion.
+
+    Redirection :
+        - vers login si non authentifié.
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
 
     id_poster, title, content, discussion_type, discussion_state, id_clone, priority = select_discussion_by_id(discussion_id)
     cloned = id_clone is not None
+
+    ###SECTION: verifie que l'utilisateur a droit a acceder a la discussion
+    discussion_groups = [g[0] for g in select_discussion_groups(discussion_id)]
+    user_groups = [g[0] for g in select_client_groupes(session['id_client'])]
+
+    in_groupe = False
+    for id_g in discussion_groups:
+        if id_g in user_groups:
+            in_groupe = True
+            break
+    if(in_groupe == False):
+        flash("Tu n'appartient pas au groupes de cette discussion!")
+        return redirect(url_for("home"))
+    
+    ###SECTION: traitement + render template
 
     comments        = []
     cloned_comments = []
@@ -164,10 +230,38 @@ def main(discussion_id):
 
 @app.route("/main_comment/<int:discussion_id>/<path:comment_ids>", methods=["GET"])
 def main_comment(discussion_id, comment_ids):
+    """
+    Vue spécialisée pour la navigation dans un thread profond de commentaires.
+
+    Permet d’isoler et d’afficher un commentaire précis dans une hiérarchie imbriquée,
+    en reconstruisant dynamiquement le chemin de navigation (breadcrumb/back).
+
+    Logique principale :
+    - parsing du chemin `comment_ids` (format hiérarchique),
+    - identification du commentaire courant (feuille du chemin),
+    - reconstruction conditionnelle d’une URL de retour vers le parent,
+    - enrichissement du commentaire avec :
+        * score (si proposition),
+        * likes / dislikes,
+        * opinion utilisateur,
+        * nombre de réponses,
+        * état,
+        * auteur (avec fallback si supprimé).
+
+    Paramètres :
+        discussion_id (int) : discussion parente.
+        comment_ids (str)   : chemin hiérarchique (ex: "12/45/78").
+
+    Retour :
+        Template partiel `partials/main_comment.html`.
+
+    Redirection :
+        - vers login si non authentifié.
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
 
-    id_poster, title, content, discussion_type, discussion_state, id_clone = select_discussion_by_id(discussion_id)
+    id_poster, title, content, discussion_type, discussion_state, id_clone, priority = select_discussion_by_id(discussion_id)
     
     #####section comment parent
     path = [int(x) for x in comment_ids.strip('/').split('/')]
@@ -216,6 +310,30 @@ def main_comment(discussion_id, comment_ids):
 
 @app.route("/commentaire/<int:discussion_id>/<int:reply>", methods=["POST"])
 def commentaire(discussion_id, reply):
+    """
+    Endpoint d’insertion de commentaire.
+
+    Gère à la fois :
+    - la création d’un commentaire racine,
+    - la réponse à un commentaire existant (threading).
+
+    Comportement :
+    - extrait les données du formulaire (contenu, type, avis),
+    - insère en base avec liaison parent/enfant via `reply`,
+    - retourne une réponse JSON en cas de reply (AJAX),
+      sinon redirection classique vers la discussion.
+
+    Paramètres :
+        discussion_id (int) : discussion cible.
+        reply (int)         : id du commentaire parent (0 = racine).
+
+    Retour :
+        - JSON (si réponse imbriquée),
+        - redirection sinon.
+
+    Redirection :
+        - vers login si non authentifié.
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     content = request.form['commentaire']
@@ -230,6 +348,26 @@ def commentaire(discussion_id, reply):
 
 @app.route("/ajouter_discussion", methods=["POST"])
 def ajouter_discussion():
+    """
+    Création d’une nouvelle discussion.
+
+    Pipeline complet :
+    1. Validation des champs obligatoires (titre, contenu, groupes, type),
+    2. Normalisation de la priorité (bool → niveau métier),
+    3. Insertion en base,
+    4. Récupération de l’ID nouvellement créé (via workaround temporel),
+    5. Association aux groupes sélectionnés (relation N-N).
+
+    Particularité :
+        Utilise un `sleep` court pour contourner un problème de synchronisation
+        lors de la récupération de l’ID (approche non idéale mais pragmatique).
+
+    Retour :
+        Redirection vers la page de la discussion créée.
+
+    Redirection :
+        - vers login si non authentifié.
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     title   = request.form['discussionTitle']
@@ -256,6 +394,29 @@ def ajouter_discussion():
 
 @app.route("/modifier_discussion/<int:d_id>", methods=["POST"])
 def modifier_discussion(d_id):
+    """
+    Mise à jour d’une discussion existante.
+
+    Permet de modifier :
+    - le titre,
+    - le contenu,
+    - les groupes associés (via reconstruction d’ensemble),
+    - la priorité métier.
+
+    Logique :
+    - conversion des groupes en `set` pour faciliter le diff côté DB,
+    - normalisation de la priorité (bool → int),
+    - délégation de la logique de mise à jour à la couche BDD.
+
+    Paramètres :
+        d_id (int) : identifiant de la discussion.
+
+    Retour :
+        Redirection vers la vue détaillée mise à jour.
+
+    Redirection :
+        - vers login si non authentifié.
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     title       = request.form['discussionTitle']
@@ -272,14 +433,58 @@ def modifier_discussion(d_id):
 
 @app.route("/clotre_discussion/<int:d_id>/<action>", methods=["POST"])
 def clotre_discussion(d_id, action):
+    """
+    Transition d’état d’une discussion.
+
+    Permet de modifier dynamiquement le statut d’une discussion
+    (ex : active → closed), impactant implicitement le comportement
+    des commentaires associés.
+
+    Paramètres :
+        d_id (int)    : identifiant de la discussion.
+        action (str)  : nouvel état cible.
+
+    Effet :
+        - mise à jour persistée en base.
+
+    Retour :
+        Redirection vers la page d’accueil.
+
+    Remarque :
+        Aucune validation stricte de `action` n’est faite ici
+        (dépendance implicite à la couche BDD).
+    """
     update_discussion_state(d_id, action)
     return redirect(url_for('home'))
 
 
 @app.route("/cloner_discussion/<int:d_id>", methods=["POST"])
 def cloner_discussion(d_id):
+    """
+    Duplication logique d’une discussion.
+
+    Crée une nouvelle discussion basée sur une existante,
+    en copiant uniquement :
+    - le contenu,
+    - les métadonnées principales.
+
+    Les commentaires :
+        Ne sont PAS dupliqués en base.
+        Ils sont récupérés dynamiquement via `main()` (liaison logique).
+
+    Processus :
+    - récupération de la discussion source,
+    - insertion avec référence `cloned_from`,
+    - association aux nouveaux groupes sélectionnés.
+
+    Paramètres :
+        d_id (int) : discussion source.
+
+    Retour :
+        Redirection vers la nouvelle discussion clonée.
+    """
     groups = request.form.getlist('groupes')
-    id_client, title, content, type_discussion, etat, priorite, cloned_id = select_discussion_by_id(d_id)
+    id_client, title, content, type_discussion, etat, cloned_id, priorite = select_discussion_by_id(d_id)
     insert_disscussions_table(id_c=id_client, title=title, content=content,
                                type=type_discussion, priority=priorite, cloned_from=d_id)
     discussion_id = select_newest_discussion_id(id_client)[0]
@@ -290,6 +495,21 @@ def cloner_discussion(d_id):
 
 @app.route("/delete_discussion/<int:d_id>", methods=["POST"])
 def delete_discussion(d_id):
+    """
+    Suppression d’une discussion.
+
+    Supprime définitivement une discussion identifiée,
+    sans logique intermédiaire (hard delete).
+
+    Paramètres :
+        d_id (int) : identifiant de la discussion.
+
+    Effet :
+        - suppression en base via couche BDD.
+
+    Retour :
+        Redirection vers la page d’accueil.
+    """
     delete_discussion_from_id(d_id)
     return redirect(url_for('home'))
 
@@ -298,6 +518,31 @@ def delete_discussion(d_id):
 
 @app.route("/like_discussion/<int:discussion_id>/<action>")
 def like_discussion(discussion_id, action):
+    """
+    Gestion des interactions sociales sur une discussion.
+
+    Permet à un utilisateur d’exprimer ou retirer une opinion :
+    - like (+1),
+    - unlike (-1).
+
+    Logique :
+    - traduction de l’action en valeur numérique,
+    - mise à jour idempotente via la couche BDD,
+    - gestion de deux contextes de retour :
+        * redirection (si homepage),
+        * JSON (mise à jour dynamique UI).
+
+    Paramètres :
+        discussion_id (int) : discussion cible.
+        action (str)        : "like" ou "unlike".
+
+    Retour :
+        - JSON contenant les nouveaux scores,
+        - ou redirection selon le contexte.
+
+    Redirection :
+        - vers login si non authentifié.
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     id_client = session['id_client']
@@ -314,6 +559,31 @@ def like_discussion(discussion_id, action):
 
 @app.route("/like_comment/<int:discussion_id>/<int:comment_id>/<action>")
 def like_comment(discussion_id, comment_id, action):
+    """
+    Params:
+        discussion_id (int): Contexte discussion.
+        comment_id (int): Commentaire ciblé.
+        action (str): 'like' ou 'unlike'.
+
+    Role:
+        Gère les votes sur un commentaire et met à jour les scores.
+
+        Fonctionnement:
+            - update_like sur le commentaire
+            - recalcul:
+                - likes/dislikes (get_comment_likes)
+                - score proposition (get_score_proposition)
+
+        Spécificité:
+            - Si réponse à une proposition:
+                → recalcule aussi le score de la proposition parente
+
+        Retour:
+            JSON avec scores mis à jour
+
+        Utilisé dans:
+            Route "/like_comment/<discussion_id>/<comment_id>/<action>"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     id_client = session['id_client']
@@ -348,6 +618,30 @@ def like_comment(discussion_id, comment_id, action):
 
 @app.route("/show_all_replies/<int:discussion_id>/<int:comment_id>")
 def show_all_replies(discussion_id, comment_id):
+    """
+    Params:
+        discussion_id (int): Identifiant de la discussion courante.
+        comment_id (int): Identifiant du commentaire parent.
+
+    Role:
+        Récupère et retourne toutes les réponses directes d’un commentaire
+        sous forme JSON, enrichies avec des métadonnées calculées.
+
+        Traitements:
+            - Récupération des réponses (select_comment_replies)
+            - Calcul des likes/dislikes (get_comment_likes)
+            - Détermination de l’opinion utilisateur (get_user_opinion)
+            - Résolution du username (get_user_by_id)
+            - Calcul du nombre de sous-réponses
+            - Gestion de l’état (fermé si discussion différente)
+
+        Spécificité:
+            - Tri final par score simple (likes - dislikes)
+
+        Utilisé dans:
+            Route "/show_all_replies/<discussion_id>/<comment_id>"
+            → endpoint AJAX pour chargement dynamique des réponses
+    """
     discussion_type       = select_discussion_by_id(discussion_id)[3]
     comment_discussion_id = select_comment_by_id(comment_id)[2]
     result = []
@@ -386,6 +680,27 @@ def show_all_replies(discussion_id, comment_id):
 
 @app.route('/groups', methods=['GET', 'POST'])
 def groups_page():
+    """
+    Role:
+        Page principale de gestion des groupes.
+
+        Fonctionnalités:
+            - Création de groupe (POST)
+                → validation nom
+                → vérification unicité (select_groupe_from_name)
+                → insertion (insert_groups_table)
+            - Affichage:
+                → groupes du client (select_client_groupes)
+                → tous les groupes (select_all_groupes)
+                → tous les membres (select_all_clients)
+
+        Gestion:
+            - Messages d’erreur utilisateur (msg)
+
+        Utilisé dans:
+            Route "/groups"
+    """
+
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     msg = ''
@@ -414,6 +729,19 @@ def groups_page():
 
 @app.route('/allgroups', methods=['POST', 'GET'])
 def take_all_groupes():
+    """
+    Role:
+        Retourne la liste brute de tous les groupes.
+
+        Fonctionnement:
+            - select_all_groupes
+            - format minimal [id, nom]
+
+        ⚠️ Retour non JSON (liste Python brute)
+
+        Utilisé dans:
+            Route "/allgroups"
+    """
     all_groups = []
     res=select_all_groupes()
     for row in res :
@@ -422,6 +750,22 @@ def take_all_groupes():
 
 @app.route('/api/group_members/<int:group_id>')
 def api_group_members(group_id):
+    """
+    Params:
+        group_id (int): Identifiant du groupe.
+
+    Role:
+        Retourne les membres d’un groupe (hors utilisateur courant) en JSON.
+
+        Fonctionnement:
+            - select_member_by_id
+            - récupération infos utilisateur (get_user_by_id)
+            - exclusion du user courant
+
+        Utilisé dans:
+            Route "/api/group_members/<group_id>"
+            → endpoint AJAX
+    """
     if not session.get('logged_in'):
         return jsonify([])
     members = []
@@ -434,6 +778,20 @@ def api_group_members(group_id):
 
 @app.route('/api/group_non_members/<int:group_id>')
 def api_group_non_members(group_id):
+    """
+    Params:
+        group_id (int): Identifiant du groupe.
+
+    Role:
+        Retourne les utilisateurs qui ne sont pas membres du groupe.
+
+        Fonctionnement:
+            - select_clients_not_in_group
+            - transformation en JSON
+
+        Utilisé dans:
+            Route "/api/group_non_members/<group_id>"
+    """
     if not session.get('logged_in'):
         return jsonify([])
     return jsonify([
@@ -444,9 +802,30 @@ def api_group_non_members(group_id):
 
 @app.route('/changemember/<int:group_id>', methods=['POST'])
 def change_member_group(group_id):
+    """
+    Params:
+        group_id (int): Identifiant du groupe.
+
+    Role:
+        Synchronise complètement les membres d’un groupe
+        avec la liste envoyée par le formulaire.
+
+        Fonctionnement:
+            - Récupère nouveaux membres (POST)
+            - Compare avec anciens (select_member_by_id)
+            - Calcule:
+                → suppressions (delete_member)
+                → ajouts (insert_group_members)
+
+        Utilisé dans:
+            Route "/changemember/<group_id>"
+    """
     if not(session.get('logged_in')):
         return redirect(url_for('login_page'))
     new_members= set(request.form.getlist('memberList'))
+    new_members.add(str(session['id_client']))
+    if new_members == None:
+        new_members = set()
 
     old_members=set()
     for m in select_member_by_id(group_id):
@@ -465,6 +844,23 @@ def change_member_group(group_id):
 
 @app.route('/addgroupe/<int:group_id>', methods=['POST'])
 def add_member_to_group(group_id):
+    """
+    Params:
+        group_id (int): Identifiant du groupe.
+
+    Role:
+        Ajoute des membres à un groupe sans supprimer les existants.
+
+        Fonctionnement:
+            - Vérifie non-existence (select_client_groupes_by_id)
+            - Insert uniquement si absent
+
+        Redirection:
+            - dépend de "origin" (groups / groupinfo)
+
+        Utilisé dans:
+            Route "/addgroupe/<group_id>"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     origin = request.form.get('origin', 'groupinfo')
@@ -478,6 +874,23 @@ def add_member_to_group(group_id):
 
 @app.route('/deletemember/<int:group_id>', methods=['POST'])
 def delete_member_from_group(group_id):
+    """
+    Params:
+        group_id (int): Identifiant du groupe.
+
+    Role:
+        Supprime des membres d’un groupe.
+
+        Fonctionnement:
+            - Vérifie existence (sécurité)
+            - Supprime via delete_member
+
+        Redirection:
+            - dépend de "origin"
+
+        Utilisé dans:
+            Route "/deletemember/<group_id>"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     origin = request.form.get('origin', 'groupinfo')
@@ -491,6 +904,21 @@ def delete_member_from_group(group_id):
 
 @app.route('/group_info/<int:g_id>', methods=['POST', 'GET'])
 def group_info(g_id):
+    """
+    Params:
+        g_id (int): Identifiant du groupe.
+
+    Role:
+        Affiche la page détaillée d’un groupe.
+
+        Contenu:
+            - membres actuels (select_member_by_id + get_user_by_id)
+            - infos groupe (select_groupe_from_id)
+            - utilisateurs non membres (select_clients_not_in_group)
+
+        Utilisé dans:
+            Route "/group_info/<g_id>"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     members = []
@@ -513,6 +941,20 @@ def group_info(g_id):
 
 @app.route('/updategroup/<int:group_id>', methods=['POST'])
 def change_group_name(group_id):
+    """
+    Params:
+        group_id (int): Identifiant du groupe.
+
+    Role:
+        Met à jour le nom d’un groupe.
+
+        Fonctionnement:
+            - update_group
+            - redirection conditionnelle (origin)
+
+        Utilisé dans:
+            Route "/updategroup/<group_id>"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     origin = request.form.get('origin', 'groupinfo')
@@ -524,6 +966,23 @@ def change_group_name(group_id):
 
 @app.route('/deletegroup/<int:group_id>', methods=['POST'])
 def delete_group_from_db(group_id):
+    """
+    Params:
+        group_id (int): Identifiant du groupe.
+
+    Role:
+        Supprime complètement un groupe.
+
+        Étapes:
+            - suppression des membres (delete_member)
+            - suppression des liens discussions (delete_discussiongroups)
+            - suppression du groupe (delete_group)
+
+        ⚠️ Pas de gestion de contraintes SQL en cascade → manuel
+
+        Utilisé dans:
+            Route "/deletegroup/<group_id>"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     for member in select_member_by_id(group_id):
@@ -534,6 +993,21 @@ def delete_group_from_db(group_id):
 
 @app.route('/allgroupmembers/<int:group_id>', methods=['GET'])
 def get_all_members_groups(group_id):
+    """
+    Params:
+        group_id (int): Identifiant du groupe.
+
+    Role:
+        Retourne tous les membres d’un groupe avec leurs rôles.
+
+        Fonctionnement:
+            - select_member_by_id
+            - enrichissement via get_user_by_id
+            - retour JSON
+
+        Utilisé dans:
+            Route "/allgroupmembers/<group_id>"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     result = select_member_by_id(group_id)
@@ -553,10 +1027,20 @@ def get_all_members_groups(group_id):
 
 @app.route('/membres', methods=["GET"])
 def membres():
+    """
+    Role:
+        Affiche la page de gestion des membres.
+
+        Contenu:
+            - liste complète des utilisateurs (select_all_clients)
+            - informations session
+
+        Utilisé dans:
+            Route "/membres"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
-    print(session['id_client'])
-    print(select_all_clients()[0]['id_client'])
+    
     return render_template(
         "membres.html",
         first_name=session['first_name'], last_name=session['last_name'],
@@ -568,6 +1052,17 @@ def membres():
 
 @app.route('/allmembers', methods=['GET'])
 def get_all_members():
+    """
+    Role:
+        Retourne tous les membres sous forme JSON.
+
+        Fonctionnement:
+            - select_all_clients
+            - transformation en structure API
+
+        Utilisé dans:
+            Route "/allmembers"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     result = select_all_clients()
@@ -583,8 +1078,32 @@ def get_all_members():
 
 @app.route('/deleteclient/<int:id_c>', methods=['POST'])
 def delete_client_from_db(id_c):
+    """
+    Params:
+        id_c (int): Identifiant du client.
+
+    Role:
+        Supprime un utilisateur (réservé au CEO).
+
+        Sécurité:
+            - vérifie rôle CEO
+            - empêche auto-suppression
+
+        Étapes:
+            - suppression des appartenances groupe
+            - suppression du client (delete_client)
+
+        Utilisé dans:
+            Route "/deleteclient/<id_c>"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
+    if session["role"] != "CEO":
+        flash("Tu n'es pas un CEO! petit malin")  
+        return redirect(url_for('membres'))
+    if id_c == session["id_client"]:
+        flash("tu ne peux pas te virer! tu ne veux plus etre le ceo??")  
+        return redirect(url_for('membres'))
 
     for id_g in select_client_groupes(id_c):
         delete_member(id_g[0],id_c)
@@ -594,33 +1113,73 @@ def delete_client_from_db(id_c):
 
     
 
-@app.route('/promoteclient/<int:id_c>')
-
+@app.route('/promoteclient/<int:id_c>', methods=['POST'])
 def promote_client(id_c):
+    """
+    Params:
+        id_c (int): Identifiant du client.
+
+    Role:
+        Promeut un utilisateur (Employe → Manager → CEO).
+
+        Contraintes:
+            - réservé au CEO
+            - interdit sur soi-même
+
+        Fonctionnement:
+            - récupération rôle (select_role_client)
+            - update_role
+            - feedback utilisateur (flash)
+
+        Utilisé dans:
+            Route "/promoteclient/<id_c>"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
-    
+    if session["role"] != "CEO":
+        flash("Tu n'es pas un CEO! petit malin")  
+        return redirect(url_for('membres'))
+    if id_c == session["id_client"]:
+        flash("tu ne peux pas te retrograder! tu ne veux plus etre le ceo??")  
+        return redirect(url_for('membres'))
     role=select_role_client(id_c)[0]
     username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
     if(role == "Manager"):
-        newrole="CEO"
         update_role("CEO",id_c)
         flash(username+" a été promu en tant que CEO")
     if(role == "Employe"):
-        newrole="Manager"
         update_role("Manager",id_c)
-        flash(username+" a été promu en tant que Manager")
-    
-    if(session['id_client']==id_c):
-        session['role']=newrole
-        
+        flash(username+" a été promu en tant que Manager")     
     return redirect(url_for('membres'))
 
-@app.route('/demoteclient/<int:id_c>')
+@app.route('/demoteclient/<int:id_c>', methods=['POST'])
 
 def demote_client(id_c):
+    """
+    Params:
+        id_c (int): Identifiant du client.
+
+    Role:
+        Rétrograde un utilisateur (CEO → Manager → Employe).
+
+        Contraintes:
+            - réservé au CEO
+            - interdit sur soi-même
+
+        Spécificité:
+            - met à jour la session si auto-modification
+
+        Utilisé dans:
+            Route "/demoteclient/<id_c>"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
+    if session["role"] != "CEO":
+        flash("Tu n'es pas un CEO! petit malin")  
+        return redirect(url_for('membres'))
+    if id_c == session["id_client"]:
+        flash("tu ne peux pas te retrograder! tu ne veux plus etre le ceo??")  
+        return redirect(url_for('membres'))
     
     role=select_role_client(id_c)[0]
     username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
@@ -641,6 +1200,24 @@ def demote_client(id_c):
 
 @app.route('/profile/<int:id_c>')
 def profile(id_c):
+    """
+    Params:
+        id_c (int): Identifiant du profil.
+
+    Role:
+        Affiche le profil d’un utilisateur.
+
+        Contenu:
+            - informations utilisateur (get_user_by_id)
+            - email (get_email)
+            - groupes (select_client_groupes)
+
+        Spécificité:
+            - distingue profil personnel vs autre utilisateur
+
+        Utilisé dans:
+            Route "/profile/<id_c>"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     my_profile = (id_c == session["id_client"])
@@ -658,6 +1235,21 @@ def profile(id_c):
 
 @app.route('/alldiscussions', methods=["GET"])
 def alldiscussions():
+    """
+    Role:
+        Retourne toutes les discussions accessibles à l’utilisateur en JSON.
+
+        Fonctionnement:
+            - select_all_group_discussions
+            - enrichissement:
+                → likes/dislikes
+                → groupes
+                → auteur
+                → métadonnées complètes
+
+        Utilisé dans:
+            Route "/alldiscussions"
+    """
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
     discussions = []
@@ -688,16 +1280,49 @@ def alldiscussions():
 
 @app.route('/login_page', methods=['GET'])
 def login_page():
+    """
+    Role:
+        Affiche la page de connexion.
+
+        Utilisé dans:
+            Route "/login_page"
+    """
     return render_template("login.html")
 
 
 @app.route('/registry_page', methods=['GET'])
 def registry_page():
-    return render_template("registry.html")
+    """
+    Role:
+        Affiche la page d’inscription.
+
+        Contenu:
+            - liste des groupes disponibles (select_all_groupes)
+
+        Utilisé dans:
+            Route "/registry_page"
+    """
+    all_groups = [[row[0], row[1]] for row in select_all_groupes()]
+    return render_template("registry.html", all_groups=all_groups)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    Role:
+        Authentifie un utilisateur.
+
+        Fonctionnement:
+            - validation champs
+            - récupération user (select_client_infos_from_email)
+            - vérification mot de passe
+            - initialisation session
+
+        ⚠️ Mot de passe en clair → sécurité faible
+
+        Utilisé dans:
+            Route "/login"
+    """
     if request.method == "GET":
         return redirect(url_for('login_page'))
     email    = request.form["email"]
@@ -715,6 +1340,21 @@ def login():
 
 @app.route('/registry', methods=['GET', 'POST'])
 def registry():
+    """
+    Role:
+        Crée un nouvel utilisateur.
+
+        Fonctionnement:
+            - vérifie existence (check_if_exists_client)
+            - insertion (insert_clients_table)
+            - ajout aux groupes sélectionnés
+
+        Spécificité:
+            - récupération id via select_client_infos_from_email
+
+        Utilisé dans:
+            Route "/registry"
+    """
     if request.method == "GET":
         return redirect(url_for('registry_page'))
     email      = request.form["email"]
@@ -724,75 +1364,56 @@ def registry():
     company    = request.form["company-name"]
     role       = request.form["role"]
     if check_if_exists_client(email, company) is not None:
-        return render_template('registry.html', message='Ce compte existe deja')
+        all_groups = [[row[0], row[1]] for row in select_all_groupes()]
+        return render_template('registry.html', message='Ce compte existe deja', all_groups=all_groups)
     insert_clients_table(email, first_name, last_name, password, company, role)
+    # Ajouter l'utilisateur aux groupes sélectionnés
+    groupes = request.form.getlist('groupes')
+    if groupes:
+        new_user = select_client_infos_from_email(email)
+        if new_user:
+            new_user_id = new_user[1]  # index 1 = id_client
+            for groupe_id in groupes:
+                if len(select_client_groupes_by_id(groupe_id, new_user_id)) == 0:
+                    insert_group_members(groupe_id, new_user_id)
     if not session.get('logged_in'):
         return redirect(url_for('login_page'))
-    
+
     return redirect(url_for('membres'))
 
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
+    """
+    Role:
+        Déconnecte l’utilisateur.
+
+        Fonctionnement:
+            - reset session
+
+        Utilisé dans:
+            Route "/logout"
+    """
     session['logged_in'] = False
     return redirect(url_for("login_page"))
 
-
-# ─── Utilitaires DB (dev) ─────────────────────────────────────────────────────
-
-@app.route("/create_client_table")
-def create_client():
-    create_client_table()
-    return "created clients table succesfully!"
-
-
-@app.route("/create_discussions_table")
-def create_discussions():
-    create_discussions_table()
-    return "created discussions table succesfully!"
-
-
-@app.route("/create_comments_table")
-def create_comments():
-    create_comments_table()
-    return "created comments table succesfully!"
-
-
-@app.route("/create_likes_table")
-def create_likes():
-    create_likes_table()
-    return "created likes table succesfully!"
-
-
-@app.route("/insert_client_table")
-def insert_client():
-    insert_clients_table("test@test", 'test', 'test', 'test', 'test', 'test')
-    return "inserted clients table succesfully!"
-
-
-@app.route("/insert_discussions_table")
-def insert_discussions():
-    insert_disscussions_table(1, "Jason", "Jason son nom est jason")
-    return "inserted clients table succesfully!"
-
-
-@app.route("/insert_comments_table")
-def insert_comments():
-    insert_comments_table(1, 1, "Tamer is the vire!!!")
-    return "inserted comments table succesfully!"
-
-
-@app.route("/insert_likes_table")
-def insert_likes():
-    insert_likes_table(1, "comment", 1, 1)
-    return "inserted likes table succesfully!"
 
 
 # ─── CLI ──────────────────────────────────────────────────────────────────────
 
 @app.cli.command("db:reset")  # usage : flask db:reset
 def reset_database():
-    "resets the database tables"
+    """
+    Role:
+        Commande CLI pour réinitialiser entièrement la base de données.
+
+        Fonctionnement:
+            - drop + recreate tables (reset_all_db)
+            - insertion utilisateur test (CEO)
+
+        Utilisation:
+            flask db:reset
+    """
     print("Dropping Database")
     reset_all_db()
     insert_clients_table("test@test", 'test', 'test', 'test', 'test', 'CEO')

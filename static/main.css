@@ -280,6 +280,39 @@ main {
 .score-neg    { background: rgba(239,68,68,0.15);  border-color: rgba(239,68,68,0.38);  color: #f87171; }
 .score-neutre { background: rgba(255,255,255,0.04); color: var(--muted); }
 
+/* ─── Switch commentaire / proposition ─── */
+
+.comment-switch {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+}
+.switch-btn {
+  padding: 7px 18px;
+  background: rgba(255,255,255,0.03);
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.switch-btn + .switch-btn {
+  border-left: 1px solid var(--border);
+}
+.switch-active {
+  background: rgba(99,102,241,0.25);
+  color: var(--text);
+  font-weight: 600;
+}
+.switch-btn:hover:not(.switch-active) {
+  background: rgba(255,255,255,0.07);
+  color: var(--text);
+}
+
 /* ─── Réponses indentées ─── */
 
 .commentReplies {

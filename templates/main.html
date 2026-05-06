@@ -16,7 +16,9 @@
 
     <div class="topbar-left">
       <a  class="icon-btn" href="{{url_for('home')}}">Home</a>
-      <div id="logo-slot" class="logo-slot" aria-label="Emplacement logo">LOGO</div>
+      <div id="logo-slot" class="logo-slot" aria-label="Logo Les Débatteurs">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Les Débatteurs" width="32" height="32">
+      </div>
 
       <div class="company">
         <div id="companyName" class="company-name">{{company}}</div>
@@ -102,20 +104,17 @@
 
         <div class="commentInput">
           {% if discussion_type == 'ouvert' %}
-            <form class="commentForm" method="post" action='{{ url_for("commentaire", discussion_id=discussion_id, reply=0) }}'>
-              <input type="hidden" name="type" value="proposition">
-              <label>Proposer une réponse</label>
-              <textarea class="form-control" name="commentaire" placeholder="Votre proposition..." required></textarea>
-              <input class="icon-btn submit-button" type="submit" value="Proposer">
+            <form class="commentForm" method="post" action='{{ url_for("commentaire", discussion_id=discussion_id, reply=0) }}' id="mainCommentForm">
+              <input type="hidden" name="type" id="commentType" value="proposition">
+              <div class="comment-switch">
+                <button type="button" class="switch-btn switch-active" id="btnProposition" onclick="switchCommentType('proposition')">💡 Proposition</button>
+                <button type="button" class="switch-btn" id="btnCommentaire" onclick="switchCommentType('normal')">💬 Commentaire</button>
+              </div>
+              <label id="commentLabel">Proposer une réponse</label>
+              <textarea class="form-control" name="commentaire" id="commentTextarea" placeholder="Votre proposition..." required></textarea>
+              <input class="icon-btn submit-button" type="submit" id="commentSubmitBtn" value="Proposer">
             </form>
-            
-            <form class="commentForm" method="post" action='{{ url_for("commentaire", discussion_id=discussion_id, reply=0) }}'>
-              <input type="hidden" name="type" value="normal">
-              <label>Commenter</label>
-              <textarea class="form-control" name="commentaire" placeholder="Votre commentaire..." required></textarea>
-              <input class="icon-btn submit-button" type="submit" value="Commenter">
-            </form>
-          
+
           {% else %}
             <form class="commentForm" method="post" action='{{ url_for("commentaire", discussion_id=discussion_id, reply=0) }}'>
               <label for="comment_input">Commentaires</label>
@@ -368,12 +367,26 @@
       const score = document.getElementById(`score-count-${comment_id}`)
       if(score != null){
         score.innerText = data.score;
+        const scoreSpan = score.closest('.score-proposition');
+        if (scoreSpan) {
+          scoreSpan.classList.remove('score-pos', 'score-neg', 'score-neutre');
+          if (data.score > 0) scoreSpan.classList.add('score-pos');
+          else if (data.score < 0) scoreSpan.classList.add('score-neg');
+          else scoreSpan.classList.add('score-neutre');
+        }
       }
       // Mettre à jour le score de la proposition parente si c'est une réponse
       if(data.proposition_id != null){
         const propScore = document.getElementById(`score-count-${data.proposition_id}`);
         if(propScore != null){
           propScore.innerText = data.proposition_score;
+          const propScoreSpan = propScore.closest('.score-proposition');
+          if (propScoreSpan) {
+            propScoreSpan.classList.remove('score-pos', 'score-neg', 'score-neutre');
+            if (data.proposition_score > 0) propScoreSpan.classList.add('score-pos');
+            else if (data.proposition_score < 0) propScoreSpan.classList.add('score-neg');
+            else propScoreSpan.classList.add('score-neutre');
+          }
         }
       }
       event.target.disabled = false;
@@ -417,6 +430,25 @@
           form.style.display = "block";
       } else {
           form.style.display = "none";
+      }
+    }
+
+    function switchCommentType(type) {
+      document.getElementById('commentType').value = type;
+      const btnProp = document.getElementById('btnProposition');
+      const btnComm = document.getElementById('btnCommentaire');
+      if (type === 'proposition') {
+        btnProp.classList.add('switch-active');
+        btnComm.classList.remove('switch-active');
+        document.getElementById('commentLabel').textContent = 'Proposer une réponse';
+        document.getElementById('commentTextarea').placeholder = 'Votre proposition...';
+        document.getElementById('commentSubmitBtn').value = 'Proposer';
+      } else {
+        btnComm.classList.add('switch-active');
+        btnProp.classList.remove('switch-active');
+        document.getElementById('commentLabel').textContent = 'Commenter';
+        document.getElementById('commentTextarea').placeholder = 'Votre commentaire...';
+        document.getElementById('commentSubmitBtn').value = 'Commenter';
       }
     }
 
