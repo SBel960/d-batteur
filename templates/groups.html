@@ -138,7 +138,7 @@
               <button onclick="openAddMember({{ group['id'] }}, '{{ group['name'] }}')">Ajouter un membre</button>
               <button onclick="openRemoveMember({{ group['id'] }}, '{{ group['name'] }}')">Retirer un membre</button>
               <button onclick="openRename({{ group['id'] }}, '{{ group['name'] }}')">Renommer</button>
-              {% if role >= 3 %}<button class="danger" onclick="openDelete({{ group['id'] }}, '{{ group['name'] }}')">Supprimer</button>{%endif%}
+              <button class="danger" onclick="openDelete({{ group['id'] }}, '{{ group['name'] }}')">Supprimer</button>
             </div>
           </div>
           {% endif %}

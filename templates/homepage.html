@@ -102,7 +102,9 @@
 
   <!-- CONTENU -->
   <main class="container">
+      <div class="notification" id="notif" style="margin-left:15%">{% with message = get_flashed_messages(with_categories=true) %}{% if message %}{{message[0][1]}}{% endif %}{% endwith %}</div>
     <section class="section">
+      
       <div class="section-head">
         <h2>Discussions</h2>
         <div id="countInfo" class="muted"></div>
@@ -110,6 +112,7 @@
 
       <div id="discussionsList" class="list"></div>
         {% for d in discussions %}
+          {% if role >= 2 %}
             <dialog id="editDiscussion_{{d[2]}}">
               <button id="closePage" commandfor="editDiscussion_{{d[2]}}" command="request-close">
                 x
@@ -193,7 +196,7 @@
                <button type="button" class="postButton" commandfor="deleteDiscussion_{{d[2]}}" command="request-close">Non</button>
               </form>
             </dialog>
-
+            {%endif%}
           {% endfor %}
       </div>
     </section>

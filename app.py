@@ -145,7 +145,17 @@ def main(discussion_id):
 
     id_poster, title, content, discussion_type, discussion_state, id_clone, priority = select_discussion_by_id(discussion_id)
     cloned = id_clone is not None
+    discussion_groups = [g[0] for g in select_discussion_groups(discussion_id)]
+    user_groups = [g[0] for g in select_client_groupes(session['id_client'])]
 
+    in_groupe = False
+    for id_g in discussion_groups:
+        if id_g in user_groups:
+            in_groupe = True
+            break
+    if(in_groupe == False):
+        flash("Tu n'appartient pas au groupes de cette discussion!")
+        return redirect(url_for("home"))
     comments        = []
     cloned_comments = []
 
