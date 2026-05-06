@@ -48,7 +48,8 @@
         <div id="userGroup" class="user-group">Role : {{role_name}}</div>
       </div>
       <a class="logout" href="{{url_for('logout')}}"> Logout </a>
-    {% if role >= 2 %}
+      {% set member_ids = members | map(attribute='id') | list %}
+    {% if role >= 3 or (role >= 2 and id_client in member_ids) %}
     <div class="dropdown" id="groupManagerDropdown">
       <button class="icon-btn" onclick="toggleGroupMenu(event)">Gerer</button>
       <div class="dropdown-content" id="groupMenuContent">
@@ -88,12 +89,14 @@
       </div>
         <form class="ChangeGroupForm" method="post" action="{{url_for('change_member_group', group_id=group_client['id']) }}">
           
-          <div class="DialogHead"> Membres du groupe </div>
+          <div class="DialogHead">Supprimer un membres du groupe </div>
           <div class="memberList">
            
             {% for membre in members %}
-                <input type=checkbox name="memberList" id="memberList_{{membre['id']}}" value="{{membre['id']}} " checked>
-                <label for="memberList_{{membre['id']}}" class="nameSelect" id="inGroup"> {{membre['name']}} {{membre['last_name']}} </label>
+              {%if membre['id'] != id_client %}
+                  <input type=checkbox name="memberList" id="memberList_{{membre['id']}}" value="{{membre['id']}} " checked>
+                  <label for="memberList_{{membre['id']}}" class="nameSelect" id="inGroup"> {{membre['name']}} {{membre['last_name']}} </label>
+              {%endif%}
             {%endfor%}
           </div>
           <div class="DialogHead"> Autres membres </div>
