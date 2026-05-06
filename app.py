@@ -145,6 +145,8 @@ def main(discussion_id):
 
     id_poster, title, content, discussion_type, discussion_state, id_clone, priority = select_discussion_by_id(discussion_id)
     cloned = id_clone is not None
+
+    ###SECTION: verifie que l'utilisateur a droit a acceder a la discussion
     discussion_groups = [g[0] for g in select_discussion_groups(discussion_id)]
     user_groups = [g[0] for g in select_client_groupes(session['id_client'])]
 
@@ -156,6 +158,9 @@ def main(discussion_id):
     if(in_groupe == False):
         flash("Tu n'appartient pas au groupes de cette discussion!")
         return redirect(url_for("home"))
+    
+    ###SECTION: traitement + render template
+
     comments        = []
     cloned_comments = []
 
