@@ -141,6 +141,22 @@ def create_discussion_groups_table():
 
 
 def insert_clients_table(email, name, last_name, password, company, role):
+    """
+    params:
+        email (str): email unique du client
+        name (str): prénom
+        last_name (str): nom
+        password (str): mot de passe
+        company (str): entreprise associée
+        role (str): rôle du client (CEO, Manager, Employé)
+
+    role:
+        Insère un nouveau client dans la table Client.
+
+    utilisation:
+        - utilisé dans app.py → fonction registry()
+        - utilisé dans app.py → commande CLI reset_database()
+    """
     data = get_db()
     sql = data.cursor()
     command = """INSERT INTO Client(email, name, last_name, password, company, role)
@@ -152,6 +168,23 @@ def insert_clients_table(email, name, last_name, password, company, role):
 
 
 def insert_disscussions_table(id_c, title, content, type, priority, cloned_from=None):
+    """
+    params:
+        id_c (int): id du client créateur
+        title (str): titre de la discussion
+        content (str): contenu
+        type (str): type de discussion (ouvert / ferme)
+        priority (int): priorité (1 ou 2)
+        cloned_from (int | None): id de la discussion clonée (optionnel)
+
+    role:
+        Insère une nouvelle discussion avec date et heure actuelles.
+
+    utilisation:
+        - utilisé dans app.py → fonction ajouter_discussion()
+        - utilisé dans app.py → fonction cloner_discussion()
+        - utilisé dans app.py → route de test insert_discussions()
+    """
     data = get_db()
     sql = data.cursor()
     date_creation = date.today()
@@ -167,6 +200,22 @@ def insert_disscussions_table(id_c, title, content, type, priority, cloned_from=
 
 
 def insert_comments_table(id_c, id_d, content, type, avis, id_reply):
+    """
+    params:
+        id_c (int): id du client
+        id_d (int): id de la discussion
+        content (str): contenu du commentaire
+        type (str): type (normal / proposition)
+        avis (str | None): pour / contre / neutre
+        id_reply (int): id du commentaire parent (0 si commentaire principal)
+
+    role:
+        Insère un commentaire ou une réponse dans la table Comments.
+
+    utilisation:
+        - utilisé dans app.py → fonction commentaire()
+        - utilisé dans app.py → route de test insert_comments()
+    """
     data = get_db()
     sql = data.cursor()
     command = """INSERT INTO Comments(id_c, id_d, content, type, avis, id_reply)
@@ -176,6 +225,20 @@ def insert_comments_table(id_c, id_d, content, type, avis, id_reply):
     data.commit()
 
 def insert_likes_table(id_c, target, id_target, like):
+    """
+    params:
+        id_c (int): id du client
+        target (str): 'discussion' ou 'comment'
+        id_target (int): id de la cible
+        like (int): 1 (like) ou -1 (dislike)
+
+    role:
+        Insère un vote (like/dislike) dans la table Likes.
+
+    utilisation:
+        - utilisé dans bdd.py → fonction update_like()
+        - utilisé dans app.py → route de test insert_likes()
+    """
     data = get_db()
     sql = data.cursor()
     command = """INSERT INTO Likes(id_c, target, id_target, like)
@@ -187,6 +250,16 @@ def insert_likes_table(id_c, target, id_target, like):
 
 
 def insert_groups_table(name):
+    """
+    params:
+        name (str): nom du groupe
+
+    role:
+        Crée un nouveau groupe dans la table Groups.
+
+    utilisation:
+        - utilisé dans app.py → fonction groups_page()
+    """
     data = get_db()
     sql = data.cursor()
     command = """INSERT INTO Groups(name)
@@ -198,6 +271,19 @@ def insert_groups_table(name):
 
 
 def insert_group_members(id_group, id_client):
+    """
+    params:
+        id_group (int): id du groupe
+        id_client (int): id du client à ajouter
+
+    role:
+        Ajoute un utilisateur à un groupe.
+
+    utilisation:
+        - utilisé dans app.py → fonction change_member_group()
+        - utilisé dans app.py → fonction add_member_to_group()
+        - utilisé dans app.py → fonction registry() (ajout aux groupes lors de l'inscription)
+    """
     data = get_db()
     sql = data.cursor()
     command = """INSERT INTO GroupMembers(id_g, id_c)
@@ -209,6 +295,21 @@ def insert_group_members(id_group, id_client):
 
 
 def insert_discussion_groups(id_group, id_discussion):
+    """
+    params:
+        id_group (int): id du groupe
+        id_discussion (int): id de la discussion
+
+    role:
+        Associe une discussion à un groupe.
+
+    utilisation:
+        - utilisé dans app.py → fonction ajouter_discussion()
+        - utilisé dans app.py → fonction modifier_discussion() (via update_discussion)
+        - utilisé dans app.py → fonction cloner_discussion()
+        - utilisé dans bdd.py → fonction update_discussion()
+    """
+
     data = get_db()
     sql = data.cursor()
     command = """INSERT INTO DiscussionGroups(id_g, id_d)
@@ -219,6 +320,13 @@ def insert_discussion_groups(id_group, id_discussion):
 #------------------------------- commandes
 
 def reset_all_db():
+    """
+    role:
+        Supprime toutes les tables puis les recrée complètement (reset total de la base).
+
+    utilisation:
+        - utilisé dans app.py → commande CLI reset_database()
+    """
     data = get_db()
     sql = data.cursor()
     tables = ["Client", "Discussions", "Comments", "Likes", "Groups", "GroupMembers", "DiscussionGroups"]
@@ -239,6 +347,13 @@ def reset_all_db():
 
 #--------------------------------- selections
 def select_all_discussions():
+    """
+    role:
+        Récupère toutes les discussions triées par priorité puis date.
+
+    utilisation:
+        - non utilisé directement dans app.py
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT * FROM Discussions ORDER BY priority DESC, date_creation DESC;
@@ -248,6 +363,17 @@ def select_all_discussions():
     return result
 
 def select_all_group_discussions(id_client):
+    """
+    params:
+        id_client (int): id du client
+
+    role:
+        Récupère toutes les discussions appartenant aux groupes du client.
+
+    utilisation:
+        - utilisé dans app.py → fonction home()
+        - utilisé dans app.py → fonction alldiscussions()
+    """
     data = get_db()
     sql = data.cursor()
     command = """ SELECT DISTINCT Discussions.* FROM Discussions
@@ -262,6 +388,16 @@ def select_all_group_discussions(id_client):
 
 
 def select_comments(discussion_id):
+    """
+    params:
+        discussion_id (int): id de la discussion
+
+    role:
+        Récupère les commentaires principaux (non réponses) d’une discussion.
+
+    utilisation:
+        - utilisé dans app.py → fonction main()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT * FROM Comments WHERE id_d= ? AND id_reply=0;
@@ -273,6 +409,16 @@ def select_comments(discussion_id):
 
 
 def select_comments_ferme(discussion_id):
+    """
+    params:
+        discussion_id (int): id de la discussion
+
+    role:
+        Récupère les commentaires principaux triés par popularité (likes/dislikes).
+
+    utilisation:
+        - utilisé dans app.py → fonction main()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT * FROM Comments 
@@ -287,6 +433,19 @@ def select_comments_ferme(discussion_id):
     return result  
 
 def select_comment_replies(comment_id):
+    """
+    params:
+        comment_id (int): id du commentaire parent
+
+    role:
+        Récupère toutes les réponses d’un commentaire.
+
+    utilisation:
+        - utilisé dans app.py → fonction main()
+        - utilisé dans app.py → fonction show_all_replies()
+        - utilisé dans app.py → fonction main_comment()
+        - utilisé dans bdd.py → fonction get_score_proposition()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT * FROM Comments WHERE id_reply=?;
@@ -298,6 +457,17 @@ def select_comment_replies(comment_id):
             
 
 def select_newest_discussion_id(id_client):
+    """
+    params:
+        id_client (int): id du client
+
+    role:
+        Récupère l’id de la dernière discussion créée par un client.
+
+    utilisation:
+        - utilisé dans app.py → fonction ajouter_discussion()
+        - utilisé dans app.py → fonction cloner_discussion()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT id_discussion FROM Discussions WHERE id_c= ? ORDER BY id_discussion DESC;
@@ -308,6 +478,19 @@ def select_newest_discussion_id(id_client):
     return result
 
 def select_discussion_by_id(id_discussion):
+    """
+    params:
+        id_discussion (int): id de la discussion
+
+    role:
+        Récupère les informations principales d’une discussion.
+
+    utilisation:
+        - utilisé dans app.py → fonction main()
+        - utilisé dans app.py → fonction main_comment()
+        - utilisé dans app.py → fonction show_all_replies()
+        - utilisé dans app.py → fonction cloner_discussion()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT id_c, title, content, type, state, cloned_from, priority FROM Discussions WHERE id_discussion= ?;
@@ -320,6 +503,18 @@ def select_discussion_by_id(id_discussion):
 
 
 def select_comment_by_id(id_comment):
+    """
+    params:
+        id_comment (int): id du commentaire
+
+    role:
+        Récupère un commentaire spécifique.
+
+    utilisation:
+        - utilisé dans app.py → fonction like_comment()
+        - utilisé dans app.py → fonction main_comment()
+        - utilisé dans app.py → fonction show_all_replies()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT * FROM Comments WHERE id_comment= ?;
@@ -330,6 +525,18 @@ def select_comment_by_id(id_comment):
     return result
 
 def select_clients_not_in_group(id_group):
+    """
+    params:
+        id_group (int): id du groupe
+
+    role:
+        Récupère les clients qui ne sont pas dans un groupe.
+
+    utilisation:
+        - utilisé dans app.py → fonction groups_page()
+        - utilisé dans app.py → fonction group_info()
+        - utilisé dans app.py → fonction api_group_non_members()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT id_client, name,last_name
@@ -346,6 +553,15 @@ def select_clients_not_in_group(id_group):
     return result
 
 def select_all_clients():
+    """
+    role:
+        Récupère tous les clients.
+
+    utilisation:
+        - utilisé dans app.py → fonction groups_page()
+        - utilisé dans app.py → fonction membres()
+        - utilisé dans app.py → fonction get_all_members()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT id_client, name, last_name,role FROM Client;
@@ -356,6 +572,16 @@ def select_all_clients():
     return result
 
 def select_all_groupes():
+    """
+    role:
+        Récupère tous les groupes.
+
+    utilisation:
+        - utilisé dans app.py → fonction home()
+        - utilisé dans app.py → fonction groups_page()
+        - utilisé dans app.py → fonction registry_page()
+        - utilisé dans app.py → fonction take_all_groupes()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT * FROM Groups;
@@ -366,6 +592,18 @@ def select_all_groupes():
     return result
 
 def select_client_groupes(id_c):
+    """
+    params:
+        id_c (int): id du client
+
+    role:
+        Récupère les groupes auxquels appartient un client.
+
+    utilisation:
+        - utilisé dans app.py → fonction groups_page()
+        - utilisé dans app.py → fonction profile()
+        - utilisé dans app.py → fonction delete_client_from_db()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT * FROM Groups 
@@ -378,6 +616,19 @@ def select_client_groupes(id_c):
     return result
 
 def select_client_groupes_by_id(id_g, id_c):
+    """
+    params:
+        id_g (int): id du groupe
+        id_c (int): id du client
+
+    role:
+        Vérifie si un client appartient à un groupe.
+
+    utilisation:
+        - utilisé dans app.py → fonction add_member_to_group()
+        - utilisé dans app.py → fonction delete_member_from_group()
+        - utilisé dans app.py → fonction registry()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT * FROM GroupMembers where id_g = ? AND id_c=?;
@@ -389,6 +640,16 @@ def select_client_groupes_by_id(id_g, id_c):
 
 
 def select_groupe_from_name(name):
+    """
+    params:
+        name (str): nom du groupe
+
+    role:
+        Récupère l’id d’un groupe à partir de son nom.
+
+    utilisation:
+        - utilisé dans app.py → fonction groups_page()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT id_group FROM Groups WHERE name=?;
@@ -400,6 +661,18 @@ def select_groupe_from_name(name):
 
 
 def select_groupe_from_id(id_g):
+    """
+    params:
+        id_g (int): id du groupe
+
+    role:
+        Récupère le nom d’un groupe.
+
+    utilisation:
+        - utilisé dans app.py → fonction home()
+        - utilisé dans app.py → fonction alldiscussions()
+        - utilisé dans app.py → fonction group_info()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT name FROM Groups WHERE id_group=?;
@@ -410,6 +683,17 @@ def select_groupe_from_id(id_g):
     return result
 
 def select_discussion_groups(id_discussion):
+    """
+    params:
+        id_discussion (int): id de la discussion
+
+    role:
+        Récupère les groupes liés à une discussion.
+
+    utilisation:
+        - utilisé dans app.py → fonction home()
+        - utilisé dans app.py → fonction alldiscussions()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT id_g FROM DiscussionGroups WHERE id_d=?;
@@ -420,6 +704,19 @@ def select_discussion_groups(id_discussion):
     return result
 
 def select_member_by_id(id_g):
+    """
+    params:
+        id_g (int): id du groupe
+
+    role:
+        Récupère les membres d’un groupe.
+
+    utilisation:
+        - utilisé dans app.py → fonction api_group_members()
+        - utilisé dans app.py → fonction group_info()
+        - utilisé dans app.py → fonction change_member_group()
+        - utilisé dans app.py → fonction delete_group_from_db()
+    """
     data = get_db()
     sql=data.cursor()
     command = """SELECT id_c from GroupMembers WHERE id_g=?
@@ -429,6 +726,17 @@ def select_member_by_id(id_g):
     return res
 
 def select_role_client(id_c):
+    """
+    params:
+        id_c (int): id du client
+
+    role:
+        Récupère le rôle d’un client.
+
+    utilisation:
+        - utilisé dans app.py → fonction promote_client()
+        - utilisé dans app.py → fonction demote_client()
+    """
     data = get_db()
     sql=data.cursor()
     command = """SELECT role from Client WHERE id_client=?
@@ -439,6 +747,20 @@ def select_role_client(id_c):
 # DELETE FUNCTION
 
 def delete_member(id_g,id_c):
+    """
+    params:
+        id_g (int): id du groupe
+        id_c (int): id du client
+
+    role:
+        Supprime un membre d’un groupe.
+
+    utilisation:
+        - utilisé dans app.py → fonction change_member_group()
+        - utilisé dans app.py → fonction delete_member_from_group()
+        - utilisé dans app.py → fonction delete_group_from_db()
+        - utilisé dans app.py → fonction delete_client_from_db()
+    """
     data =get_db()
     sql=data.cursor()
     command ="""DELETE FROM GroupMembers WHERE id_g=? AND id_c=?
@@ -448,6 +770,16 @@ def delete_member(id_g,id_c):
     sql.close()
 
 def delete_group(id_g):
+    """
+    params:
+        id_g (int): id du groupe
+
+    role:
+        Supprime un groupe.
+
+    utilisation:
+        - utilisé dans app.py → fonction delete_group_from_db()
+    """
     data =get_db()
     sql=data.cursor()
     command ="""DELETE FROM Groups WHERE id_group=?
@@ -457,15 +789,16 @@ def delete_group(id_g):
     sql.close()
 
 def delete_discussiongroups(id_g):
-    data =get_db()
-    sql=data.cursor()
-    command ="""DELETE FROM DiscussionGroups WHERE id_g=? AND id_d=?
-        """
-    sql.execute(command,[id_g])
-    data.commit()
-    sql.close()
+    """
+    params:
+        id_g (int): id du groupe
 
-def delete_discussiongroups(id_g):
+    role:
+        Supprime les liens entre un groupe et les discussions.
+
+    utilisation:
+        - utilisé dans app.py → fonction delete_group_from_db()
+    """
     data =get_db()
     sql=data.cursor()
     command ="""DELETE FROM DiscussionGroups WHERE id_g=?
@@ -475,6 +808,16 @@ def delete_discussiongroups(id_g):
     sql.close()
 
 def delete_client(id_c):
+    """
+    params:
+        id_c (int): id du client
+
+    role:
+        Supprime un client.
+
+    utilisation:
+        - utilisé dans app.py → fonction delete_client_from_db()
+    """
     data =get_db()
     sql=data.cursor()
     command ="""DELETE FROM Client WHERE id_client=?
@@ -484,6 +827,16 @@ def delete_client(id_c):
     sql.close()
 
 def select_comments_from_clientid(id_c):
+    """
+    params:
+        id_c (int): id du client
+
+    role:
+        Récupère les ids des commentaires d’un client.
+
+    utilisation:
+        - non utilisé dans app.py
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT id_comment FROM Comments WHERE id_c=?;
@@ -498,6 +851,17 @@ def select_comments_from_clientid(id_c):
 
 
 def update_group(name,id_g):
+    """
+    params:
+        name (str): nouveau nom
+        id_g (int): id du groupe
+
+    role:
+        Modifie le nom d’un groupe.
+
+    utilisation:
+        - utilisé dans app.py → fonction change_group_name()
+    """
     data=get_db()
     sql=data.cursor()
     command="""UPDATE Groups SET name=? WHERE id_group=?
@@ -508,6 +872,20 @@ def update_group(name,id_g):
     sql.close()
 
 def update_discussion(title,content, d_id, new_groupes, priority):
+    """
+    params:
+        title (str)
+        content (str)
+        d_id (int)
+        new_groupes (iterable)
+        priority (int)
+
+    role:
+        Met à jour une discussion et remplace ses groupes associés.
+
+    utilisation:
+        - utilisé dans app.py → fonction modifier_discussion()
+    """
     data=get_db()
     sql=data.cursor()
     #premierement, supprime tout les anciens groupes de la discussion 
@@ -530,6 +908,17 @@ def update_discussion(title,content, d_id, new_groupes, priority):
 
 
 def update_discussion_state(id_discussion, action):
+    """
+    params:
+        id_discussion (int)
+        action (str): active / closed
+
+    role:
+        Change l’état d’une discussion et de tous ses commentaires.
+
+    utilisation:
+        - utilisé dans app.py → fonction clotre_discussion()
+    """
     data=get_db()
     sql=data.cursor()
     command="""UPDATE Discussions SET state=?, priority=0 WHERE id_discussion=?
@@ -545,6 +934,18 @@ def update_discussion_state(id_discussion, action):
     return
 
 def update_role(role,id_c):
+    """
+    params:
+        role (str)
+        id_c (int)
+
+    role:
+        Modifie le rôle d’un utilisateur.
+
+    utilisation:
+        - utilisé dans app.py → fonction promote_client()
+        - utilisé dans app.py → fonction demote_client()
+    """
     data=get_db()
     sql=data.cursor()
     command="""UPDATE Client SET role=? WHERE id_client=?
@@ -556,10 +957,21 @@ def update_role(role,id_c):
 #---------------------- likes
 
 def update_like(id_client, id_cible, cible, value):
-    """ fonction a 3 cas:
-    1- si il nya pas de like ou dislike deja dans la table: on insere la ligne
-    2- sinon: si l'action ne correspond pas a la valeur deja dans la table, on modifie la ligne
-    3- sinon: si l'action est comme la valeur deja dans la table, on supprime la ligne
+    """ 
+    params:
+        id_client (int)
+        id_cible (int)
+        cible (str)
+        value (int)
+
+    fonction a 3 cas:
+        1- si il nya pas de like ou dislike deja dans la table: on insere la ligne
+        2- sinon: si l'action ne correspond pas a la valeur deja dans la table, on modifie la ligne
+        3- sinon: si l'action est comme la valeur deja dans la table, on supprime la ligne
+
+    utilisation:
+        - utilisé dans app.py → fonction like_discussion()
+        - utilisé dans app.py → fonction like_comment()
     """
     data = get_db()
     sql = data.cursor()
@@ -585,6 +997,19 @@ def update_like(id_client, id_cible, cible, value):
 
 
 def get_discussion_likes(id_discussion):
+    """
+    params:
+        id_discussion (int)
+
+    role:
+        Compte les likes et dislikes d’une discussion.
+
+    utilisation:
+        - utilisé dans app.py → fonction home()
+        - utilisé dans app.py → fonction main()
+        - utilisé dans app.py → fonction like_discussion()
+        - utilisé dans app.py → fonction alldiscussions()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT like FROM Likes WHERE id_target=? AND target =?;
@@ -602,6 +1027,19 @@ def get_discussion_likes(id_discussion):
     return (likes, dislikes)
 
 def get_comment_likes(id_comment):
+    """
+    params:
+        id_comment (int)
+
+    role:
+        Compte les likes et dislikes d’un commentaire.
+
+    utilisation:
+        - utilisé dans app.py → fonction main()
+        - utilisé dans app.py → fonction like_comment()
+        - utilisé dans app.py → fonction show_all_replies()
+        - utilisé dans bdd.py → fonction get_score_proposition()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT like FROM Likes WHERE id_target=? AND target =?;
@@ -619,6 +1057,19 @@ def get_comment_likes(id_comment):
     return (likes, dislikes)
 
 def get_user_opinion(id_discussion, id_client):
+    """
+    params:
+        id_discussion (int)
+        id_client (int)
+
+    role:
+        Récupère l’opinion (like/dislike) d’un utilisateur sur une discussion.
+
+    utilisation:
+        - utilisé dans app.py → fonction main()
+        - utilisé dans app.py → fonction main_comment()
+        - utilisé dans app.py → fonction show_all_replies()
+    """
     data = get_db()
     sql = data.cursor()
     command = """SELECT like FROM Likes WHERE id_target=? AND target =? AND id_c = ?;
@@ -631,6 +1082,17 @@ def get_user_opinion(id_discussion, id_client):
 #-------------------------------authentificattion
 
 def select_client_infos_from_email(email):
+    """
+    params:
+        email (str)
+
+    role:
+        Récupère toutes les infos d’un client à partir de son email.
+
+    utilisation:
+        - utilisé dans app.py → fonction login()
+        - utilisé dans app.py → fonction registry()
+    """
     data = get_db()
     sql= data.cursor()
     command = """SELECT password, id_client, email, name, last_name, company, role FROM Client WHERE email = ? ;
@@ -641,6 +1103,17 @@ def select_client_infos_from_email(email):
 
 
 def check_if_exists_client(email, company):
+    """
+    params:
+        email (str)
+        company (str)
+
+    role:
+        Vérifie si un client existe déjà.
+
+    utilisation:
+        - utilisé dans app.py → fonction registry()
+    """
     data = get_db()
     sql= data.cursor()
     command = """SELECT * FROM Client WHERE email = ? AND company = ? ;
@@ -651,6 +1124,24 @@ def check_if_exists_client(email, company):
 
 
 def get_user_by_id(id_c):
+    """
+    params:
+        id_c (int)
+
+    role:
+        Récupère les infos d’un utilisateur.
+
+    utilisation:
+        - utilisé dans app.py → fonction home()
+        - utilisé dans app.py → fonction main()
+        - utilisé dans app.py → fonction main_comment()
+        - utilisé dans app.py → fonction show_all_replies()
+        - utilisé dans app.py → fonction group_info()
+        - utilisé dans app.py → fonction api_group_members()
+        - utilisé dans app.py → fonction promote_client()
+        - utilisé dans app.py → fonction demote_client()
+        - utilisé dans app.py → fonction profile()
+    """
     data = get_db()
     sql=data.cursor()
     command= """SELECT id_client, name, last_name, role FROM Client WHERE id_client= ?
@@ -662,6 +1153,16 @@ def get_user_by_id(id_c):
     return res
 
 def get_email(id_c):
+    """
+    params:
+        id_c (int)
+
+    role:
+        Récupère l’email d’un utilisateur.
+
+    utilisation:
+        - utilisé dans app.py → fonction profile()
+    """
     data = get_db()
     sql=data.cursor()
     command= """SELECT email FROM Client WHERE id_client= ?
@@ -741,6 +1242,16 @@ def migrate_db():
 
 ####deletes
 def delete_discussion_from_id(id_discussion):
+    """
+    params:
+        id_discussion (int)
+
+    role:
+        Supprime une discussion.
+
+    utilisation:
+        - utilisé dans app.py → fonction delete_discussion()
+    """
     data = get_db()
     sql=data.cursor()
     command= """DELETE FROM Discussions WHERE id_discussion=?

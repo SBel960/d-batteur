@@ -105,7 +105,7 @@
   <main class="container">
     <h1>GROUPES</h1>
 
-    {% if role >= 2 %}
+    {% if role >= 3 %}
     <div>
       <h3 class="ajouter_group">Ajouter un nouveau groupe :</h3>
 
@@ -179,7 +179,7 @@
       items.forEach(g => {
         const card = document.createElement("div");
         card.className = "group-card";
-        const isManager = {{role}} >= 2;
+        const isManager = {{role}} >= 3;
         card.innerHTML = `
           <a href="/group_info/${g.id}" class="group-name">${escapeHtml(g.name)}</a>
           ${isManager ? `
