@@ -128,7 +128,8 @@ def create_discussion_groups_table():
 
                 FOREIGN KEY(id_d) REFERENCES Discussions(id_discussion),
                 FOREIGN KEY(id_g) REFERENCES Groups(id_groupe)
-    
+
+                UNIQUE(id_g,id_d)
 
                 )  
             """
@@ -190,7 +191,6 @@ def insert_disscussions_table(id_c, title, content, type, priority, cloned_from=
     date_creation = date.today().isoformat()
     named_tuple = time.localtime() # get struct_time
     time_creation = time.strftime("%H:%M", named_tuple)
-    print(time_creation)
     command = """INSERT INTO Discussions(id_c, title, content, type, date_creation,time_creation, cloned_from, priority)
                 VALUES (?,?,?,?,?,?,?,?)
 
@@ -412,7 +412,6 @@ def select_comments_ferme(discussion_id):
     """
     params:
         discussion_id (int): id de la discussion
-
     role:
         Récupère les commentaires principaux triés par popularité (likes/dislikes).
 
@@ -421,7 +420,7 @@ def select_comments_ferme(discussion_id):
     """
     data = get_db()
     sql = data.cursor()
-    command = """SELECT * FROM Comments 
+    command = """SELECT Comments.* FROM Comments 
             LEFT JOIN Likes ON Comments.id_comment = Likes.id_target AND Likes.target='comment'
             WHERE Comments.id_d= ? AND id_reply=0
             GROUP BY Comments.id_comment
