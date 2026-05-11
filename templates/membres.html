@@ -1,4 +1,23 @@
 <!DOCTYPE html>
+
+<!-- 
+==============================================================================
+PAGE : MEMBRES
+------------------------------------------------------------------------------
+Affiche tous les membres de l’entreprise classés par rôle :
+- CEO
+- Managers
+- Employés
+
+Permet également :
+- recherche dynamique
+- promotion/rétrogradation
+- suppression d’utilisateurs
+- gestion des employés (CEO uniquement)
+
+La majorité du rendu est faite dynamiquement en JavaScript.
+==============================================================================
+-->
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -45,6 +64,10 @@
       </div>
       <a class="logout" href="{{ url_for('logout') }}">Logout</a>
     {% if role >= 3 %}
+    <!-- 
+    Dropdown réservé au CEO.
+    Permet d’ajouter ou gérer les employés.
+    -->
     <div class="dropdown" id="groupManagerDropdown">
       <button class="icon-btn" onclick="toggleGroupMenu(event)">Gerer</button>
       <div class="dropdown-content" id="groupMenuContent">
@@ -70,6 +93,14 @@
     <div class="companyNameBox">
       <div class="companyName">{{session['company']}}</div>
     </div>
+
+     <!-- 
+        Les membres sont injectés dynamiquement dans :
+        - ceoList
+        - managerList
+        - membersList
+        via JavaScript.
+        -->
     <section class="section">
       <div class="section-head">
         <h2>Ceo</h2>
@@ -88,9 +119,15 @@
       <div id="membersList" class="members-grid"></div>
 
       <div id="popupSetting">
-        
+
+       
+        <!-- SUPPRESSION
+        Un dialog est créé pour chaque membre.
+        Permet confirmation avant suppression.
+        -->
         {%for member in all_member%}
           {%if member['id_client']==id %}
+          
             <dialog id="deleteClient_{{member['id_client']}}">
 
             <button type="button" id="closePage" commandfor="deleteClient_{{member['id_client']}}" command="request-close"> 
@@ -120,10 +157,16 @@
   <script>
     let all_members = [];
     let myid;
+    /**
+     * Sauvegarde l'id du client connecté.
+     */
     async function getId(id) {
         myid=id;
     }
 
+    /**
+   * Ouvre ou ferme le menu dropdown de gestion.
+   */
     function toggleGroupMenu(event) {
       event.stopPropagation();
       document.getElementById("groupMenuContent").classList.toggle("show");
@@ -139,12 +182,19 @@
       "Employe": { bg: "rgba(99,102,241,0.22)",  border: "rgba(99,102,241,0.50)", text: "#818cf8" },
     };
 
+    /**
+   * Récupère tous les membres depuis l’API Flask.
+   */
     async function chargerMembres() {
       const reponse = await fetch("/allmembers");
       const data = await reponse.json();
       all_members = data;
     }
 
+    /**
+   * Génère dynamiquement les cartes des membres.
+   * Classe automatiquement selon le rôle.
+   */
     function renderMembres(items) {
       const ceolist = document.getElementById("ceoList");
       const managerlist=document.getElementById("managerList")
@@ -238,6 +288,9 @@
       
     }
 
+    /**
+     * Filtre les membres selon la recherche utilisateur.
+     */
     function appliquerRecherche() {
       const q = document.getElementById("searchInput").value.trim().toLowerCase();
       const filtres = all_members.filter(m =>
@@ -253,6 +306,11 @@
 
     document.getElementById("searchInput").addEventListener("input", appliquerRecherche);
 
+    /**
+     * Initialise la page :
+     * - récupère les membres
+     * - affiche les cartes
+     */
     async function initialiserMembres() {
       await chargerMembres();
       renderMembres(all_members);
@@ -261,6 +319,9 @@
 
     let isOpen=false;
     
+    /**
+   * Affiche ou masque les boutons d’options des membres.
+   */
     function showOption(event, id){
       options=document.querySelectorAll(".Options");
         if(isOpen==false){
@@ -280,6 +341,9 @@
     }
 
     
+    /**
+   * Fait disparaître progressivement la notification flash.
+   */
     function Notification(){
       setTimeout(() => {
      
@@ -303,6 +367,10 @@
       document.getElementById("groupMenuContent").classList.toggle("show");
     }
 
+      /**
+   * Empêche la propagation d’événement
+   * pour éviter la fermeture du menu dropdown.
+   */
     function Button(event) {
       event.stopPropagation();
     }

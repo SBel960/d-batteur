@@ -1,4 +1,17 @@
 <!DOCTYPE html>
+<!-- 
+==============================================================================
+PAGE : PROFIL UTILISATEUR
+------------------------------------------------------------------------------
+Affiche les informations d’un membre :
+- identité
+- email
+- rôle
+- groupes auxquels il appartient
+
+Page principalement statique avec navigation vers les groupes.
+==============================================================================
+-->
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -74,6 +87,10 @@
             <div class="infoText"> {{role_p}}</div>
         </div>
         
+        <!-- 
+          Zone affichant les groupes du membre.
+          Chaque groupe redirige vers sa page d'information.
+          -->
         <div class="infoBox">
             <div class="infoName">Groupe(s) :</div>
             <div class="infoText">

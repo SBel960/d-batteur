@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+
+<!-- Page de discussion — affiche une discussion avec ses commentaires et la barre de vote.
+     Les commentaires sont rendus par Jinja au chargement. Les réponses sont chargées dynamiquement via toggleReplies().
+     Deux types de discussion :
+       - ouvert  : question ouverte, formulaires proposition + commentaire, score affiché sur les propositions
+       - ferme   : question fermée, formulaire commentaire simple sans proposition -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,6 +13,8 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}"/>
     <title> Discussion </title>
 </head>
+
+<!-- classe du body selon l'état de la discussion (active/closed) et si c'est un clone -->
 <body class="body_{{discussion_state}}" id="body_{% if cloned == true %}cloned{%endif%}">
     
     <!-- HEADER / TOOLBAR -->
@@ -31,6 +39,7 @@
     <!-- Centre : recherche (titre uniquement) -->
     <div class="topbar-center">
       <div class="search">
+        <!-- barre de recherche — filtre les commentaires côté client par auteur ou contenu -->
         <span class="search-icon" aria-hidden="true">⌕</span>
         <input
           id="searchInput"
@@ -58,6 +67,7 @@
 
 
   <main>
+    <!-- ── Informations de la discussion ── -->
     <section class="information-section">
       <div class="topic-title-container">
         <span class="type {{discussion_type}}">
@@ -78,7 +88,9 @@
       </div>
     </section>
     
+    <!-- ── Barre de vote + commentaires ── -->
     <section class="interactive-section">
+      <!-- ── Barre de votes — largeurs mises à jour dynamiquement par applyBar() ── -->
       <div class="voting-results">
         <div class="voting-bar-wrapper">
           <span class="bar-label bar-label-for">👍 Pour</span>
@@ -93,16 +105,22 @@
           <a  id="likes-count" class="icon-btn" href="#" onclick="likeDiscussion(event, {{discussion_id}}, 'like')">👍 <span id="d-likes-count-{{discussion_id}}"> {{likes}}</span></a>
           <a  id="dislikes-count" class="icon-btn" href="#" onclick="likeDiscussion(event, {{discussion_id}}, 'unlike')">👎 <span id="d-dislikes-count-{{discussion_id}}"> {{dislikes}}</span></a>
           {% else %}
+          <!-- clôturée : votes affichés mais non cliquables -->
           <a  id="likes-count" class="icon-btn closed" href="#">👍 <span id="d-likes-count-{{discussion_id}}"> {{likes}}</span></a>
           <a  id="dislikes-count" class="icon-btn closed" href="#">👎 <span id="d-dislikes-count-{{discussion_id}}"> {{dislikes}}</span></a>
           {% endif %}
         </div>
 
       </div>
+
+      <!-- ── Section commentaires ── -->
       <div class="comments">
+  
+         <!-- ── Formulaires de saisie — uniquement si la discussion est active ── -->
         {% if discussion_state == 'active' %}
 
         <div class="commentInput">
+          <!-- ouvert : deux formulaires — un pour les propositions, un pour les commentaires simples -->
           {% if discussion_type == 'ouvert' %}
             <form class="commentForm" method="post" action='{{ url_for("commentaire", discussion_id=discussion_id, reply=0) }}' id="mainCommentForm">
               <input type="hidden" name="type" id="commentType" value="proposition">
@@ -116,6 +134,7 @@
             </form>
 
           {% else %}
+          <!-- ferme : formulaire unique, pas de type proposition -->
             <form class="commentForm" method="post" action='{{ url_for("commentaire", discussion_id=discussion_id, reply=0) }}'>
               <label for="comment_input">Commentaires</label>
               <textarea class="form-control" name="commentaire" placeholder="Ajoutez votre commentaire..." id="comment_input" required></textarea>
@@ -126,9 +145,13 @@
         </div>
         {% endif %}
 
+        <!-- ── Liste des commentaires principaux ── -->
         {% for  comment in comments %}
         
+        <!-- data-depth="0" : profondeur initiale pour le système de repli des réponses imbriquées -->
           <div class="commentTextList" data-depth="0">
+
+            <!-- classes commentBox : état (active/closed) + type/opinion pour le code couleur -->
             <div class="commentBox commentBox_{{comment['etat']}} commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['opinion'] and discussion_type=='ferme' %}{{comment['opinion']}}{% else %}normal{% endif %} ">
               
               <div class="commentUser">
@@ -147,6 +170,7 @@
                     <a class="likes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'like')">👍 <span id="likes-count-{{id}}"> {{comment['like']}}</span></a>
                     <a class="dislikes-count icon-btn" href="#" onclick="likeComment(event, {{discussion_id}}, {{id}}, 'unlike')">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
                     {% if comment['type'] == 'proposition' %}
+                    <!-- score composite affiché uniquement sur les propositions -->
                       <span class="score-proposition {% if comment['score'] > 0 %}score-pos{% elif comment['score'] < 0 %}score-neg{% else %}score-neutre{% endif %}">
                         Score :&nbsp; <span id="score-count-{{id}}"> {{ comment['score'] }}</span>
                       </span>
@@ -155,6 +179,7 @@
 
                       {% else %}
 
+                      <!-- clôturé : likes/dislikes non cliquables -->
                     <a class="likes-count icon-btn closed" href="#" >👍 <span id="likes-count-{{id}}"> {{comment['like']}}</span></a>
                     <a class="dislikes-count icon-btn closed" href="#">👎 <span id="dislikes-count-{{id}}"> {{comment['dislike']}}</span></a>
                     {% if comment['type'] == 'proposition' %}
@@ -166,8 +191,10 @@
 
 
                     {% endif %}
-
+                   
                   </div>  
+
+                  <!-- formulaire de réponse — les propositions imposent un choix d'avis (pour/contre/neutre) -->
                    {% if comment['type'] == 'proposition' %}
                    
                     <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
@@ -185,6 +212,7 @@
                     </form>
 
                   {% else %}
+
                     <form class="commentForm reply" id="replyForm-{{id}}" method="post" 
                           action='{{url_for("commentaire", discussion_id=discussion_id, reply=id)}}'
                           onsubmit="sendReply(event, {{discussion_id}}, {{id}})"
@@ -196,9 +224,13 @@
                     
                     
               </div>
+
+              <!-- conteneur vide rempli par JS lors du chargement des réponses -->
               <div class="commentReplies" id="commentReplies-{{comment['id_c']}}"></div>
             </div>
           </div>
+
+          <!-- bouton "X réponse(s)" — caché si aucune réponse -->
          <a id="repliesBtn-{{comment['id_c']}}"
             href="#"
             data-count="{{comment['reply_count']}}"
@@ -216,6 +248,7 @@
           {% if cloned_comments != [] %} <h1 style="margin-top: 40px; font-size: x-large; border-bottom: 2px solid white;"> Commentaires clones</h1> {% endif %}
           {% for  comment in cloned_comments %}
         
+          <!-- même structure que les commentaires normaux, mais etat forcé à 'closed' côté Flask -->
           <div class="commentTextList">
             <div class="commentBox commentBox_{{comment['etat']}} commentBox_{% if comment['type'] == 'proposition' %}proposition{% elif comment['opinion'] and discussion_type=='ferme' %}{{comment['opinion']}}{% else %}normal{% endif %} ">
               
@@ -316,13 +349,20 @@
       });
     });
 
-    /*Script JS à remplir*/
-
+    
+    // ── Barre de vote ──────────────────────────────────────────────────────────
     const barFor = document.getElementById("bar-for");
     const barAgainst = document.getElementById("bar-against");
     const pctFor = document.getElementById("bar-pct-for");
     const pctAgainst = document.getElementById("bar-pct-against");
 
+    /**
+     * Met à jour les largeurs et pourcentages de la barre de vote pour/contre.
+     * Si aucun vote, affiche 50/50 par défaut.
+     *
+     * @param {number} likesCount    - nombre de votes pour
+     * @param {number} dislikesCount - nombre de votes contre
+     */
     function applyBar(likesCount, dislikesCount) {
       const total = likesCount + dislikesCount;
       const forPct  = total > 0 ? Math.round(likesCount    * 100 / total) : 50;
@@ -333,19 +373,33 @@
       pctAgainst.textContent = agPct   > 8 ? agPct   + "%" : "";
     }
 
+
+    // initialisation de la barre au chargement depuis les valeurs déjà dans le DOM
     {
       const likesCount    = Number(document.getElementById('likes-count').textContent.slice(2));
       const dislikesCount = Number(document.getElementById('dislikes-count').textContent.slice(2));
       applyBar(likesCount, dislikesCount);
     }
 
+    /**
+     * Relit les compteurs de votes depuis le DOM et met à jour la barre.
+     * Appelée après chaque vote sur la discussion.
+     */
     async function updateBar(){
       const likesCount    = Number(document.getElementById('likes-count').textContent.slice(2));
       const dislikesCount = Number(document.getElementById('dislikes-count').textContent.slice(2));
       applyBar(likesCount, dislikesCount);
     }
 
-
+    // ── Votes ──────────────────────────────────────────────────────────────────
+ 
+    /**
+     * Envoie un vote pour/contre sur la discussion et met à jour les compteurs + barre.
+     *
+     * @param {Event}  event         - événement clic
+     * @param {number} discussion_id - id de la discussion
+     * @param {string} action        - 'like' ou 'unlike'
+     */
     async function likeDiscussion(event, discussion_id, action){
       event.preventDefault();
       event.target.disabled = true;
@@ -357,6 +411,15 @@
       updateBar();
     }
 
+    /**
+     * Envoie un vote pour/contre sur un commentaire et met à jour les compteurs.
+     * Met aussi à jour le score de la proposition parente si le commentaire est une réponse à une proposition.
+     *
+     * @param {Event}  event         - événement clic
+     * @param {number} discussion_id - id de la discussion
+     * @param {number} comment_id    - id du commentaire voté
+     * @param {string} action        - 'like' ou 'unlike'
+     */
     async function likeComment(event, discussion_id,comment_id, action){
       event.preventDefault();
       event.target.disabled = true;
@@ -393,6 +456,16 @@
     }
 
 
+     // ── Réponses ───────────────────────────────────────────────────────────────
+ 
+    /**
+     * Soumet une réponse à un commentaire via fetch, recharge les réponses affichées,
+     * et remet à jour le bouton de comptage.
+     *
+     * @param {Event}  event         - événement submit du formulaire
+     * @param {number} discussion_id - id de la discussion
+     * @param {number} comment_id    - id du commentaire parent
+     */
     async function sendReply(event, discussion_id, comment_id){
       event.preventDefault();
       var form = event.target;
@@ -421,6 +494,12 @@
       toggleReplies(event, discussion_id, comment_id);
     }
 
+    /**
+     * Affiche ou masque le formulaire de réponse d'un commentaire.
+     *
+     * @param {Event}  event - événement clic
+     * @param {number} id    - id du commentaire
+     */
     function toggleCommentForm(event, id) {
       event.preventDefault(); 
 
@@ -433,6 +512,13 @@
       }
     }
 
+
+    // ── Profondeur des réponses imbriquées ─────────────────────────────────────
+ 
+    /**
+     * Retourne la profondeur maximale d'imbrication autorisée selon la largeur d'écran.
+     * Au-delà de cette limite, toggleReplies redirige vers main_comment.
+     */
     function switchCommentType(type) {
       document.getElementById('commentType').value = type;
       const btnProp = document.getElementById('btnProposition');
@@ -452,6 +538,12 @@
       }
     }
 
+    // ── Profondeur des réponses imbriquées ─────────────────────────────────────
+ 
+    /**
+     * Retourne la profondeur maximale d'imbrication autorisée selon la largeur d'écran.
+     * Au-delà de cette limite, toggleReplies redirige vers main_comment.
+     */
     function getMaxDepth() {
         if (window.innerWidth < 768) return 2;
         if (window.innerWidth < 1200) return 4;
@@ -482,6 +574,14 @@
   })
 
 
+    /**
+     * Charge et affiche les réponses d'un commentaire, ou les masque si déjà chargées.
+     * Redirige vers /main_comment si la profondeur maximale est atteinte.
+     *
+     * @param {Event}  event         - événement clic
+     * @param {number} discussion_id - id de la discussion
+     * @param {number} comment_id    - id du commentaire dont on charge les réponses
+     */
     async function toggleReplies(event, discussion_id, comment_id){
       event.preventDefault();
       const container = document.getElementById(`commentReplies-${comment_id}`);
@@ -513,6 +613,18 @@
       if (btn) btn.textContent = "Masquer les réponses";
     }
 
+
+     // ── Rendu des commentaires dynamiques ─────────────────────────────────────
+ 
+    /**
+     * Génère le HTML d'un commentaire chargé dynamiquement (réponse).
+     * Adapte le formulaire de réponse selon l'avis du commentaire parent (pour/contre/neutre).
+     * Transmet la profondeur via data-depth pour le système de repli.
+     *
+     * @param {Object} comment - objet commentaire retourné par /show_all_replies
+     * @param {number} depth   - profondeur d'imbrication actuelle
+     * @returns {string}       - HTML du commentaire
+     */
     function renderComment(comment, depth = 0) {
         let replyForm = '';
 
