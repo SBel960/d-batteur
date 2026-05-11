@@ -1,7 +1,7 @@
 import pytest
 from flask import Flask,g
 import bdd
-
+from app import app as app_test
 @pytest.fixture(scope="function")
 def app():
     
@@ -446,5 +446,5 @@ def app_test_algo(app):
         return app
 
 @pytest.fixture()
-def client(app):
-    return app.test_client()
+def client():
+    return app_test.test_client()
