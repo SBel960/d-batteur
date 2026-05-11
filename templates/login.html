@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<!-------------------
+ Page de connexion — formulaire email/mot de passe simple, accessible sans session 
+ ------------------->
+
 <html lang="fr">
 
 <head>
@@ -15,6 +19,7 @@
         <form method="post" action='{{url_for("login")}}'>
             <h1>Login</h1>
             <div class="input-box">
+                <!-- ── Champ email ── -->
                 <input type="email" placeholder="Email" name="email" required >
                 <svg
                 width="24"
@@ -30,6 +35,7 @@
                 />
                 </svg>
             </div>
+             <!-- ── Champ mot de passe ── -->
             <div class="input-box">
                 <input type="password" placeholder="Password" name="password" required>
                 <svg
@@ -49,9 +55,8 @@
             </div>
             <button class="icon-btn" type="submit">Login</button>
 
+            <!-- message d'erreur envoyé par Flask en cas d'échec de connexion -->
             <p class="error-msg" style="color:red;"> {{message}} </p>
-            <p  style="color:white;"> pour tester: <br>
-                <br> email: test@test <br> password: test <br> <br> /insert_client_table </p>
         </form>
     </div>
 </body>

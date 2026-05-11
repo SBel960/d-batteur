@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+
+<!-- Page d'accueil — liste toutes les discussions visibles par l'utilisateur connecté (filtrées par groupe).
+     Les cartes de discussion sont rendues dynamiquement via JS (renderDiscussions).
+     Les modales d'édition/clonage/clôture/suppression sont pré-rendues par Jinja pour chaque discussion,
+     uniquement pour les utilisateurs avec role >= 2 (Manager ou CEO). -->
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -25,6 +30,8 @@
       <div class="company-mark" aria-hidden="true">🏢</div>
     </div>
 
+
+     <!-- barre de recherche — filtre les cartes côté client par titre -->
     <div class="topbar-center">
       <div class="search">
         <span class="search-icon" aria-hidden="true">⌕</span>
@@ -44,6 +51,8 @@
       </div>
       <a class="logout" href="{{url_for('logout')}}"> Logout </a>
 
+
+      <!-- ── Bouton + modale d'ajout de discussion — Manager/CEO uniquement ── -->
       {% if role >= 2 %}
       <button id="addDiscussionBtn" commandfor="newDiscussion" command="show-modal" class="icon-btn" title="Ajouter une discussion">
         +
@@ -100,17 +109,23 @@
   </div>
   </section>
 
-  <!-- CONTENU -->
+   <!-- ── Contenu principal ── -->
   <main class="container">
       <div class="notification" id="notif" style="margin-left:15%">{% with message = get_flashed_messages(with_categories=true) %}{% if message %}{{message[0][1]}}{% endif %}{% endwith %}</div>
     <section class="section">
       
       <div class="section-head">
         <h2>Discussions</h2>
-        <div id="countInfo" class="muted"></div>
+        <div id="countInfo" class="muted"></div> <!-- rempli par JS avec "X discussion(s)" -->
       </div>
 
+      <!-- les cartes de discussion sont injectées ici par renderDiscussions() -->
       <div id="discussionsList" class="list"></div>
+
+      <!-- ── Modales par discussion — pré-rendues par Jinja, Manager/CEO uniquement ──
+           Ces dialogues sont cachés par défaut et ouverts via commandfor/show-modal.
+           Ils sont rendus ici (hors des cartes JS) car ils utilisent des variables Jinja
+           (d[2] = id discussion, d[0] = titre, d[5] = groupes associés, etc.) -->
         {% for d in discussions %}
           {% if role >= 2 %}
             <dialog id="editDiscussion_{{d[2]}}">
@@ -118,6 +133,7 @@
                 x
               </button>
 
+               <!-- Modale d'édition -->
               <form class="newDiscussionForm" method="post" action="{{url_for('modifier_discussion',d_id=d[2])}}">
                 <label> Modifier la discussion</label>
                 <div class="discussionInformation">
@@ -138,7 +154,7 @@
                     <div class="groupList">
                       <label style="margin-top: 15px; "> Modifier les groupes </label>
                       <select class="selectGroupList" name="groupes" id="groupes_dropdown" multiple required>
-                        
+                        <!-- pré-sélectionne les groupes auxquels la discussion appartient déjà -->
                         {% for groupe in groupes %}
                           {% if groupe in d[5] %}
                             <option value="{{groupe[0]}}" selected> {{groupe[1]}} </option>
@@ -154,6 +170,8 @@
             
               </form>
             </dialog>
+
+            <!-- Modale de confirmation de clôture -->
             <dialog id="clotreDiscussion_{{d[2]}}">
               <p>Etes vous sur de vouloir cloturer la discussion <br> <b>Personne ne pourra agir avec la discussion apres la cloture</b></p>
               <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2], action='closed')}}">
@@ -161,6 +179,8 @@
                <button type="button" class="yesnoButton postButton" commandfor="clotreDiscussion_{{d[2]}}" command="request-close">Non</button>
               </form>
             </dialog>
+
+             <!-- Modale de confirmation de ré-ouverture -->
             <dialog id="ouvrirDiscussion_{{d[2]}}">
               <p>Etes vous sur de vouloir re-ouvrir la discussion </p>
               <form class="newDiscussionForm" method="post" action="{{url_for('clotre_discussion',d_id=d[2], action='active')}}">
@@ -169,9 +189,8 @@
               </form>
             </dialog>
 
-            <dialog id="cloneDiscussion_{{d[2]}}" style="justify-content: center; align-items: center;">
-              
-
+            <!-- Modale de clonage — n'affiche que les groupes où la discussion n'est pas encore présente -->
+            <dialog id="cloneDiscussion_{{d[2]}}" style="justify-content: center; align-items: center;">     
               <label>Choisissez vers quel groupe cloner la discussion</label>
               <form class="newDiscussionForm" method="post" action="{{url_for('cloner_discussion',d_id=d[2])}}">
                <div class="groupList">
@@ -189,6 +208,7 @@
   
             </dialog>
 
+             <!-- Modale de confirmation de suppression -->
             <dialog id="deleteDiscussion_{{d[2]}}">
               <p>etes vous sur de vouloir supprimer cette discussion <br> <b>Vous ne pourriez pas revenir en arriere</b></p>
               <form class="newDiscussionForm" method="post" action="{{url_for('delete_discussion',d_id=d[2])}}">
@@ -203,14 +223,25 @@
   </main>
 
   <script>
+    // Toutes les discussions récupérées depuis l'API, gardées en mémoire pour le filtrage côté client
     let all_discussions = [];
 
+    /**
+     * Récupère toutes les discussions visibles par l'utilisateur connecté depuis /alldiscussions.
+     * Remplit le tableau all_discussions.
+     */
     async function chargerDiscussions() {
       const reponse = await fetch("/alldiscussions");
       const data = await reponse.json();
       all_discussions = data;
     }
 
+    /**
+     * Affiche un tableau de discussions sous forme de cartes dans #discussionsList.
+     * Vide la liste avant de rendre. Affiche un état vide si aucun élément.
+     *
+     * @param {Array} items - tableau d'objets discussion provenant de /alldiscussions
+     */
     function renderDiscussions(items) {
       const list = document.getElementById("discussionsList");
       const countInfo = document.getElementById("countInfo");
@@ -278,6 +309,10 @@
       });
     }
 
+    /**
+     * Filtre all_discussions par titre (insensible à la casse) et re-rend la liste.
+     * Appelée à chaque frappe dans le champ de recherche.
+     */
     function appliquerRecherche() {
       const q = document.getElementById("searchInput").value.trim().toLowerCase();
       const filtres = all_discussions.filter(d => d.titre.toLowerCase().includes(q));
@@ -286,11 +321,22 @@
 
     document.getElementById("searchInput").addEventListener("input", appliquerRecherche);
 
+    /**
+     * Point d'entrée — récupère les discussions puis les affiche au chargement de la page.
+     */
     async function initialiserDiscussions() {
       await chargerDiscussions();
       renderDiscussions(all_discussions);
     }
 
+    /**
+     * Bascule le menu déroulant kebab d'une carte de discussion.
+     * Ferme tous les autres menus ouverts en premier.
+     * Remonte le z-index de la carte parente pour que le menu passe au-dessus des cartes suivantes.
+     *
+     * @param {Event} event - événement clic (stopPropagation pour ne pas déclencher le handler de fermeture global)
+     * @param {number} id   - id de la discussion
+     */
     function toggleDropdown(event, id) {
       event.stopPropagation();
       const dropdown = document.getElementById(`showDiscussionOptions_${id}`);

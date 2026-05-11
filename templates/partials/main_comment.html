@@ -1,5 +1,13 @@
 
 <!DOCTYPE html>
+<!-- Page de commentaire principal (partials/main_comment.html)
+     Affichée quand la profondeur de réponses imbriquées dépasse getMaxDepth() dans main.html.
+     Recentre la vue sur un commentaire spécifique et ses réponses directes.
+     Le fil de navigation (breadcrumb) est encodé dans l'URL : /main_comment/<discussion_id>/<id1>/<id2>/...
+     Le bouton "Retour à l'avant" remonte d'un niveau en supprimant le dernier id de l'URL.
+     
+     MEME STRUCTURE DE COMMENTAIRES ET VOTES QUE main.html
+     MEME JAVASRCIPT QUE main.html-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -99,16 +107,23 @@
 
       </div>
       <div class="comments">
+
+        <!-- data-depth="0" : on repart de zéro pour le comptage de profondeur sur cette page -->
         <div class="commentTextList" data-depth="0">
             <div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-between;">
+
+              <!-- ── Boutons de navigation (breadcrumb) ── -->
             {% if back_url %}
+             <!-- back_url = URL actuelle sans le dernier id du breadcrumb, calculé par Flask -->
                 <a href="{{back_url}}" class="repliesBtn" 
                   style="font-size: small; color:white; border-bottom-color: rgba(255,255,255,0.2);"> ← Retour en l'arriere</a>
             {%else%}
-            <div></div> {# pour cree de lespace meme si il nya pas de back_url #}
+            <div></div> {# pour cree de lespace meme si il nya pas de back_url #} <!-- placeholder pour maintenir space-between quand back_url est absent (premier niveau) -->
             {%endif%}
             <a href="{{url_for('main', discussion_id=discussion_id)}}" class="repliesBtn" style="font-size: small; color:white; border-bottom-color: rgba(255,255,255,0.2);">Retour à la discussion →</a>
             </div>
+
+            <!-- commentaire parent affiché en tête de page -->
             <div class="commentBox commentBox_{{comment_parent['etat']}} commentBox_{% if comment_parent['type'] == 'proposition' %}proposition{% elif comment_parent['opinion'] and discussion_type=='ferme' %}{{comment_parent['opinion']}}{% else %}normal{% endif %} ">
               
               <div class="commentUser">
@@ -194,6 +209,7 @@
     </section>
   </main>
 
+  <!-- ── Scripts — identiques à main.html ── -->
   <script>
     document.getElementsByClassName("repliesBtn-main")[0].click();
 
@@ -215,6 +231,12 @@
     const pctFor = document.getElementById("bar-pct-for");
     const pctAgainst = document.getElementById("bar-pct-against");
 
+    /**
+     * Met à jour les largeurs et pourcentages de la barre de vote pour/contre.
+     *
+     * @param {number} likesCount    - nombre de votes pour
+     * @param {number} dislikesCount - nombre de votes contre
+     */
     function applyBar(likesCount, dislikesCount) {
       const total = likesCount + dislikesCount;
       const forPct  = total > 0 ? Math.round(likesCount    * 100 / total) : 50;
@@ -238,6 +260,13 @@
     }
 
 
+    /**
+     * Envoie un vote pour/contre sur la discussion et met à jour les compteurs + barre.
+     *
+     * @param {Event}  event         - événement clic
+     * @param {number} discussion_id - id de la discussion
+     * @param {string} action        - 'like' ou 'unlike'
+     */
     async function likeDiscussion(event, discussion_id, action){
       event.preventDefault();
       event.target.disabled = true;
@@ -249,6 +278,16 @@
       updateBar();
     }
 
+
+    /**
+     * Envoie un vote pour/contre sur un commentaire et met à jour les compteurs.
+     * Met aussi à jour le score de la proposition parente si applicable.
+     *
+     * @param {Event}  event         - événement clic
+     * @param {number} discussion_id - id de la discussion
+     * @param {number} comment_id    - id du commentaire voté
+     * @param {string} action        - 'like' ou 'unlike'
+     */
     async function likeComment(event, discussion_id,comment_id, action){
       event.preventDefault();
       event.target.disabled = true;
@@ -271,6 +310,13 @@
     }
 
 
+    /**
+     * Soumet une réponse, recharge les réponses affichées et met à jour le compteur.
+     *
+     * @param {Event}  event         - événement submit
+     * @param {number} discussion_id - id de la discussion
+     * @param {number} comment_id    - id du commentaire parent
+     */
     async function sendReply(event, discussion_id, comment_id){
       event.preventDefault();
       var form = event.target;
@@ -299,6 +345,12 @@
       toggleReplies(event, discussion_id, comment_id);
     }
 
+    /**
+     * Affiche ou masque le formulaire de réponse d'un commentaire.
+     *
+     * @param {Event}  event - événement clic
+     * @param {number} id    - id du commentaire
+     */
     function toggleCommentForm(event, id) {
       event.preventDefault(); 
 
@@ -311,12 +363,17 @@
       }
     }
 
+    /**
+     * Retourne la profondeur maximale d'imbrication selon la largeur d'écran.
+     * Au-delà, toggleReplies construit une URL plus profonde dans le breadcrumb.
+     */
     function getMaxDepth() {
         if (window.innerWidth < 768) return 2;
         if (window.innerWidth < 1200) return 4;
         return 5;
     }
 
+    // replie les fils trop profonds si la fenêtre est réduite
     window.addEventListener("resize", function() {
       const maxDepth = getMaxDepth();
       document.querySelectorAll('.commentTextList[data-depth]').forEach(el => {
@@ -341,6 +398,15 @@
   })
 
 
+    /**
+     * Charge et affiche les réponses d'un commentaire, ou les masque si déjà chargées.
+     * Si la profondeur max est atteinte, ajoute l'id du commentaire au breadcrumb de l'URL
+     * et redirige vers une nouvelle instance de main_comment.
+     *
+     * @param {Event}  event         - événement clic
+     * @param {number} discussion_id - id de la discussion
+     * @param {number} comment_id    - id du commentaire dont on charge les réponses
+     */
     async function toggleReplies(event, discussion_id, comment_id){
       event.preventDefault();
       const container = document.getElementById(`commentReplies-${comment_id}`);
@@ -373,6 +439,13 @@
       if (btn) btn.textContent = "Masquer les réponses";
     }
 
+     /**
+     * Génère le HTML d'un commentaire chargé dynamiquement.
+     *
+     * @param {Object} comment - objet commentaire retourné par /show_all_replies
+     * @param {number} depth   - profondeur d'imbrication actuelle
+     * @returns {string}       - HTML du commentaire
+     */
     function renderComment(comment, depth = 0) {
         let replyForm = '';
 
