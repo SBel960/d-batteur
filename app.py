@@ -1184,16 +1184,11 @@ def demote_client(id_c):
     role=select_role_client(id_c)[0]
     username=get_user_by_id(id_c)[1]+" "+get_user_by_id(id_c)[2]
     if(role == "CEO"):
-        newrole="Manager"
-        update_role(newrole,id_c)
+        update_role("Manager",id_c)
         flash(username+" a été rétrogradé en tant que Manager")
     if(role == "Manager"):
-        newrole="Employe"
-        update_role(newrole,id_c)
+        update_role("Employe",id_c)
         flash(username+" a été rétrogradé en tant que Employe")
-
-    if(session['id_client']==id_c):
-        session['role']=newrole
     
     return redirect(url_for('membres'))
 

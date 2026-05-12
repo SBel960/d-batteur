@@ -1,4 +1,22 @@
 <!DOCTYPE html>
+
+<!-- 
+==============================================================================
+PAGE : GROUPES
+------------------------------------------------------------------------------
+Affiche :
+- les groupes du client
+- tous les groupes existants
+
+Permet également :
+- création de groupe
+- ajout/retrait de membres
+- renommage
+- suppression
+
+Gestion accessible selon le rôle utilisateur.
+==============================================================================
+-->
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -55,6 +73,13 @@
   </section>
 
   {% if role >= 2 %}
+  <!-- 
+  Dialogs utilisés pour :
+  - ajouter membre
+  - retirer membre
+  - renommer groupe
+  - supprimer groupe
+  -->
   <!-- Modal : Ajouter un membre -->
   <dialog id="modalAddMember">
     <button class="icon-btn" style="float:right" onclick="document.getElementById('modalAddMember').close()">x</button>
@@ -106,6 +131,9 @@
     <h1>GROUPES</h1>
 
     {% if role >= 3 %}
+    <!-- ajouter gtroupe
+      Section visible uniquement pour les CEO.
+      -->
     <div>
       <h3 class="ajouter_group">Ajouter un nouveau groupe :</h3>
 
@@ -126,13 +154,16 @@
     </div>
     {% endif %}
 
+    <!-- ====================== GROUPES UTILISATEUR ====================== -->
     <h2>Vos groupes</h2>
     <div class="groupsContainer">
       {% for group in groups_client %}
         <div class="group-card">
           <a href="{{ url_for('group_info', g_id=group['id']) }}" class="group-name">{{ group['name'] }}</a>
           {% if role >= 2 %}
+          
           <div class="dropdown">
+            <!-- Seul manager+ on acces au dropdown -->
             <button class="kebab-btn" onclick="toggleMenu(event, 'mymenu-{{group['id']}}')"><span></span><span></span><span></span></button>
             <div class="dropdown-content" id="mymenu-{{ group['id'] }}">
               <button onclick="openAddMember({{ group['id'] }}, '{{ group['name'] }}')">Ajouter un membre</button>
@@ -146,6 +177,7 @@
       {% endfor %}
     </div>
 
+    <!-- ====================== TOUS LES GROUPES ====================== -->
     <h2>Tous les groupes</h2>
     <p id="countInfo"></p>
     <div id="groupsList" class="groupsContainer"></div>
@@ -158,6 +190,10 @@
 
     let all_groups = [];
 
+    /**
+     * Sécurise une chaîne avant injection HTML.
+     * Évite certains problèmes XSS.
+     */
     function escapeHtml(str) {
       return String(str)
         .replaceAll("&", "&amp;")
@@ -167,6 +203,9 @@
         .replaceAll("'", "&#039;");
     }
 
+    /**
+   * Génère dynamiquement les cartes des groupes.
+   */
     function renderGroups(items) {
       list.innerHTML = "";
       countInfo.textContent = `${items.length} groupe(s)`;
@@ -198,6 +237,9 @@
       });
     }
 
+    /**
+   * Charge tous les groupes depuis l’API Flask.
+   */
     async function chargerGroupesBDD() {
       const reponse = await fetch("/allgroups");
       const data = await reponse.json();
@@ -208,11 +250,18 @@
       }));
     }
 
+    /**
+   *  initialise le chargement des groupes.
+   */
     async function initialiserGroupes() {
       await chargerGroupesBDD();
       renderGroups(all_groups);
     }
 
+
+    /**
+   * Filtre les groupes selon la barre de recherche.
+   */
     function appliquerRecherche() {
       const q = searchInput.value.trim().toLowerCase();
 
@@ -225,6 +274,9 @@
 
     searchInput.addEventListener("input", appliquerRecherche);
 
+    /**
+   * Ouvre ou ferme un dropdown spécifique.
+   */
     function toggleMenu(event, id) {
       event.stopPropagation();
       event.preventDefault();
@@ -242,6 +294,10 @@
       document.querySelectorAll(".group-card").forEach(c => c.style.zIndex = "");
     });
 
+    /**
+     * Ouvre la modal d’ajout de membre.
+     * Charge uniquement les utilisateurs non présents dans le groupe.
+     */
     async function openAddMember(groupId, groupName) {
       document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
       const res = await fetch(`/api/group_non_members/${groupId}`);
@@ -255,6 +311,10 @@
       document.getElementById("modalAddMember").showModal();
     }
 
+    /**
+   * Ouvre la modal de retrait de membre.
+   * Charge les membres actuels du groupe.
+   */
     async function openRemoveMember(groupId, groupName) {
       document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
       const res = await fetch(`/api/group_members/${groupId}`);
@@ -268,6 +328,9 @@
       document.getElementById("modalRemoveMember").showModal();
     }
 
+    /**
+   * Ouvre la modal de renommage du groupe.
+   */
     function openRename(groupId, groupName) {
       document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
       document.getElementById("formRename").action = `/updategroup/${groupId}`;
@@ -275,6 +338,9 @@
       document.getElementById("modalRename").showModal();
     }
 
+    /**
+   * Ouvre la modal de suppression du groupe.
+   */
     function openDelete(groupId, groupName) {
       document.querySelectorAll(".dropdown-content").forEach(d => d.classList.remove("show"));
       document.getElementById("modalDeleteTitle").innerHTML = `Supprimer <b>${groupName}</b> ? Cette action est irréversible.`;

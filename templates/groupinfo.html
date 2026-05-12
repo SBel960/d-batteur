@@ -1,4 +1,22 @@
 <!DOCTYPE html>
+<!-- 
+==============================================================================
+PAGE : INFORMATIONS D’UN GROUPE
+------------------------------------------------------------------------------
+Affiche :
+- les membres du groupe
+- leur rôle
+
+Permet également :
+- gestion des membres
+- renommage
+- suppression du groupe
+
+Certaines actions sont accessibles uniquement :
+- aux CEO
+- ou aux managers appartenant au groupe
+==============================================================================
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -49,6 +67,13 @@
       </div>
       <a class="logout" href="{{url_for('logout')}}"> Logout </a>
       {% set member_ids = members | map(attribute='id') | list %}
+
+
+      <!-- 
+      Condition :
+      - CEO : accès total
+      - Manager : uniquement s’il appartient au groupe
+      -->
     {% if role >= 3 or (role >= 2 and id_client in member_ids) %}
     <div class="dropdown" id="groupManagerDropdown">
       <button class="icon-btn" onclick="toggleGroupMenu(event)">Gerer</button>
@@ -87,6 +112,11 @@
           aria-label="Rechercher"
         />
       </div>
+
+      <!-- 
+      Les membres cochés restent dans le groupe.
+      Les membres décochés seront retirés.
+      -->
         <form class="ChangeGroupForm" method="post" action="{{url_for('change_member_group', group_id=group_client['id']) }}">
           
           <div class="DialogHead">Supprimer un membres du groupe </div>
@@ -95,7 +125,7 @@
             {% for membre in members %}
               {%if membre['id'] != id_client %}
                   <input type=checkbox name="memberList" id="memberList_{{membre['id']}}" value="{{membre['id']}} " checked>
-                  <label for="memberList_{{membre['id']}}" class="nameSelect" id="inGroup"> {{membre['name']}} {{membre['last_name']}} </label>
+                  <label for="memberList_{{membre['id']}}" class="nameSelect" id="inGroup"><span>{{membre['name']}} {{membre['last_name']}} </span></label>
               {%endif%}
             {%endfor%}
           </div>
@@ -104,7 +134,7 @@
             
             {% for membre in other %}
                 <input type=checkbox name="memberList" id="memberList_{{membre['id']}}" value="{{membre['id']}}">
-                <label for="memberList_{{membre['id']}}" class="nameSelect" id="Others"> {{membre['name']}} {{membre['last_name']}} </label>
+                <label for="memberList_{{membre['id']}}" class="nameSelect" id="Others"><span>{{membre['name']}} {{membre['last_name']}} </span></label>
             {%endfor%}
             
           </div>
@@ -134,14 +164,13 @@
   <!-- Supprimer le groupe -->
 
         <dialog id="DeleteGroup">
-          <p>Etes vous sûr de vouloir supprimer le groupe</p>
-            <button class="postButton" id="closePage" commandfor='DeleteGroup' command="request-close"> 
-              Annuler
-            </button>
-
-            <form action="{{url_for('delete_group_from_db', group_id=group_client['id']) }}", method="POST"> 
-              <input class="postButton deleteGroup" type="submit" value="Supprimer">
-            </form> 
+          <button class="postButton" id="closePage" commandfor='DeleteGroup' command="request-close"> 
+            x
+          </button>
+          <p style="margin-bottom: 15px;">Êtes-vous sûr de vouloir supprimer le groupe</p>
+          <form action="{{url_for('delete_group_from_db', group_id=group_client['id']) }}", method="POST"> 
+            <input class="postButton deleteGroup" type="submit" value="Supprimer">
+          </form> 
         </dialog>
       
     <div class="container">
@@ -149,16 +178,24 @@
         <div class="groupTitleBox">
           <div class="groupTitle">  {{group_client['name']}}  </div>
         </div>
+
+        <!-- ====================== LISTE DES MEMBRES ====================== -->
       <div class="section-head">
         <h2>Membres</h2>
         <div id="countInfo" class="muted"></div>
       </div>
+      <!-- 
+    La liste est générée dynamiquement en JavaScript.
+    -->
       <div id="memberGroupList" class="members-grid"></div>
     </section>
     </div>
   </main>
 
   <script>
+    /**
+    * Ouvre ou ferme le menu dropdown de gestion.
+    */
     function toggleGroupMenu(event) {
       event.stopPropagation();
       document.getElementById("groupMenuContent").classList.toggle("show");
@@ -184,6 +221,9 @@
     id=part[2]
 
 
+    /**
+   * Charge les membres du groupe depuis l’API Flask.
+   */
     async function chargerGroupeMembre() {
       const reponse = await fetch("/allgroupmembers/"+id);
       const data = await reponse.json();
@@ -197,6 +237,9 @@
       "Employe": { bg: "rgba(99,102,241,0.22)",  border: "rgba(99,102,241,0.50)", text: "#818cf8" },
     };
 
+    /**
+   * Génère dynamiquement les cartes des membres du groupe.
+   */
     function renderMembres(items) {
       const memberlist = document.getElementById("memberGroupList");
       memberlist.innerHTML = "";
@@ -224,6 +267,9 @@
       });
     }
 
+    /**
+   * Filtre les membres du groupe selon la recherche.
+   */
     function appliquerRecherche() {
       const q = document.getElementById("searchInput").value.trim().toLowerCase();
       const filtres = groupmember.filter(m =>
@@ -243,6 +289,9 @@
       });
     });
 
+    /**
+   * Initialise l’affichage des membres du groupe.
+   */
     async function initialiserMembres() {
       await chargerGroupeMembre();
       renderMembres(groupmember);

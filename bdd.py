@@ -111,7 +111,8 @@ def create_group_members_table():
                 id_c INTEGER NOT NULL,
 
                 FOREIGN KEY(id_c) REFERENCES Client(id_client),
-                FOREIGN KEY(id_g) REFERENCES Groups(id_groupe)
+                FOREIGN KEY(id_g) REFERENCES Groups(id_groupe),
+                UNIQUE (id_g,id_c)
                 )  
             """
     sql.execute(command)
@@ -127,7 +128,8 @@ def create_discussion_groups_table():
 
                 FOREIGN KEY(id_d) REFERENCES Discussions(id_discussion),
                 FOREIGN KEY(id_g) REFERENCES Groups(id_groupe)
-    
+
+                UNIQUE(id_g,id_d)
 
                 )  
             """
@@ -166,7 +168,6 @@ def insert_clients_table(email, name, last_name, password, company, role):
     sql.execute(command, [email, name, last_name, password, company, role])
     data.commit()
 
-
 def insert_disscussions_table(id_c, title, content, type, priority, cloned_from=None):
     """
     params:
@@ -187,10 +188,9 @@ def insert_disscussions_table(id_c, title, content, type, priority, cloned_from=
     """
     data = get_db()
     sql = data.cursor()
-    date_creation = date.today()
+    date_creation = date.today().isoformat()
     named_tuple = time.localtime() # get struct_time
     time_creation = time.strftime("%H:%M", named_tuple)
-    print(time_creation)
     command = """INSERT INTO Discussions(id_c, title, content, type, date_creation,time_creation, cloned_from, priority)
                 VALUES (?,?,?,?,?,?,?,?)
 
@@ -412,7 +412,6 @@ def select_comments_ferme(discussion_id):
     """
     params:
         discussion_id (int): id de la discussion
-
     role:
         Récupère les commentaires principaux triés par popularité (likes/dislikes).
 
@@ -421,7 +420,7 @@ def select_comments_ferme(discussion_id):
     """
     data = get_db()
     sql = data.cursor()
-    command = """SELECT * FROM Comments 
+    command = """SELECT Comments.* FROM Comments 
             LEFT JOIN Likes ON Comments.id_comment = Likes.id_target AND Likes.target='comment'
             WHERE Comments.id_d= ? AND id_reply=0
             GROUP BY Comments.id_comment
@@ -606,7 +605,7 @@ def select_client_groupes(id_c):
     """
     data = get_db()
     sql = data.cursor()
-    command = """SELECT * FROM Groups 
+    command = """SELECT Groups.id_group, Groups.name FROM Groups 
         JOIN GroupMembers ON Groups.id_group = GroupMembers.id_g 
         WHERE GroupMembers.id_c=?;
             """
@@ -946,13 +945,14 @@ def update_role(role,id_c):
         - utilisé dans app.py → fonction promote_client()
         - utilisé dans app.py → fonction demote_client()
     """
-    data=get_db()
-    sql=data.cursor()
-    command="""UPDATE Client SET role=? WHERE id_client=?
-        """
-    sql.execute(command,[role, id_c])
-    data.commit()
-    sql.close()
+    if role=="CEO" or role=="Manager" or role=="Employe":
+        data=get_db()
+        sql=data.cursor()
+        command="""UPDATE Client SET role=? WHERE id_client=?
+            """
+        sql.execute(command,[role, id_c])
+        data.commit()
+        sql.close()
 
 #---------------------- likes
 
