@@ -1,6 +1,10 @@
-
 __pycache__/
-*.db
 *.pyc
-
-.pychtest_cache/*
+*.pyo
+approot/app.db
+*.db
+.env
+.DS_Store
+node_modules/
+.venv/
+.pytest_cache/

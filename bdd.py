@@ -3,7 +3,10 @@ import math
 from flask import g
 from datetime import date
 import time
-db_file = "approot/app.db"
+import os as _os
+_base = _os.path.dirname(_os.path.abspath(__file__))
+_os.makedirs(_os.path.join(_base, 'approot'), exist_ok=True)
+db_file = _os.path.join(_base, 'approot', 'app.db')
 
 def get_db():
     if "db" not in g:
