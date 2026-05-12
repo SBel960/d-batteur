@@ -8,3 +8,5 @@ approot/app.db
 node_modules/
 .venv/
 .pytest_cache/
+.venv
+venv
