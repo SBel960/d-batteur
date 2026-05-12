@@ -24,7 +24,7 @@ from bdd import (
 import time
 
 app = Flask(__name__)
-app.secret_key = "ITTorsdyP2Gfzss33gjoY34otqT5BWC5"
+app.secret_key = "bonjour suis-je la cle secrete?"
 
 roles_numeros = {
     "CEO":     3,
