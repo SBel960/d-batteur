@@ -195,6 +195,7 @@ body { padding-top: 148px; }
     justify-content: center;
     transition: transform .12s ease, background .12s ease, border-color .12s ease;
     user-select: none;
+    margin-bottom: 15px;
   }
   #closePage:hover{
     transform: translateY(-1px);

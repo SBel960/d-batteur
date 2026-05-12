@@ -125,7 +125,7 @@ Certaines actions sont accessibles uniquement :
             {% for membre in members %}
               {%if membre['id'] != id_client %}
                   <input type=checkbox name="memberList" id="memberList_{{membre['id']}}" value="{{membre['id']}} " checked>
-                  <label for="memberList_{{membre['id']}}" class="nameSelect" id="inGroup"> {{membre['name']}} {{membre['last_name']}} </label>
+                  <label for="memberList_{{membre['id']}}" class="nameSelect" id="inGroup"><span>{{membre['name']}} {{membre['last_name']}} </span></label>
               {%endif%}
             {%endfor%}
           </div>
@@ -134,7 +134,7 @@ Certaines actions sont accessibles uniquement :
             
             {% for membre in other %}
                 <input type=checkbox name="memberList" id="memberList_{{membre['id']}}" value="{{membre['id']}}">
-                <label for="memberList_{{membre['id']}}" class="nameSelect" id="Others"> {{membre['name']}} {{membre['last_name']}} </label>
+                <label for="memberList_{{membre['id']}}" class="nameSelect" id="Others"><span>{{membre['name']}} {{membre['last_name']}} </span></label>
             {%endfor%}
             
           </div>
@@ -164,14 +164,13 @@ Certaines actions sont accessibles uniquement :
   <!-- Supprimer le groupe -->
 
         <dialog id="DeleteGroup">
-          <p>Etes vous sûr de vouloir supprimer le groupe</p>
-            <button class="postButton" id="closePage" commandfor='DeleteGroup' command="request-close"> 
-              Annuler
-            </button>
-
-            <form action="{{url_for('delete_group_from_db', group_id=group_client['id']) }}", method="POST"> 
-              <input class="postButton deleteGroup" type="submit" value="Supprimer">
-            </form> 
+          <button class="postButton" id="closePage" commandfor='DeleteGroup' command="request-close"> 
+            x
+          </button>
+          <p style="margin-bottom: 15px;">Êtes-vous sûr de vouloir supprimer le groupe</p>
+          <form action="{{url_for('delete_group_from_db', group_id=group_client['id']) }}", method="POST"> 
+            <input class="postButton deleteGroup" type="submit" value="Supprimer">
+          </form> 
         </dialog>
       
     <div class="container">
