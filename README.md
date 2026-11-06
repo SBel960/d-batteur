@@ -1,10 +1,10 @@
 # les-debatteurs
-Membre du groupe : Numéro d'étudiant
+Membre du groupe :
 
-- François ALICANTE : 21414341
-- Justin KANG : 21431641
-- Soufiane BEL HADJ : 21303076
-- Tamer AL MASRI : 21412678
+- François ALICANTE
+- Justin KANG
+- Soufiane BEL HADJ
+- Tamer AL MASRI
 
 # Description du projet
 L'objectif principal de ce projet est de fournir une plateforme de délibération pour les entreprises.
